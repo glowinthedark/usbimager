@@ -115,7 +115,7 @@ LIBS += $(shell pkg-config --libs udisks2)
 endif
 SRC += disks_linux.c
 TMP = $(ARCH:x86_64=amd64)
-TMP2 = $(ARCH:aarch64=arm64)
+TMP2 = $(TMP:aarch64=arm64)
 DEBARCH = $(TMP2:armv7l=armhf)
 endif
 endif

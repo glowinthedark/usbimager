@@ -70,7 +70,7 @@ Fícsörök
 |---------------------------------|---------------|-------------------|-----------|
 | Többplatformos                  | ✔             | ✗                 | ✔         |
 | Minimum Windows                 | Win 7         | Win XP            | Win XP    |
-| Minimum MacOSX (1)              | ?             | ✗                 | 10.14     |
+| Minimum MacOSX (1)              | ?             | ✗                 | 10.13     |
 | Elérhető Raspbian-on            | ✗             | ✗                 | ✔         |
 | Program mérete (2)              | 130 Mb        | ✗                 | 300 Kb    |
 | Függőségek                      | sok, ~300 Mb  | Qt, ~8 Mb         | ✗ nincs   |

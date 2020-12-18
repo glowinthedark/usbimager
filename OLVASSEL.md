@@ -290,7 +290,7 @@ Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @M
 
 Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani (japán), @ngedizaydindogmus (török), @coltrane (portugál).
 
-További köszönet @munntjlx-nek és @LFOM-nak, hogy lefordították az USBImager-t MacOS-en.
+További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en.
 
 Legjobbakat,
 

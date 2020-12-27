@@ -128,11 +128,12 @@ body { padding-top: 64px; }
         [ "Linux",    "Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.4-amd64.deb" ],
         [ "Rasp",     "RaspiOS", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-armhf.deb" ],
         [ "Win",      "Windows", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-i686-win-gdi.zip" ],
-        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip" ]
+        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip" ],
+        [ "X11",      "Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-x86_64-linux-x11.zip" ]
       ];
-      var dl = document.getElementById("dl"), dlos = document.getElementById("dlos");
+      var dl = document.getElementById("dl"), dlos = document.getElementById("dlos"), os = navigator.appVersion.concat(navigator.platform);
       for(var i = 0; i < dllinks.length; i++)
-          if(navigator.appVersion.indexOf(dllinks[i][0]) != -1) {
+          if(os.indexOf(dllinks[i][0]) != -1) {
               dlos.innerHTML = dllinks[i][1]; dl.setAttribute("href", dllinks[i][2]); break;
           }
     });

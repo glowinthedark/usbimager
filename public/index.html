@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="USBImager, Windows, Linux, MacOS">
+    <meta name="author" content="bzt">
+    <title>USBImager</title>
+    <link href="logo.png" rel="shortcut icon">
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <style>
+body { padding-top: 64px; }
+.card { height: 100%; }
+.headerbg {background: #333 url(images/headerbg.png) center;background-size: cover;}
+.headerbg p {text-shadow: 2px 2px 2px #000;}
+.headerbg h1 {text-shadow: 3px 3px 5px #000;}
+.headerbg div {padding-bottom:5px;}
+.headerbg img { height: 30px; margin-right: 20px;}
+#content, #results { padding-bottom: 25px; }
+#menuchk:checked ~ .navbar-collapse { display:block; }
+.nav-link { cursor:pointer; }
+.nav-link:hover {  border-color: #888; }
+.nav-tabs { border-bottom: 1px solid #888; }
+.nav-tabs li { position: relative; bottom: -1px; }
+.nav-tabs li label { margin-bottom: 0px !important; cursor: inherit; }
+.tabcol { border-bottom: 1px solid #888; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/usbimager/"><img src="images/usbimagerhdr.png" height="30" alt="USBImager"> USBImager</a>
+        <input type="checkbox" id="menuchk" style="display:none;"><label for="menuchk" class="navbar-toggler">
+          <span class="navbar-toggler-icon"></span>
+        </label>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/usbimager/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#install">Install</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#features">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#screen">Screenshots</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://gitlab.com/bztsrc/usbimager/issues">Issues</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div style="display:none;"><img src="images/headerbg.png" alt=""></div>
+    <div class="container" id="content" style="display:block;">
+      <header class="jumbotron my-4 headerbg" id="home">
+        <h1 class="display-3 text-white">Welcome to USBImager!</h1>
+        <p class="lead text-white">USBImager is a really really simple GUI application that writes compressed disk images to USB drives and creates backups. Available platforms: Windows, MacOS and Linux. Its interface is as simple as it gets, totally bloat-free.</p>
+        <div class="row text-center">
+        <div class="col-lg-6"><a href="https://gitlab.com/bztsrc/usbimager/tree/binaries" class="btn btn-primary btn-lg btn-block" target="_new" id="dl"><img src="images/download.png" alt="Download">Download (<span id="dlos">all</span>)</a></div>
+        <div class="col-lg-6"><a href="https://gitlab.com/bztsrc/usbimager" class="btn btn-primary btn-lg btn-block" target="_new"><img src="images/gitlab.png" alt="GitLab">Browse the Source</a></div>
+        </div>
+      </header>
+      <div class="card text-white bg-secondary my-4">
+        <div class="card-body">
+          <p class="text-white text-center m-0">The application is Open Source and free as in free beer! Licensed under <a href="https://gitlab.com/bztsrc/usbimager/blob/master/LICENSE" class="text-white" target="_new"><b>MIT license</b></a>.</p>
+        </div>
+      </div>
+
+    <hr id="install">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Installation</h2>
+          <ol>
+            <li>download one of the <tt>usbimager_*.zip</tt> archives from the <a href="https://gitlab.com/bztsrc/usbimager/tree/binaries" target="_new">repo</a> for your desktop (less than 192 Kilobytes each)</li>
+            <li>extract to: <tt>C:\Program Files</tt> (Windows), <tt>/Applications</tt> (MacOS) or <tt>/usr</tt> (Linux)</li>
+            <li>Enjoy!</li>
+          </ol>
+          <small>You can use the executable in the archive as-is, the other files only provide integration with your desktop (icons and such). It will autodetect your operating system's configured language, and if dictionary found, it will greet you in your language.</small>
+        </div>
+      </div>
+
+    <hr id="features">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Features</h2>
+          <ul>
+            <li>Open Source and MIT licensed</li>
+            <li>Portable executable, no installation needed, just extract the archives</li>
+            <li>Small. Really small, few kilobytes only, yet has no dependencies</li>
+            <li>No privacy concerns nor advertisements like with etch*r, fully GDPR compatible</li>
+            <li>Minimalist, multilingual, native interface on all platforms</li>
+            <li>Tries to be bullet-proof and avoids overwriting of the system disk</li>
+            <li>Makes synchronized writes, that is, all data is on disk when the progressbar reaches 100%</li>
+            <li>Can verify writing by comparing the disk to the image</li>
+            <li>Can read raw disk images: .img, .bin, .raw, .iso, .dd, etc.</li>
+            <li>Can read compressed images on-the-fly: .gz, .bz2, .xz, .zst</li>
+            <li>Can read archives on-the-fly: .zip (PKZIP and ZIP64) <sup>*</sup></li>
+            <li>Can create backups in raw and bzip2 compressed format</li>
+            <li>Can send images to microcontrollers over serial line</li>
+            <li>Available in 17 languages</li>
+          </ul>
+          <small><sup>*</sup> - for archives with multiple files, the first file in the archive is used as input</small>
+        </div>
+      </div>
+
+    <hr id="screen">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Screenshots</h2>
+          <img src="https://gitlab.com/bztsrc/usbimager/raw/master/usbimager.png">
+        </div>
+      </div>
+    </div>
+
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="text-center text-white">Copyright &copy; bzt (bztsrc@gitlab) 2020.</p>
+      </div>
+    </footer>
+  </body>
+  <script language="javascript">
+    document.addEventListener("DOMContentLoaded", function(e) {
+      var dllinks = [
+        [ "Linux",    "Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.4-amd64.deb" ],
+        [ "Rasp",     "RaspiOS", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-armhf.deb" ],
+        [ "Win",      "Windows", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-i686-win-gdi.zip" ],
+        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip" ]
+      ];
+      var dl = document.getElementById("dl"), dlos = document.getElementById("dlos");
+      for(var i = 0; i < dllinks.length; i++)
+          if(navigator.appVersion.indexOf(dllinks[i][0]) != -1) {
+              dlos.innerHTML = dllinks[i][1]; dl.setAttribute("href", dllinks[i][2]); break;
+          }
+    });
+  </script>
+</html>

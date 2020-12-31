@@ -269,6 +269,7 @@ Authors
 - bzip2: Julian R. Seward
 - xz: Igor Pavlov and Lasse Collin
 - zlib: Mark Adler
+- zstd: FB, various contributors (see http://www.zstd.net)
 - zip format: bzt (no PKWARE-related lib nor source was used in this project)
 - usbimager: bzt
 

@@ -280,6 +280,7 @@ Szerzők
 - bzip2: Julian R. Seward
 - xz: Igor Pavlov és Lasse Collin
 - zlib: Mark Adler
+- zstd: FB, számos kontribútor (lásd http://www.zstd.net)
 - zip kezelés: bzt (semmilyen PKWARE függvénykönyvtár vagy forrás nem lett felhasználva)
 - usbimager: bzt
 

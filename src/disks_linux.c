@@ -141,26 +141,39 @@ void disks_refreshlist()
     dir = opendir("/sys/block");
     if(dir) {
         while((de = readdir(dir))) {
+            if(verbose > 1) printf("%s: ", de->d_name);
             if((de->d_name[0] != 's' || de->d_name[1] != 'd') &&
-                (de->d_name[0] != 'm' || de->d_name[1] != 'm')) continue;
+                (de->d_name[0] != 'm' || de->d_name[1] != 'm')) {
+                    if(verbose > 1) printf("SKIP\n");
+                    continue;
+            }
             if(!disks_all) {
                 for(k = 0; k < j && strcmp(de->d_name, skip[k]); k++);
-                if(k != j) continue;
+                if(k != j) {
+                    if(verbose > 1) printf("SKIP sysdisk\n");
+                    continue;
+                }
             }
-            if(verbose > 1) printf("\n");
             /* some mmc card driver do not set this... */
             /* and some SATA to USB converters either, see issue #19. Better not to check at all */
             /*
             sprintf(path, "/sys/block/%s/removable", de->d_name);
             filegetcontent(path, vendorName, 2);
-            if(vendorName[0] != '1') continue;
-	    */
+            if(vendorName[0] != '1') {
+                if(verbose > 1) printf("SKIP non-removable\n");
+                continue;
+            }
+        */
             sprintf(path, "/sys/block/%s/ro", de->d_name);
             filegetcontent(path, vendorName, 2);
-            if(vendorName[0] != '0') continue;
+            if(vendorName[0] != '0') {
+                if(verbose > 1) printf("SKIP read-only\n");
+                continue;
+            }
             size = 0;
             sprintf(path, "/sys/block/%s/size", de->d_name);
             filegetcontent(path, vendorName, sizeof(vendorName));
+            if(verbose > 1) printf("OK size %s", vendorName);
             size = (uint64_t)atoll(vendorName) * 512UL;
             memset(vendorName, 0, sizeof(vendorName));
             sprintf(path, "/sys/block/%s/device/vendor", de->d_name);

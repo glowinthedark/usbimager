@@ -2,7 +2,7 @@ USBImager
 =========
 
 <img src="https://gitlab.com/bztsrc/usbimager/raw/master/src/misc/icon32.png">
-[USBImager](https://gitlab.com/bztsrc/usbimager) is a really really simple GUI application that writes compressed disk images to USB drives
+[USBImager](https://bztsrc.gitlab.io/usbimager) is a really really simple GUI application that writes compressed disk images to USB drives
 and creates backups. Available platforms: Windows, MacOSX and Linux. Its interface is as simple as it gets, totally bloat-free.
 
 | Platform     | Frontend     | Description                  |
@@ -58,6 +58,7 @@ Features
 - Can read archives on-the-fly: .zip (PKZIP and ZIP64) (*)
 - Can create backups in raw and bzip2 compressed format
 - Can send images to microcontrollers over serial line
+- Available in 17 languages
 
 (* - for archives with multiple files, the first file in the archive is used as input)
 

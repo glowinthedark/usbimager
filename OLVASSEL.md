@@ -2,7 +2,7 @@ USBImager
 =========
 
 <img src="https://gitlab.com/bztsrc/usbimager/raw/master/src/misc/icon32.png">
-Az [USBImager](https://gitlab.com/bztsrc/usbimager) egy igen igen faék egyszerűségű ablakos alkalmazás, amivel
+Az [USBImager](https://bztsrc.gitlab.io/usbimager) egy igen igen faék egyszerűségű ablakos alkalmazás, amivel
 tömörített lemezképeket lehet USB meghajtókra írni és lementeni. Elérhető Windows, MaxOSX és Linux rendszereken. A felülete
 annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 
@@ -60,6 +60,7 @@ Fícsörök
 - Képes csomagolt fájlokat kitömöríteni: .zip (PKZIP és ZIP64) (*)
 - Képes lemezképeket készíteni, nyers és bzip2 tömörített formátumban
 - Képes mikrokontrollerek számára soros vonalon leküldeni a lemezképeket
+- 17 nyelvre lefordítva
 
 (* - a több fájlt is tartalmazó csomagolt fájlok esetén a csomagolt fájl legelső fájlját használja bemenetnek)
 

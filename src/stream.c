@@ -453,14 +453,21 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
     }
 
     if(comp) {
-        ctx->type = TYPE_BZIP2;
-        ctx->b = BZ2_bzopen(fn, "wb");
-        if(!ctx->b) {
+        ctx->type = TYPE_ZSTD;
+        ctx->zcmp = ZSTD_createCCtx();
+        ctx->g = fopen(fn, "wb");
+        if(!ctx->g || !ctx->zcmp) {
             main_getErrorMessage();
+            if(ctx->g) fclose(ctx->g);
+            ctx->g = NULL;
+            if(ctx->zcmp) ZSTD_freeCCtx(ctx->zcmp);
+            ctx->zcmp = NULL;
             free(ctx->buffer); ctx->buffer = NULL;
             free(ctx->compBuf); ctx->compBuf = NULL;
             return 1;
         }
+        ZSTD_CCtx_setParameter(ctx->zcmp, ZSTD_c_compressionLevel, 1);
+        ZSTD_CCtx_setParameter(ctx->zcmp, ZSTD_c_nbWorkers, 4);
     } else {
         ctx->type = TYPE_PLAIN;
         ctx->f = fopen(fn, "wb");
@@ -482,6 +489,7 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
  */
 int stream_write(stream_t *ctx, char *buffer, int size)
 {
+    size_t remaining;
     if(verbose)
         printf("stream_write() readSize %" PRIu64 " / fileSize %" PRIu64 " (output size %d)\r\n",
             ctx->readSize, ctx->fileSize, size);
@@ -493,9 +501,17 @@ int stream_write(stream_t *ctx, char *buffer, int size)
             if(!fwrite(buffer, size, 1, ctx->f))
                 size = 0;
         break;
-        case TYPE_BZIP2:
-            if(BZ2_bzwrite(ctx->b, buffer, size) < 1)
-                size = 0;
+        case TYPE_ZSTD:
+            ctx->zi.src = buffer; ctx->zi.size = size; ctx->zi.pos = 0;
+            ctx->zo.dst = ctx->compBuf; ctx->zo.size = buffer_size; ctx->zo.pos = 0;
+            do {
+                remaining = ZSTD_compressStream2(ctx->zcmp, &ctx->zo , &ctx->zi,
+                    ctx->readSize >= ctx->fileSize ? ZSTD_e_end : ZSTD_e_continue);
+                if(!fwrite(ctx->compBuf, ctx->zo.pos, 1, ctx->g)) {
+                    size = 0;
+                    break;
+                }
+            } while(ctx->readSize >= ctx->fileSize ? (remaining != 0) : (ctx->zi.pos != (size_t)size));
         break;
     }
     if(verbose) printf("stream_write() output size %d\r\n", size);
@@ -511,11 +527,15 @@ void stream_close(stream_t *ctx)
     if(ctx->verifyBuf) free(ctx->verifyBuf);
     if(ctx->buffer) free(ctx->buffer);
     if(ctx->f) fclose(ctx->f);
+    if(ctx->g) fclose(ctx->g);
     switch(ctx->type) {
         case TYPE_DEFLATE: inflateEnd(&ctx->zstrm); break;
-        case TYPE_BZIP2: if(ctx->b) BZ2_bzclose(ctx->b); else BZ2_bzDecompressEnd(&ctx->bstrm); break;
+        case TYPE_BZIP2: BZ2_bzDecompressEnd(&ctx->bstrm); break;
         case TYPE_XZ: xz_dec_end(ctx->xz); break;
-        case TYPE_ZSTD: ZSTD_freeDCtx(ctx->zstd); break;
+        case TYPE_ZSTD:
+            if(ctx->zstd) ZSTD_freeDCtx(ctx->zstd);
+            if(ctx->zcmp) ZSTD_freeCCtx(ctx->zcmp);
+        break;
     }
 }
 

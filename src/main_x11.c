@@ -587,7 +587,7 @@ void main_onProgress(void *data)
     if(XPending(dpy)) {
         XNextEvent(dpy, &e);
         if(e.type == ClientMessage && (Atom)(e.xclient.data.l[0]) == delAtom) {
-            if(ctx && ctx->b) stream_close(ctx);
+            if(ctx && ctx->g) stream_close(ctx);
             onQuit();
             exit(1);
         }
@@ -794,7 +794,7 @@ static void *readerRoutine()
         lt = localtime(&now);
         snprintf(fn + i, sizeof(fn)-1-i, "/usbimager-%04d%02d%02dT%02d%02d.dd%s",
             lt->tm_year+1900, lt->tm_mon+1, lt->tm_mday, lt->tm_hour, lt->tm_min,
-            needCompress ? ".bz2" : "");
+            needCompress ? ".zst" : "");
         strcpy(source, fn);
         mainRedraw();
         if(!stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {

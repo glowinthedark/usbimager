@@ -267,7 +267,8 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
             wsprintfW(home, L".\\");
         GetDateFormatW(LOCALE_USER_DEFAULT, 0, NULL, L"yyyyMMdd", (LPWSTR)&d, 16);
         GetTimeFormatW(LOCALE_USER_DEFAULT, 0, NULL, L"HHmm", (LPWSTR)&t, 8);
-        wsprintfW(wFn, L"%s\\usbimager-%sT%s.dd%s", bkpdir && !_wstat(bkpdir, &st) ? bkpdir : home, d, t, needCompress ? L".bz2" : L"");
+        wsprintfW(wFn, L"%s\\usbimager-%sT%s.dd%s", bkpdir && !_wstat(bkpdir, &st) ? bkpdir : home, d, t,
+            needCompress ? L".zst" : L"");
         for(wlen = 0; wFn[wlen]; wlen++);
         len = WideCharToMultiByte(CP_UTF8, 0, wFn, wlen, 0, 0, NULL, NULL);
         if(len > 0) {

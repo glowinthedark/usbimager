@@ -32,7 +32,6 @@ OBJS= blocksort.o  \
       crctable.o   \
       randtable.o  \
       decompress.o \
-      compress.o \
       bzlib.o
 
 all: libbz2.a bzip2 bzip2recover test

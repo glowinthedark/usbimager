@@ -143,7 +143,7 @@ xz/libxz.a:
 	@make -C xz libxz.a
 
 zstd/libzstd.a:
-	@make -C zstd libzstd.a ZSTD_LIB_COMPRESSION=0 ZSTD_LIB_DICTBUILDER=0 ZSTD_LIB_DEPRECATED=0 \
+	@make -C zstd libzstd.a ZSTD_LEGACY_SUPPORT=0 ZSTD_LIB_DICTBUILDER=0 ZSTD_LIB_DEPRECATED=0 \
 		ZSTD_LIB_MINIFY=1 ZSTD_STATIC_LINKING_ONLY=1 ZSTD_STRIP_ERROR_STRINGS=1 DEBUGLEVEL=0
 
 resource.o: misc/resource.rc

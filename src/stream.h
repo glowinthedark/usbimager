@@ -55,7 +55,7 @@
 
 /* stream context */
 typedef struct {
-    FILE *f;
+    FILE *f, *g;
     uint64_t fileSize;
     uint64_t compSize;
     uint64_t readSize;
@@ -69,10 +69,10 @@ typedef struct {
     bz_stream bstrm;
     struct xz_buf xstrm;
     struct xz_dec *xz;
+    ZSTD_CCtx* zcmp;
     ZSTD_DCtx* zstd;
     ZSTD_inBuffer zi;
     ZSTD_outBuffer zo;
-    BZFILE *b;
     char type;
     time_t start;
 } stream_t;

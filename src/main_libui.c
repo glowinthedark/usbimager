@@ -236,7 +236,7 @@ static void *readerRoutine(void *data)
         lt = localtime(&now);
         snprintf(fn + i, sizeof(fn)-1-i, "/usbimager-%04d%02d%02dT%02d%02d.dd%s",
             lt->tm_year+1900, lt->tm_mon+1, lt->tm_mday, lt->tm_hour, lt->tm_min,
-            needCompress ? ".bz2" : "");
+            needCompress ? ".zst" : "");
         uiQueueMain(onSourceSet, fn);
 
         if(!stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {

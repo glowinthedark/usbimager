@@ -12,7 +12,7 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip) | natív interfész |
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.4-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban |
-| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-x86_64-linux-gtk.zip)  | javalott<br>kompatíbilitás (van egy kis biztonsági kockázat a nyers lemezelérések engedélyezésekor udisks2 nélkül) |
+| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-x86_64-linux-gtk.zip)  | javalott<br>kompatíbilitás (van egy kis biztonsági kockázat a nyers lemezelérések engedélyezésekor udisks2 nélkül) |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban |
 | Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-aarch64-linux-x11.zip) | natív interfész, AArch32 (armv7l)<br>natív interfész, AArch64 (arm64) |
 

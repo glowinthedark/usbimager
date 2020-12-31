@@ -2363,8 +2363,8 @@ ZSTD_entropyCompressSequences(seqStore_t* seqStorePtr,
  * assumption : strat is a valid strategy */
 ZSTD_blockCompressor ZSTD_selectBlockCompressor(ZSTD_strategy strat, ZSTD_dictMode_e dictMode)
 {
-    (void*)strat;
-    (void*)dictMode;
+    (void)strat;
+    (void)dictMode;
     return ZSTD_compressBlock_fast;
 }
 

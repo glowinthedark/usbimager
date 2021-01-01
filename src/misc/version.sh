@@ -137,6 +137,57 @@ BEGIN
 END
 EOF
 
+cat <<EOF | sed 's/$/\r/g' >resourcewo.rc
+#include "../resource.h"
+#include <windows.h>
+#include <commctrl.h>
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "manifest.xml"
+IDI_APP_ICON ICON "usbimager.ico"
+
+VS_VERSION_INFO    VERSIONINFO
+FILEVERSION        $COMMAVER,0
+PRODUCTVERSION     $COMMAVER,0
+FILEFLAGSMASK      VS_FFI_FILEFLAGSMASK
+FILEFLAGS          0
+FILEOS             VOS_NT_WINDOWS32
+FILETYPE           VFT_APP
+FILESUBTYPE        VFT2_UNKNOWN
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904b0"
+    BEGIN
+      VALUE "CompanyName", "bzt@gitlab"
+      VALUE "FileDescription", "USB image writer"
+      VALUE "FileVersion", "0.0.1"
+      VALUE "InternalName", "Win32App"
+      VALUE "LegalCopyright", "©2020 bzt@gitlab"
+      VALUE "OriginalFilename", "usbimager.exe"
+      VALUE "ProductName", "USBImager by bzt"
+      VALUE "ProductVersion", "$VERSION"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1200
+  END
+END
+
+IDC_MAINDLG DIALOGEX 0, 0, 320, 80
+STYLE DS_CENTER | DS_SHELLFONT | WS_SYSMENU
+FONT 8, "MS Shell Dlg"
+CAPTION "USBImager $VERSION"
+BEGIN
+    EDITTEXT IDC_MAINDLG_SOURCE, 5, 5, 275, 12, ES_AUTOHSCROLL
+    PUSHBUTTON "...", IDC_MAINDLG_SELECT, 285, 4, 30, 14
+    COMBOBOX IDC_MAINDLG_TARGET_LIST, 5, 20, 310, 71, CBS_DROPDOWNLIST | WS_TABSTOP
+    PUSHBUTTON "&Write", IDC_MAINDLG_WRITE, 5, 40, 310, 16
+    CONTROL "", IDC_MAINDLG_PROGRESSBAR, "msctls_progress32", PBS_SMOOTH, 5, 60, 310, 4
+    LTEXT "", IDC_MAINDLG_STATUS, 5, 66, 310, 14, WS_TABSTOP
+END
+EOF
+
 cat <<EOF >usbimager.desktop
 [Desktop Entry]
 Version=$VERSION

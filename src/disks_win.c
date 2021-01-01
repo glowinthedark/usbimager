@@ -39,13 +39,13 @@ int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX];
 uint64_t disks_capacity[DISKS_MAX];
 
 HANDLE hTargetVolume = NULL;
+unsigned int cdrive = 0;
 
 /**
  * Refresh target device list in the combobox
  */
 void disks_refreshlist() {
     int i = 0, j, k;
-    unsigned int cdrive = 0;
     VOLUME_DISK_EXTENTS volumeDiskExtents;
     wchar_t szLbText[1024], volName[MAX_PATH+1], siz[64], *wc;
     HANDLE hTargetDevice;
@@ -54,7 +54,7 @@ void disks_refreshlist() {
     DWORD bytesReturned;
     long long int totalNumberOfBytes = 0;
     STORAGE_PROPERTY_QUERY Query;
-    char Buf[1024] = {0}, letter, *c, fn[64] = "\\\\.\\C:";
+    char Buf[1024] = {0}, letter, sl, el, *c, fn[64] = "\\\\.\\C:";
     PSTORAGE_DEVICE_DESCRIPTOR pDevDesc = (PSTORAGE_DEVICE_DESCRIPTOR)Buf;
     pDevDesc->Size = sizeof(Buf);
     Query.PropertyId = StorageDeviceProperty;
@@ -73,19 +73,33 @@ void disks_refreshlist() {
             cdrive = (unsigned int)volumeDiskExtents.Extents[0].DiskNumber;
         CloseHandle(hTargetDevice);
     }
-    for(letter = 'A'; letter <= 'Z'; letter++) {
-        fn[4] = letter;
-        /* fn[6] = '\\'; if(GetDriveType(fn) != DRIVE_REMOVABLE) continue; else fn[6] = 0; */
-        if(!disks_all && letter == 'C') continue;
-        hTargetDevice = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-        if (hTargetDevice != INVALID_HANDLE_VALUE) {
-            /* skip drive letters that are on the same physical disk as the C: drive */
-            if(!disks_all &&
-                DeviceIoControl(hTargetDevice, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL) &&
-                cdrive == (unsigned int)volumeDiskExtents.Extents[0].DiskNumber) {
+    if(!disks_all) { sl = 'A'; el = 'Z'; } else { sl = '0'; el = '9'; }
+    for(letter = sl; letter <= el; letter++) {
+        hTargetDevice = INVALID_HANDLE_VALUE;
+        if(!disks_all) {
+            fn[4] = letter;
+            /* fn[6] = '\\'; if(GetDriveType(fn) != DRIVE_REMOVABLE) continue; else fn[6] = 0; */
+            if(letter == 'C') continue;
+            hTargetDevice = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+            if (hTargetDevice != INVALID_HANDLE_VALUE) {
+                /* skip drive letters that are on the same physical disk as the C: drive */
+                if(DeviceIoControl(hTargetDevice, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents,
+                        sizeof volumeDiskExtents, &bytesReturned, NULL) &&
+                        cdrive != (unsigned int)volumeDiskExtents.Extents[0].DiskNumber) {
+                    disks_targets[i] = (int)volumeDiskExtents.Extents[0].DiskNumber;
+                } else {
                     CloseHandle(hTargetDevice);
                     continue;
+                }
             }
+        } else {
+            sprintf(fn, "\\\\.\\PhysicalDrive%c", letter);
+            hTargetDevice = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+            if (hTargetDevice != INVALID_HANDLE_VALUE) {
+                disks_targets[i] = (int)(letter - '0');
+            }
+        }
+        if(hTargetDevice != INVALID_HANDLE_VALUE) {
             totalNumberOfBytes = 0;
             if (DeviceIoControl(hTargetDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX, NULL, 0, &diskGeometryEx, sizeof diskGeometryEx, &bytesReturned, NULL)) {
                 totalNumberOfBytes = (long long int)diskGeometryEx.DiskSize.QuadPart;
@@ -93,12 +107,17 @@ void disks_refreshlist() {
             if (DeviceIoControl(hTargetDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY, NULL, 0, &diskGeometry, sizeof diskGeometry, &bytesReturned, NULL)) {
                 totalNumberOfBytes = (long long int)diskGeometry.Cylinders.QuadPart * (long long int)diskGeometry.TracksPerCylinder * (long long int)diskGeometry.SectorsPerTrack * (long long int)diskGeometry.BytesPerSector;
             }
-            szLbText[0] = (wchar_t)letter; szLbText[1] = (wchar_t)':';
-            /* don't use GetVolumeInformationByHandleW, that requires Vista / Server 2008 */
-            memset(volName, 0, sizeof(volName)); szLbText[2] = (wchar_t)'\\'; szLbText[3] = 0;
-            k = MAX_PATH;
-            GetVolumeInformationW(szLbText, volName, k, NULL, NULL, NULL, NULL, 0);
-            j = 2;
+            if(!disks_all) {
+                /* don't use GetVolumeInformationByHandleW, that requires Vista / Server 2008 */
+                memset(volName, 0, sizeof(volName));
+                szLbText[0] = (wchar_t)letter; szLbText[1] = (wchar_t)':'; szLbText[2] = (wchar_t)'\\'; szLbText[3] = 0;
+                k = MAX_PATH;
+                GetVolumeInformationW(szLbText, volName, k, NULL, NULL, NULL, NULL, 0);
+                j = 2;
+            } else {
+                wsprintfW(szLbText, L"Disk %d:", (int)(letter - '0'));
+                j = 7;
+            }
             if (totalNumberOfBytes > 0) {
                 long long int sizeInGbTimes10 = ((long long int)(10 * (totalNumberOfBytes + 1024LL*1024LL*1024LL-1LL)) >> 30LL);
                 wchar_t *unit = lang[L_GIB];
@@ -121,7 +140,7 @@ void disks_refreshlist() {
                     while(j > 0 && szLbText[j-1] == (wchar_t)' ') j--;
                 }
             }
-            if(volName[0] && j < 1020) {
+            if(!disks_all && volName[0] && j < 1020) {
                 szLbText[j++] = (wchar_t)' ';
                 szLbText[j++] = (wchar_t)'(';
                 for(k = 0; volName[k] == (wchar_t)' '; k++);
@@ -131,8 +150,7 @@ void disks_refreshlist() {
             }
             szLbText[j] = 0;
             CloseHandle(hTargetDevice);
-            disks_capacity[i] = (uint64_t)totalNumberOfBytes;
-            disks_targets[i++] = letter;
+            disks_capacity[i++] = (uint64_t)totalNumberOfBytes;
             main_addToCombobox((char*)szLbText);
             if(i >= DISKS_MAX) break;
         }
@@ -168,20 +186,20 @@ char *disks_volumes(int *num, char ***mounts)
 void *disks_open(int targetId, uint64_t size)
 {
     HANDLE ret;
-    char szVolumePathName[256] = "\\\\.\\X:", szDevicePathName[256];
+    char fn[256], letter;
     VOLUME_DISK_EXTENTS volumeDiskExtents;
     DWORD bytesReturned;
     DCB config;
     COMMTIMEOUTS timeouts;
     int k;
 
-    if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] == -1 || (!disks_all && disks_targets[targetId] == 'C')) return (HANDLE)-1;
+    if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] == -1 || (!disks_all && disks_targets[targetId] == cdrive)) return (HANDLE)-1;
     if(size && disks_capacity[targetId] && size > disks_capacity[targetId]) return (HANDLE)-1;
 
     if(disks_targets[targetId] >= 1024) {
-        sprintf(szDevicePathName, "\\\\.\\COM%d", disks_targets[targetId] - 1024);
-        ret = CreateFileA(szDevicePathName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
-        if(verbose) printf("disks_open(%s) serial\r\n  fd=%d errno=%d\r\n", szDevicePathName, (int)ret, errno);
+        sprintf(fn, "\\\\.\\COM%d", disks_targets[targetId] - 1024);
+        ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+        if(verbose) printf("disks_open(%s) serial\r\n  fd=%d errno=%d\r\n", fn, (int)ret, errno);
         if(ret == INVALID_HANDLE_VALUE) {
             main_getErrorMessage();
             return NULL;
@@ -219,11 +237,11 @@ sererr:     main_getErrorMessage();
             if(verbose) printf("  awaiting client\r\n");
             for(k = 0; k < 3;) {
                 main_onProgress(NULL);
-                if(ReadFile(ret, szVolumePathName, (DWORD)1, (LPDWORD)&bytesReturned, NULL) && bytesReturned == 1) {
-                    if(szVolumePathName[0] == 3) k++;
+                if(ReadFile(ret, fn, (DWORD)1, (LPDWORD)&bytesReturned, NULL) && bytesReturned == 1) {
+                    if(fn[0] == 3) k++;
                     else {
                         k = 0;
-                        if(verbose) printf("%c", szVolumePathName[0]);
+                        if(verbose) printf("%c", fn[0]);
                     }
                 }
             }
@@ -233,11 +251,11 @@ sererr:     main_getErrorMessage();
                     printf(" unable to send size errno=%d\r\n", errno);
                 goto sererr;
             }
-            if(!ReadFile(ret, szVolumePathName, (DWORD)2, (LPDWORD)&bytesReturned, NULL) || bytesReturned != 2 ||
-                szVolumePathName[0] != 'O' || szVolumePathName[1] != 'K') {
+            if(!ReadFile(ret, fn, (DWORD)2, (LPDWORD)&bytesReturned, NULL) || bytesReturned != 2 ||
+                fn[0] != 'O' || fn[1] != 'K') {
                 if(verbose)
                     printf(" didn't received ACK from client, got '%c%c' errno=%d\r\n",
-                        szVolumePathName[0], szVolumePathName[1], errno);
+                        fn[0], fn[1], errno);
                 goto sererr;
             }
         }
@@ -246,10 +264,10 @@ sererr:     main_getErrorMessage();
 #if DISKS_TEST
     if((char)disks_targets[targetId] == 'T') {
         hTargetVolume = NULL;
-        sprintf(szDevicePathName, ".\\test.bin");
-        ret = CreateFileA(szDevicePathName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_FLAG_NO_BUFFERING, NULL);
+        sprintf(fn, ".\\test.bin");
+        ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_FLAG_NO_BUFFERING, NULL);
         if(verbose)
-            printf("disks_open(%s)\r\n  fd=%d\r\n", szDevicePathName, ret);
+            printf("disks_open(%s)\r\n  fd=%d\r\n", fn, ret);
         if (ret == INVALID_HANDLE_VALUE) {
             main_getErrorMessage();
             return NULL;
@@ -257,32 +275,35 @@ sererr:     main_getErrorMessage();
         return (void*)ret;
     }
 #endif
-    szVolumePathName[4] = (char)disks_targets[targetId];
-    hTargetVolume = CreateFileA(szVolumePathName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-    if (hTargetVolume == INVALID_HANDLE_VALUE) {
+    /* dismount volumes */
+    for(letter = 'A'; letter <= 'Z'; letter++) {
+        sprintf(fn, "\\\\.\\%c:", letter);
+        hTargetVolume = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+        if (hTargetVolume == INVALID_HANDLE_VALUE) continue;
+        if(!DeviceIoControl(hTargetVolume, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL) ||
+            (unsigned int)disks_targets[targetId] != (unsigned int)volumeDiskExtents.Extents[0].DiskNumber) {
+                CloseHandle(hTargetVolume);
+                continue;
+        }
+        DeviceIoControl(hTargetVolume, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        k = DeviceIoControl(hTargetVolume, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        DeviceIoControl(hTargetVolume, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        CloseHandle(hTargetVolume);
+        if(verbose)
+            printf("umount(%s) ret=%d\r\n", fn, k);
+        if(!k) {
+            main_getErrorMessage();
+            return (HANDLE)-2;
+        }
+    }
+    /* open raw disk */
+    sprintf(fn, "\\\\.\\PhysicalDrive%d", disks_targets[targetId]);
+    ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+    if(verbose)
+        printf("disks_open(%s)\r\n  fd=%d\r\n", fn, (int)ret);
+    if (ret == INVALID_HANDLE_VALUE) {
         main_getErrorMessage();
         return (HANDLE)-3;
-    }
-
-    if (DeviceIoControl(hTargetVolume, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL) &&
-        DeviceIoControl(hTargetVolume, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL) &&
-        DeviceIoControl(hTargetVolume, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL)) {
-            sprintf(szDevicePathName, "\\\\.\\PhysicalDrive%u", (unsigned int)volumeDiskExtents.Extents[0].DiskNumber);
-            ret = CreateFileA(szDevicePathName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
-            if(verbose)
-                printf("disks_open(%s)\r\n  fd=%d\r\n", szDevicePathName, (int)ret);
-            if (ret == INVALID_HANDLE_VALUE) {
-                main_getErrorMessage();
-                DeviceIoControl(hTargetVolume, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-                CloseHandle(hTargetVolume);
-                hTargetVolume = NULL;
-                return NULL;
-            }
-    } else {
-        main_getErrorMessage();
-        CloseHandle(hTargetVolume);
-        hTargetVolume = NULL;
-        return (HANDLE)-2;
     }
     return (void*)ret;
 }
@@ -292,13 +313,5 @@ sererr:     main_getErrorMessage();
  */
 void disks_close(void *data)
 {
-    DWORD bytesReturned;
-
     CloseHandle((HANDLE)data);
-
-    if(hTargetVolume) {
-        DeviceIoControl(hTargetVolume, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-        CloseHandle(hTargetVolume);
-        hTargetVolume = NULL;
-    }
 }

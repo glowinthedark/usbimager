@@ -53,10 +53,16 @@ SRC += main_win.c disks_win.c
 CFLAGS += -DNDEBUG -DWINVER=0x0500 -DUNICODE=1
 LDFLAGS += -mwindows -static -static-libgcc
 TARGET = usbimager.exe
-OBJ += resource.o
 WINDRES = windres
 ARCH = i686
+ifeq ($(USE_WRONLY),)
+OBJ += resource.o
 FRM = win-gdi
+else
+CFLAGS += -DUSE_WRONLY=1
+OBJ += resourcewo.o
+FRM = win-wo
+endif
 else
 ifneq ("$(wildcard /Library/Frameworks)","")
 # MacOSX
@@ -73,7 +79,12 @@ SRC += main_libui.c
 CFLAGS += -pthread
 LDFLAGS += -framework Foundation -framework Cocoa
 LIBS += libui/darwin.a -lc -lobjc -lpthread
+ifeq ($(USE_WRONLY),)
 FRM = macosx-cocoa
+else
+CFLAGS += -DUSE_WRONLY=1
+FRM = macosx-wo
+endif
 endif
 SRC += disks_darwin.c
 LD = ld
@@ -83,6 +94,9 @@ else
 # Linux
 LINUX = 1
 ARCH = $(shell uname -m)
+ifneq ($(USE_WRONLY),)
+USE_LIBUI = 1
+endif
 ifeq ($(USE_LIBUI),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11
@@ -107,7 +121,12 @@ LIBS += $(shell pkg-config --libs gtk+-3.0)
 else
 LIBS += -lgtk-3 -lgdk-3 -lgobject-2.0 -lglib-2.0
 endif
+ifeq ($(USE_WRONLY),)
 FRM = linux-gtk
+else
+CFLAGS += -DUSE_WRONLY=1
+FRM = linux-wo
+endif
 endif
 ifneq ($(USE_UDISKS2),)
 CFLAGS += -DUSE_UDISKS2=1 $(shell pkg-config --cflags udisks2) -I/usr/include/gio-unix-2.0

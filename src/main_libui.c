@@ -44,11 +44,13 @@ static uiButton *sourceButton;
 static uiEntry *source;
 static uiBox *targetCont;
 static uiCombobox *target;
+#if !defined(USE_WRONLY) || !USE_WRONLY
 static uiCheckbox *verify;
 static uiCheckbox *compr;
 static uiCombobox *blksize;
-static uiButton *writeButton;
 static uiButton *readButton;
+#endif
+static uiButton *writeButton;
 static uiProgressBar *pbar;
 static uiLabel *status;
 static int blksizesel = 0;
@@ -68,16 +70,20 @@ void main_getErrorMessage()
 
 static void onDone(void *data)
 {
+#if !defined(USE_WRONLY) || !USE_WRONLY
     int targetId = uiComboboxSelected(target);
+#endif
     uiControlEnable(uiControl(source));
     uiControlEnable(uiControl(sourceButton));
     uiControlEnable(uiControl(target));
     uiControlEnable(uiControl(writeButton));
+#if !defined(USE_WRONLY) || !USE_WRONLY
     if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] < 1024)
         uiControlEnable(uiControl(readButton));
     uiControlEnable(uiControl(verify));
     uiControlEnable(uiControl(compr));
     uiControlEnable(uiControl(blksize));
+#endif
     uiProgressBarSetValue(pbar, 0);
     uiLabelSetText(status, (char*)data);
     main_errorMessage = NULL;
@@ -105,23 +111,21 @@ static void onThreadError(void *data)
     uiMsgBoxError(mainwin, main_errorMessage && *main_errorMessage ? main_errorMessage : lang[L_ERROR], (char*)data);
 }
 
-static void onSourceSet(void *data)
-{
-    uiControlEnable(uiControl(source));
-    uiEntrySetText(source, data);
-    uiControlDisable(uiControl(source));
-}
-
 /**
  * Function that reads from input and writes to disk
  */
 static void *writerRoutine(void *data)
 {
-    int dst, needVerify = uiCheckboxChecked(verify), numberOfBytesRead;
+    int dst, needVerify, numberOfBytesRead;
     int numberOfBytesWritten, numberOfBytesVerify, targetId = uiComboboxSelected(target);
     static char lpStatus[128];
     static stream_t ctx;
     (void)data;
+#if !defined(USE_WRONLY) || !USE_WRONLY
+    needVerify = uiCheckboxChecked(verify);
+#else
+    needVerify = 1;
+#endif
 
     ctx.fileSize = 0;
     dst = stream_open(&ctx, uiEntryText(source), targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024);
@@ -184,16 +188,26 @@ static void onWriteButtonClicked(uiButton *b, void *data)
     uiControlDisable(uiControl(sourceButton));
     uiControlDisable(uiControl(target));
     uiControlDisable(uiControl(writeButton));
+#if !defined(USE_WRONLY) || !USE_WRONLY
     uiControlDisable(uiControl(readButton));
     uiControlDisable(uiControl(verify));
     uiControlDisable(uiControl(compr));
     uiControlDisable(uiControl(blksize));
+#endif
     uiProgressBarSetValue(pbar, 0);
     uiLabelSetText(status, "");
     main_errorMessage = NULL;
 
     if(verbose) printf("Starting worker thread for writing.\r\n");
     pthread_create(&thrd, &tha, writerRoutine, NULL);
+}
+
+#if !defined(USE_WRONLY) || !USE_WRONLY
+static void onSourceSet(void *data)
+{
+    uiControlEnable(uiControl(source));
+    uiEntrySetText(source, data);
+    uiControlDisable(uiControl(source));
 }
 
 /**
@@ -293,6 +307,15 @@ static void onReadButtonClicked(uiButton *b, void *data)
     pthread_create(&thrd, &tha, readerRoutine, NULL);
 }
 
+static void refreshBlkSize(uiCombobox *cb, void *data)
+{
+    int current = uiComboboxSelected(blksize);
+    (void)cb;
+    (void)data;
+    buffer_size = (1UL << current) * 1024UL * 1024UL;
+}
+#endif
+
 static void refreshTarget(uiCombobox *cb, void *data)
 {
     int current = uiComboboxSelected(target);
@@ -306,22 +329,21 @@ static void refreshTarget(uiCombobox *cb, void *data)
     disks_refreshlist();
     uiComboboxSetSelected(target, current);
     if(current >= 0 && current < DISKS_MAX && disks_targets[current] >= 1024) {
+#if !defined(USE_WRONLY) || !USE_WRONLY
         snprintf(btntext, sizeof(btntext)-1, "▼ %s", lang[L_SEND]);
         uiControlDisable(uiControl(readButton));
+#else
+        snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_SEND]);
+#endif
     } else {
+#if !defined(USE_WRONLY) || !USE_WRONLY
         snprintf(btntext, sizeof(btntext)-1, "▼ %s", lang[L_WRITE]);
-        uiButtonSetText(writeButton, lang[L_WRITE]);
         uiControlEnable(uiControl(readButton));
+#else
+        snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_WRITE]);
+#endif
     }
     uiButtonSetText(writeButton, btntext);
-}
-
-static void refreshBlkSize(uiCombobox *cb, void *data)
-{
-    int current = uiComboboxSelected(blksize);
-    (void)cb;
-    (void)data;
-    buffer_size = (1UL << current) * 1024UL * 1024UL;
 }
 
 static void onSelectClicked(uiButton *b, void *data)
@@ -361,7 +383,9 @@ int main(int argc, char **argv)
     uiGrid *grid;
     uiBox *vbox;
     uiBox *bbox;
+#if !defined(USE_WRONLY) || !USE_WRONLY
     uiLabel *sep;
+#endif
     int i, j;
     char *lc = getenv("LANG"), btntext[256];
     char help[] = "USBImager " USBIMAGER_VERSION
@@ -463,6 +487,7 @@ int main(int argc, char **argv)
     uiGridAppend(grid, uiControl(source), 0, 0, 7, 1, 1, uiAlignFill, 0, uiAlignFill);
     uiGridAppend(grid, uiControl(sourceButton), 7, 0, 1, 1, 0, uiAlignFill, 0, uiAlignFill);
 
+#if !defined(USE_WRONLY) || !USE_WRONLY
     bbox = uiNewHorizontalBox();
 
     uiGridAppend(grid, uiControl(bbox), 0, 1, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
@@ -484,7 +509,6 @@ int main(int argc, char **argv)
     target = uiNewCombobox();
     uiBoxAppend(targetCont, uiControl(target), 1);
     uiComboboxOnSelected(target, refreshTarget, NULL);
-    refreshTarget(target, NULL);
 
     verify = uiNewCheckbox(lang[L_VERIFY]);
     uiCheckboxSetChecked(verify, 1);
@@ -507,6 +531,27 @@ int main(int argc, char **argv)
 
     vbox = uiNewVerticalBox();
     uiGridAppend(grid, uiControl(vbox), 0, 5, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
+#else
+    targetCont = uiNewHorizontalBox();
+    uiGridAppend(grid, uiControl(targetCont), 0, 1, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
+    target = uiNewCombobox();
+    uiBoxAppend(targetCont, uiControl(target), 1);
+    uiComboboxOnSelected(target, refreshTarget, NULL);
+
+    bbox = uiNewHorizontalBox();
+    uiGridAppend(grid, uiControl(bbox), 0, 2, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
+    snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_WRITE]);
+    writeButton = uiNewButton(btntext);
+    uiButtonOnClicked(writeButton, onWriteButtonClicked, NULL);
+    uiBoxAppend(bbox, uiControl(writeButton), 1);
+
+    pbar = uiNewProgressBar();
+    uiGridAppend(grid, uiControl(pbar), 0, 3, 8, 1, 0, uiAlignFill, 4, uiAlignFill);
+
+    vbox = uiNewVerticalBox();
+    uiGridAppend(grid, uiControl(vbox), 0, 4, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
+#endif
+    refreshTarget(target, NULL);
 
     status = uiNewLabel("");
     uiBoxAppend(vbox, uiControl(status), 0);

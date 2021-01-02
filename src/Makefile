@@ -137,7 +137,9 @@ TMP = $(ARCH:x86_64=amd64)
 TMP2 = $(TMP:aarch64=arm64)
 DEBARCH = $(TMP2:armv7l=armhf)
 ifneq ($(USE_WRONLY),)
-DEBARCH+=-wo
+WO = _wo
+else
+WO =
 endif
 endif
 endif
@@ -256,7 +258,7 @@ ifeq ($(USE_LIBUI),)
 else
 	@tar -C DEBIAN -czvf control.tar.gz control copyright md5sums
 endif
-	@ar r ../usbimager_$(VERSION)-$(DEBARCH).deb debian-binary control.tar.gz data.tar.gz
+	@ar r ../usbimager_$(VERSION)$(WO)-$(DEBARCH).deb debian-binary control.tar.gz data.tar.gz
 	@rm -rf debian-binary control.tar.gz data.tar.gz DEBIAN usr
 
 ####### cleanup #######

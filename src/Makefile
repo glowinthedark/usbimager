@@ -136,6 +136,9 @@ SRC += disks_linux.c
 TMP = $(ARCH:x86_64=amd64)
 TMP2 = $(TMP:aarch64=arm64)
 DEBARCH = $(TMP2:armv7l=armhf)
+ifneq ($(USE_WRONLY),)
+DEBARCH+=-wo
+endif
 endif
 endif
 

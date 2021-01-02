@@ -170,7 +170,7 @@ Ugyancsak itt, a "Biztonság" fülön be lehet állítani, hogy rendszergazdaké
 
 A legelső paraméter, ami nem kapcsoló (nem '-'-el kezdődik) a lemezképek lementési könyvtáraként értelmeződik.
 
-A '-a' kapcsoló minden eszközt listáz, még a rendszerlemezeket is. Ezzel használhatatlanná lehet tenni a gépet, óvatosan.
+A '-a' kapcsoló minden eszközt listáz, még a rendszerlemezeket és a különösen nagyokat is. Ezzel használhatatlanná lehet tenni a gépet, óvatosan.
 
 A kapcsolókat külön-külön (pl. "usbimager -v -s -2") vagy egyben ("usbimager -2vs") is megadhatod, a sorrend nem számít. Azon kapcsolók
 közül, amik ugyanazt állítják, csak a legutolsót veszi figyelembe (pl "-124" ugyanaz, mint a "-4").
@@ -214,59 +214,7 @@ FIGYELEM: nem minden soros port kezeli az összes baud rátát. Ellenőrizd a k�
 Fordítás
 --------
 
-### Windows
-
-Függőségek: csak szabvány Win32 DLL-ek, és MinGW a fordításhoz.
-
-1. telepítsd a [MinGW](https://osdn.net/projects/mingw/releases)-t, ezáltal lesz "gcc" és "make parancsod Windows alatt
-2. nyisd meg az MSYS terminált, és az src könyvtárban add ki a `make` parancsot
-3. a csomagolt fájl létrehozásához futtasd a `make package` parancsot
-
-### MacOSX
-
-Függőségek: csak szabvány keretrendszerek (CoreFoundation, IOKit, DiskArbitration és Cocoa),
-valamint a parancssori eszközök (nem kell az egész XCode, csak a CLI eszközei).
-
-1. Terminálban futtasd a `xcode-select --install` parancsot, majd a felugró ablakban kattints a "Telepítés"-re. Ezáltal lesz "gcc" és "make parancsod MacOSX alatt
-2. az src könyvtárban add ki a `make` parancsot
-3. a csomagolt fájl létrehozásához futtasd a `make package` parancsot
-
-Alapból az USBImager natív Cocoa támogatással fordul, libui használatával (mellékelve). Lefordíthatod azonban az X11 verziót is
-(ha van XQuartz-od telepítve) az `USE_X11=yes make` paranccsal.
-
-### Linux
-
-Függőségek: libc, libX11 és szabvány GNU eszköztár.
-
-1. az src könyvtárban add ki a `make` parancsot
-2. a csomagolt fájl létrehozásához futtasd a `make package` parancsot
-3. a Debian archívum létrehozásához futtasd a `make deb` parancsot
-4. a telepítéshez add ki a `sudo make install` parancsot
-
-Lefordíthatod GTK+ támogatással is az `USE_LIBUI=yes make` paranccsal. Ez libui-t fog használni (mellékelve), ami cserébe rengeteg
-függőséget tartalmaz (pthread, X11, wayland, gdk, harfbuzz, pango, cairo, freetype2 stb.) Fontos továbbá, hogy a GTK verzió nem fog futni
-setgid bittel, így az írási hozzáférés a lemezekhez nem garantált. Az X11 verzió automatikusan bekerül a "disk" csoportba futtatáskor.
-A GTK esetén kézzel hozzá kell adnod a felhasználód ehhez a csoporthoz, vagy sudo-val kell indítanod az USBImager-t, különben "hozzáférés
-megtagadva" hibaüzenetet fogsz kapni. Alternat1vaként fordítsd `USE_LIBUI=yes USE_UDISKS2=yes make` támogatással.
-
-Forrás hackelése
-----------------
-
-Debuggoláshoz fordítsd a `DEBUG=yes make` paranccsal. Ez extra debuggoló szimbólumokat és forrásfájl hivatkozásokat fog a futtathatóba
-rakni, amit mind a valgrind, mind a gdb tud értelmezni.
-
-Szerkeszd a Makefile-t, és állítsd a `DISKS_TEST`-et 1-re, hogy egy speciális `test.bin` "eszköz" jelenjen meg a listában. Minden
-platformon egységesen elérhető, ezzel a kicsomagolást tudod leteszteni.
-
-Az X11 csak alacsony szintű hívásokkal operál (nem használ Xft, Xmu vagy más bővítményeket), így könnyű más POSIX rendszerekre portolni (pl.
-BSD-kre vagy Minixre). Nem kezel lokalizációt, de a fájlnevekben támogatja az UTF-8 kódolást (ez csak a megjelenítésnél számít, a fájlműveletek
-bármilyen kódlapot lekezelnek). Ha ezt ki akarod kapcsolni, akkor a main_x11.c fájl elején állítsd a `USEUTF8` define-t 0-ára.
-
-A forrás jól elkülöníthetően 4 rétegre van bontva:
-- stream.c / stream.h dolga a fájlok belolvasása, kicsomagolása, valamint tömörítése és kiírása
-- disks_*.c / disks.h az a réteg, ami beolvassa és kiírja a lemezszektorokat, minden platformhoz külön van
-- main_*.c / main.h az, ahol a main() (vagy WinMain) függvényt találod, ebben vannak a felhasználói felület cuccai
-- lang.c / lang.h szolgál a nemzetköziesítésre és ebben vannak a platformfüggetlen szótárak
+Részletes leírás a [használati útmutató](https://gitlab.com/bztsrc/usbimager/-/raw/master/usbimager-manual.pdf) mellékletében.
 
 Ismert bugok
 ------------
@@ -292,7 +240,7 @@ Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @M
 
 Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel).
 
-További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en.
+További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért.
 
 Legjobbakat,
 

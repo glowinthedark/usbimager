@@ -165,7 +165,7 @@ to run USBImager as Administrator if you have problems accessing the raw disk de
 
 The first argument which is not a flag (does not start with '-') is used as the backup image directory.
 
-With '-a', all devices will be listed, even system disks. With this you can seriously damage your computer, be careful.
+With '-a', all devices will be listed, even system disks and large disks. With this you can seriously damage your computer, be careful.
 
 Flags can be given separately (like "usbimager -v -s -2") or at once ("usbimager -2vs"), the order doesn't matter. For flags that set
 the same thing, only the last taken into account (for example "-124" is the same as "-4").
@@ -208,54 +208,7 @@ WARNING: not every serial port supports all baud rates. Check you device's manua
 Compilation
 -----------
 
-### Windows
-
-Dependencies: just standard Win32 DLLs, and MinGW for compilation.
-
-1. install [MinGW](https://osdn.net/projects/mingw/releases), this will give you "gcc" and "make" under Windows
-2. open MSYS terminal, and in the src directory, run `make`
-3. to create the archive, run `make package`
-
-### MacOSX
-
-Dependencies: just standard frameworks (CoreFoundation, IOKit, DiskArbitration and Cocoa), and command line tools (no need for XCode, just the CLI tools).
-
-1. in a Terminal, run `xcode-select --install` and in the pop-up window click "Install". This will give you "gcc" and "make" under MacOSX.
-2. in the src directory, run `make`
-3. to create the archive, run `make package`
-
-By default USBImager is compiled for native Cocoa with libui (included). You can also compile for X11 (if you have XQuartz installed) by using `USE_X11=yes make`.
-
-### Linux
-
-Dependencies: libc, libX11 and standard GNU toolchain.
-
-1. in the src directory, run `make`
-2. to create the archive, run `make package`
-3. to create a Debian archive, run `make deb`
-4. to install, run `sudo make install`
-
-You can also compile for GTK+ by using `USE_LIBUI=yes make`. That'll use libui (included), which in turn relies on hell a lot of libraries (pthread, X11,
-wayland, gdk, harfbuzz, pango, cairo, freetype2 etc.) Also note that the GTK version cannot be installed with setgid bit, so that write access to disk
-devices cannot be guaranteed. The X11 version gains "disk" group membership on execution automatically. For GTK you'll have to add your user to that group
-manually or run USBImager via sudo, otherwise you'll get "permission denied" errors. Alternatively compile with `USE_LIBUI=yes USE_UDISKS2=yes make`.
-
-Hacking the Source
-------------------
-
-To compile with debugging, use `DEBUG=yes make`. This will add extra debugging symbols and sorce file references to the executable, parsed by both valgrind and gdb.
-
-Editing Makefile and changing `DISKS_TEST` to 1 will add a special `test.bin` "device" to the list on all platforms. You can test the decompressors with this.
-
-X11 uses only low-level X11 (no Xft, Xmu nor any other extensions), so it should be trivial to port to other POSIX systems (like BSD or Minix). It does not
-handle locales, but it does use UTF-8 encoding in file names (this only matters for displaying, the file operations can handle any encoding). If you don't
-want this, set the `USEUTF8` define to 0 in the beginning of the main_x11.c file.
-
-The source is clearly separated into 4 layers:
-- stream.c / stream.h is responsible for reading in and uncompressing the data from file as well as compressing and writing out
-- disks_*.c / disks.h is the layer that reads and writes out data to disks, separated for each platform
-- main_*.c / main.h is where you can find main() (or WinMain), the user interface stuff
-- lang.c / lang.h provides the internationalization and language dictionaries for all platform
+Please refer to the Appendix in the [manual](https://gitlab.com/bztsrc/usbimager/-/raw/master/usbimager-manual.pdf).
 
 Known Issues
 ------------
@@ -281,7 +234,7 @@ USBImager on various platforms with various devices.
 
 My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970, @JumpZero (French), and @hansotten, @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish).
 
-Further thanks to @munntjlx and @lfomartins for compiling USBImager on MacOS for me.
+Further thanks to @munntjlx and @lfomartins for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs.
 
 Bests,
 

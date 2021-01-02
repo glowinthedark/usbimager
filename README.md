@@ -56,7 +56,7 @@ Features
 - Can read raw disk images: .img, .bin, .raw, .iso, .dd, etc.
 - Can read compressed images on-the-fly: .gz, .bz2, .xz, .zst
 - Can read archives on-the-fly: .zip (PKZIP and ZIP64) (*)
-- Can create backups in raw and bzip2 compressed format
+- Can create backups in raw and ZStandard compressed format
 - Can send images to microcontrollers over serial line
 - Available in 17 languages
 

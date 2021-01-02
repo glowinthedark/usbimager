@@ -168,6 +168,9 @@ zstd/libzstd.a:
 resource.o: misc/resource.rc
 	$(WINDRES) misc/resource.rc -o resource.o
 
+resourcewo.o: misc/resourcewo.rc
+	$(WINDRES) misc/resourcewo.rc -o resourcewo.o
+
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 

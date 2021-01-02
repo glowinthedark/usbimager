@@ -32,6 +32,7 @@
 #include <limits.h>
 
 #define DISKS_MAX 128
+#define DISKS_MAXSIZE 256 /* Gb */
 
 extern int disks_all, disks_serial, disks_targets[DISKS_MAX];
 extern uint64_t disks_capacity[DISKS_MAX];

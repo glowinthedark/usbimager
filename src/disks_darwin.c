@@ -176,7 +176,7 @@ void disks_refreshlist()
             if(!stat(str, &st))
                 size = st.st_blocks ? st.st_blocks * 512 : st.st_size;
         }
-#if !defined(USE_WRONLY) || !USE_WRONLY
+#if USE_WRONLY
         if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) continue;
 #endif
         if(size) {

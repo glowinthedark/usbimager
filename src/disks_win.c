@@ -108,7 +108,7 @@ void disks_refreshlist() {
                 totalNumberOfBytes = (long long int)diskGeometry.Cylinders.QuadPart * (long long int)diskGeometry.TracksPerCylinder * (long long int)diskGeometry.SectorsPerTrack * (long long int)diskGeometry.BytesPerSector;
             }
             if(!disks_all) {
-#if !defined(USE_WRONLY) || !USE_WRONLY
+#if USE_WRONLY
                 if(totalNumberOfBytes/1024LL > DISKS_MAXSIZE*1024LL*1024LL) continue;
 #endif
                 /* don't use GetVolumeInformationByHandleW, that requires Vista / Server 2008 */

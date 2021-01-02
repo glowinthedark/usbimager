@@ -174,7 +174,7 @@ void disks_refreshlist()
             sprintf(path, "/sys/block/%s/size", de->d_name);
             filegetcontent(path, vendorName, sizeof(vendorName));
             size = (uint64_t)atoll(vendorName) * 512UL;
-#if !defined(USE_WRONLY) || !USE_WRONLY
+#if USE_WRONLY
             if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) {
                 if(verbose > 1) printf("SKIP too big\n");
                 continue;

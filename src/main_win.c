@@ -111,6 +111,8 @@ static void onDone(HWND hwndDlg)
     EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_VERIFY), TRUE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_COMPRESS), TRUE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_BLKSIZE), TRUE);
+#else
+    (void)index;
 #endif
     SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, 0, 0);
     ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
@@ -398,10 +400,12 @@ INT_PTR MainDlgSelectClick(HWND hwndDlg) {
 }
 
 static INT_PTR CALLBACK MainDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    HICON wrico, rdico;
     UNREFERENCED_PARAMETER(lParam);
+#if !defined(USE_WRONLY) || !USE_WRONLY
     LRESULT index;
+    HICON wrico, rdico;
     wchar_t tmp[16];
+#endif
 
     switch (uMsg) {
         case WM_INITDIALOG:
@@ -515,6 +519,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
                                     SetConsoleScreenBufferSize(ConsoleHandle, bs);
                                 }
                                 printf("USBImager " USBIMAGER_VERSION
+#if USE_WRONLY
+                                    "_wo"
+#endif
 #ifdef USBIMAGER_BUILD
                                     " (build " USBIMAGER_BUILD ")"
 #endif
@@ -629,7 +636,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
         printf("GetUserDefaultLangID %04x '%s', dict '%s', serial %d, buffer_size %d MiB\r\n",
             lid, loc, dict[i][0], disks_serial, buffer_size/1024/1024);
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
+#if !defined(USE_WRONLY) || !USE_WRONLY
         if(bkpdir) wprintf(L"bkpdir '%s'\r\n", bkpdir);
+#endif
     }
 
     ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDC_MAINDLG), NULL, MainDlgProc, (LPARAM) hInstance);

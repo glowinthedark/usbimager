@@ -55,13 +55,11 @@ LDFLAGS += -mwindows -static -static-libgcc
 TARGET = usbimager.exe
 WINDRES = windres
 ARCH = i686
+FRM = win-gdi
 ifeq ($(USE_WRONLY),)
 OBJ += resource.o
-FRM = win-gdi
 else
-CFLAGS += -DUSE_WRONLY=1
 OBJ += resourcewo.o
-FRM = win-wo
 endif
 else
 ifneq ("$(wildcard /Library/Frameworks)","")
@@ -79,12 +77,7 @@ SRC += main_libui.c
 CFLAGS += -pthread
 LDFLAGS += -framework Foundation -framework Cocoa
 LIBS += libui/darwin.a -lc -lobjc -lpthread
-ifeq ($(USE_WRONLY),)
 FRM = macosx-cocoa
-else
-CFLAGS += -DUSE_WRONLY=1
-FRM = macosx-wo
-endif
 endif
 SRC += disks_darwin.c
 LD = ld
@@ -121,12 +114,7 @@ LIBS += $(shell pkg-config --libs gtk+-3.0)
 else
 LIBS += -lgtk-3 -lgdk-3 -lgobject-2.0 -lglib-2.0
 endif
-ifeq ($(USE_WRONLY),)
 FRM = linux-gtk
-else
-CFLAGS += -DUSE_WRONLY=1
-FRM = linux-wo
-endif
 endif
 ifneq ($(USE_UDISKS2),)
 CFLAGS += -DUSE_UDISKS2=1 $(shell pkg-config --cflags udisks2) -I/usr/include/gio-unix-2.0
@@ -136,12 +124,14 @@ SRC += disks_linux.c
 TMP = $(ARCH:x86_64=amd64)
 TMP2 = $(TMP:aarch64=arm64)
 DEBARCH = $(TMP2:armv7l=armhf)
+endif
+endif
+
 ifneq ($(USE_WRONLY),)
+CFLAGS += -DUSE_WRONLY=1
 WO = _wo
 else
 WO =
-endif
-endif
 endif
 
 OBJ += $(SRC:.c=.o)
@@ -210,8 +200,8 @@ package: $(TARGET)
 ifneq ($(WIN),)
 	@mkdir USBImager
 	@cp $(TARGET) USBImager
-	@rm ../usbimager_$(VERSION)-$(ARCH)-$(FRM).zip 2>/dev/null || true
-	zip -r -9 ../usbimager_$(VERSION)-$(ARCH)-$(FRM).zip USBImager
+	@rm ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip 2>/dev/null || true
+	zip -r -9 ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip USBImager
 	@rm -rf USBImager
 else
 ifneq ($(MACOSX),)
@@ -219,8 +209,8 @@ ifneq ($(MACOSX),)
 	@cp $(TARGET) USBImager.app/Contents/MacOS
 	@cp misc/Info.plist USBImager.app/Contents
 	@cp misc/usbimager.icns USBImager.app/Contents/Resources
-	@rm ../usbimager_$(VERSION)-$(ARCH)-$(FRM).zip 2>/dev/null || true
-	zip -r -9 ../usbimager_$(VERSION)-$(ARCH)-$(FRM).zip USBImager.app
+	@rm ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip 2>/dev/null || true
+	zip -r -9 ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip USBImager.app
 	@rm -rf USBImager.app
 else
 	@mkdir bin share share/applications share/man share/man/man8 share/icons share/icons/hicolor share/icons/hicolor/16x16 share/icons/hicolor/16x16/apps share/icons/hicolor/32x32 share/icons/hicolor/32x32/apps share/icons/hicolor/64x64 share/icons/hicolor/64x64/apps share/icons/hicolor/128x128 share/icons/hicolor/128x128/apps
@@ -231,8 +221,8 @@ else
 	@cp misc/icon64.png share/icons/hicolor/64x64/apps/usbimager.png
 	@cp misc/icon32.png share/icons/hicolor/32x32/apps/usbimager.png
 	@cp misc/icon16.png share/icons/hicolor/16x16/apps/usbimager.png
-	@rm ../usbimager_$(VERSION)-$(ARCH)-$(FRM).zip 2>/dev/null || true
-	zip -r -9 ../usbimager_$(VERSION)-$(ARCH)-$(FRM).zip bin share
+	@rm ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip 2>/dev/null || true
+	zip -r -9 ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip bin share
 	@rm -rf bin share
 endif
 endif

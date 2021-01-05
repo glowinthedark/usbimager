@@ -35,11 +35,10 @@
 #include "main.h"
 #include "disks.h"
 
-int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX];
+int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX], cdrive = 0;
 uint64_t disks_capacity[DISKS_MAX];
 
 HANDLE hTargetVolume = NULL;
-unsigned int cdrive = 0;
 
 /**
  * Refresh target device list in the combobox
@@ -70,7 +69,7 @@ void disks_refreshlist() {
     hTargetDevice = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
     if (hTargetDevice != INVALID_HANDLE_VALUE) {
         if(DeviceIoControl(hTargetDevice, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL))
-            cdrive = (unsigned int)volumeDiskExtents.Extents[0].DiskNumber;
+            cdrive = (int)volumeDiskExtents.Extents[0].DiskNumber;
         CloseHandle(hTargetDevice);
     }
     if(!disks_all) { sl = 'A'; el = 'Z'; } else { sl = '0'; el = '9'; }
@@ -85,7 +84,7 @@ void disks_refreshlist() {
                 /* skip drive letters that are on the same physical disk as the C: drive */
                 if(DeviceIoControl(hTargetDevice, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents,
                         sizeof volumeDiskExtents, &bytesReturned, NULL) &&
-                        cdrive != (unsigned int)volumeDiskExtents.Extents[0].DiskNumber) {
+                        cdrive != (int)volumeDiskExtents.Extents[0].DiskNumber) {
                     disks_targets[i] = (int)volumeDiskExtents.Extents[0].DiskNumber;
                 } else {
                     CloseHandle(hTargetDevice);

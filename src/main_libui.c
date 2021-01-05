@@ -389,6 +389,9 @@ int main(int argc, char **argv)
     int i, j;
     char *lc = getenv("LANG"), btntext[256];
     char help[] = "USBImager " USBIMAGER_VERSION
+#if USE_WRONLY
+        "_wo"
+#endif
 #ifdef USBIMAGER_BUILD
         " (build " USBIMAGER_BUILD ")"
 #endif
@@ -458,7 +461,9 @@ int main(int argc, char **argv)
         printf("LANG '%s', dict '%s', serial %d, buffer_size %d MiB\r\n",
             lc, lang[-1], disks_serial, buffer_size/1024/1024);
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
+#if !defined(USE_WRONLY) || !USE_WRONLY
         if(bkpdir) printf("bkpdir '%s'\r\n", bkpdir);
+#endif
     }
 
     pthread_attr_init(&tha);

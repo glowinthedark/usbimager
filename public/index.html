@@ -64,6 +64,11 @@ body { padding-top: 64px; }
         <div class="col-lg-6"><a href="https://gitlab.com/bztsrc/usbimager" class="btn btn-primary btn-lg btn-block" target="_new"><img src="images/gitlab.png" alt="GitLab">Browse the Source</a></div>
         </div>
       </header>
+      <div class="row">
+        <div class="col-lg-12">
+            The download link leads to a binary for your OS with the simplified (write-only) interface. For the standard interface and other platforms, check out the <a href="https://gitlab.com/bztsrc/usbimager/" target="_new">repository</a>.
+        </div>
+      </div>
       <div class="card text-white bg-secondary my-4">
         <div class="card-body">
           <p class="text-white text-center m-0">The application is Open Source and free as in free beer! Licensed under <a href="https://gitlab.com/bztsrc/usbimager/blob/master/LICENSE" class="text-white" target="_new"><b>MIT license</b></a>.</p>
@@ -125,11 +130,9 @@ body { padding-top: 64px; }
   <script language="javascript">
     document.addEventListener("DOMContentLoaded", function(e) {
       var dllinks = [
-        [ "Linux",    "Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.4-amd64.deb" ],
-        [ "Rasp",     "RaspiOS", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-armhf.deb" ],
-        [ "Win",      "Windows", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-i686-win-gdi.zip" ],
-        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip" ],
-        [ "X11",      "Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-x86_64-linux-x11.zip" ]
+        [ "Linux",    "Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-amd64.deb" ],
+        [ "Win",      "Windows", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-i686-win-gdi.zip" ],
+        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip" ]
       ];
       var dl = document.getElementById("dl"), dlos = document.getElementById("dlos"), os = navigator.appVersion.concat(navigator.platform);
       for(var i = 0; i < dllinks.length; i++)

@@ -35,10 +35,10 @@
 #include "main.h"
 #include "disks.h"
 
-int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX], cdrive = 0;
+int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
 uint64_t disks_capacity[DISKS_MAX];
 
-HANDLE hTargetVolume = NULL;
+HANDLE hLocks[32];
 
 /**
  * Refresh target device list in the combobox
@@ -193,7 +193,7 @@ void *disks_open(int targetId, uint64_t size)
     DWORD bytesReturned;
     DCB config;
     COMMTIMEOUTS timeouts;
-    int k;
+    int k, nLocks = 0;
 
     if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] == -1 || (!disks_all && disks_targets[targetId] == cdrive)) return (HANDLE)-1;
     if(size && disks_capacity[targetId] && size > disks_capacity[targetId]) return (HANDLE)-1;
@@ -265,7 +265,6 @@ sererr:     main_getErrorMessage();
     }
 #if DISKS_TEST
     if((char)disks_targets[targetId] == 'T') {
-        hTargetVolume = NULL;
         sprintf(fn, ".\\test.bin");
         ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_FLAG_NO_BUFFERING, NULL);
         if(verbose)
@@ -278,25 +277,28 @@ sererr:     main_getErrorMessage();
     }
 #endif
     /* dismount volumes */
+    memset(hLocks, 0, sizeof(hLocks));
+    nLocks = 0;
     for(letter = 'A'; letter <= 'Z'; letter++) {
         sprintf(fn, "\\\\.\\%c:", letter);
-        hTargetVolume = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-        if (hTargetVolume == INVALID_HANDLE_VALUE) continue;
-        if(!DeviceIoControl(hTargetVolume, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL) ||
+        ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+        if (ret == INVALID_HANDLE_VALUE) continue;
+        if(!DeviceIoControl(ret, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL) ||
             (unsigned int)disks_targets[targetId] != (unsigned int)volumeDiskExtents.Extents[0].DiskNumber) {
-                CloseHandle(hTargetVolume);
+                CloseHandle(ret);
                 continue;
         }
-        DeviceIoControl(hTargetVolume, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-        k = DeviceIoControl(hTargetVolume, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-        DeviceIoControl(hTargetVolume, FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-        CloseHandle(hTargetVolume);
+        if(DeviceIoControl(ret, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL))
+            k = DeviceIoControl(ret, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        else
+            k = -1;
         if(verbose)
             printf("umount(%s) ret=%d\r\n", fn, k);
         if(!k) {
             main_getErrorMessage();
             return (HANDLE)-2;
         }
+        hLocks[nLocks++] = ret;
     }
     /* open raw disk */
     sprintf(fn, "\\\\.\\PhysicalDrive%d", disks_targets[targetId]);
@@ -315,5 +317,15 @@ sererr:     main_getErrorMessage();
  */
 void disks_close(void *data)
 {
+    DWORD bytesReturned;
+    int i;
+
     CloseHandle((HANDLE)data);
+
+    for(i = 0; i < nLocks; i++) {
+        DeviceIoControl(hLocks[i], FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        CloseHandle(hLocks[i]);
+        hLocks[i] = NULL;
+    }
+    nLocks = 0;
 }

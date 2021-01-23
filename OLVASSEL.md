@@ -9,7 +9,7 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | Platform     | Felület      | Leírás                       |
 |--------------|--------------|------------------------------|
 | Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-i686-win-gdi.zip) | natív interfész<br>egyszerűsített, csak író felület |
-| MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip)<br>[Cocoa wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip) | natív interfész<br>egyszerűsített, csak író felület |
+| MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-intel-macosx-cocoa.zip)<br>[Cocoa wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-intel-macosx-cocoa.zip) | natív interfész<br>egyszerűsített, csak író felület |
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban |

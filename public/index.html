@@ -131,9 +131,9 @@ body { padding-top: 64px; }
     document.addEventListener("DOMContentLoaded", function(e) {
       var dllinks = [
         [ "Linux x86","Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-amd64.deb" ],
-        [ "Linux arm","Linux",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-armhf.deb" ],
+        [ "Linux arm","RaspiOS", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-armhf.deb" ],
         [ "Win",      "Windows", "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-i686-win-gdi.zip" ],
-        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.5-intel-macosx-cocoa.zip" ]
+        [ "Mac",      "MacOS",   "https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.6_wo-intel-macosx-cocoa.zip" ]
       ];
       var dl = document.getElementById("dl"), dlos = document.getElementById("dlos"), os = navigator.appVersion.concat(navigator.platform);
       for(var i = 0; i < dllinks.length; i++)

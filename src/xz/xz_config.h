@@ -10,6 +10,9 @@
 #ifndef XZ_CONFIG_H
 #define XZ_CONFIG_H
 
+/* added to support Linux kernel madness */
+#define fallthrough
+
 /* Uncomment to enable CRC64 support. */
 /* #define XZ_USE_CRC64 */
 

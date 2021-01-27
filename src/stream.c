@@ -284,7 +284,6 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         break;
         case TYPE_XZ:
             xz_crc32_init();
-            xz_crc64_init();
             ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26);
             if (!ctx->xz) { fclose(ctx->f); return 4; }
         break;

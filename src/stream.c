@@ -256,6 +256,8 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         if(verbose) printf(" zstd\r\n");
         ctx->compSize = fs;
         ctx->fileSize = (size_t)ZSTD_getFrameContentSize(hdr, sizeof(hdr));
+        if(ctx->fileSize == ZSTD_CONTENTSIZE_UNKNOWN || ctx->fileSize == ZSTD_CONTENTSIZE_ERROR)
+            ctx->fileSize = 0;
         myseek(ctx->f, 0L);
         ctx->type = TYPE_ZSTD;
     } else
@@ -434,10 +436,11 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
 {
     errno = 0;
     memset(ctx, 0, sizeof(stream_t));
-    if(!fn || !*fn || !size) return 1;
 
     if(verbose)
         printf("stream_create(%s) comp %d size %" PRIu64 ")\r\n", fn, comp, size);
+
+    if(!fn || !*fn || !size) return 1;
 
     ctx->compBuf = (unsigned char*)malloc(buffer_size);
     if(!ctx->compBuf) {

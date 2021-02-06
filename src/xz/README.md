@@ -10,9 +10,9 @@ I also had to add this little patch to make it work with concatenated streams ge
                         if (!fill_temp(s, b))
                                 return XZ_OK;
 
--                       return dec_stream_footer(s);
 +                       xz_dec_reset(s);
 +                       continue;
+-                       return dec_stream_footer(s);
                 }
         }
 ```

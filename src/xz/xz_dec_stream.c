@@ -715,11 +715,8 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			if (!fill_temp(s, b))
 				return XZ_OK;
 
-			if (!memeq(s->temp.buf, HEADER_MAGIC, HEADER_MAGIC_SIZE)) {
-				xz_dec_reset(s);
-				continue;
-			}
-			return dec_stream_footer(s);
+			xz_dec_reset(s);
+			continue;
 		}
 	}
 

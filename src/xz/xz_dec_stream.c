@@ -715,8 +715,12 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			if (!fill_temp(s, b))
 				return XZ_OK;
 
-			xz_dec_reset(s);
-			continue;
+			ret = dec_stream_footer(s);
+			if (ret == XZ_STREAM_END) {
+				xz_dec_reset(s);
+				continue;
+			}
+			return ret;
 		}
 	}
 

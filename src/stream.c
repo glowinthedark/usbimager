@@ -470,6 +470,7 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
         }
         ZSTD_CCtx_setParameter(ctx->zcmp, ZSTD_c_compressionLevel, 1);
         ZSTD_CCtx_setParameter(ctx->zcmp, ZSTD_c_nbWorkers, 4);
+        ZSTD_CCtx_setPledgedSrcSize(ctx->zcmp, size);
     } else {
         ctx->type = TYPE_PLAIN;
         ctx->f = fopen(fn, "wb");

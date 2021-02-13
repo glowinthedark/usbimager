@@ -20,7 +20,7 @@ I also had to add this little patch to make it work with concatenated streams ge
                 }
         }
 ```
-Otherwise this the verbatim code from the Linux kernel.
+Otherwise this is the verbatim code from the Linux kernel.
 
 Compilation
 -----------

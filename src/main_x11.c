@@ -1408,7 +1408,7 @@ int main(int argc, char **argv)
     XEvent e;
     KeySym k;
     XTextProperty title_property;
-    Atom a, t;
+    Atom a, t, *sa = NULL;
     char colorName[16], *title = "USBImager " USBIMAGER_VERSION;
     int i, j, ser;
     long *extents;
@@ -1550,10 +1550,24 @@ int main(int argc, char **argv)
         sprintf(blksizeList[i], "%3dM", (1<<i));
     refreshTarget();
 
-    a = XInternAtom(dpy, "_NET_FRAME_EXTENTS", True);
-    while(XGetWindowProperty(dpy, mainwin, a, 0, 4, False, AnyPropertyType, &t, &i,
-            &n, &b, (unsigned char**)&extents) != Success || n != 4 || b != 0)
-        XNextEvent(dpy, &e);
+    a = XInternAtom(dpy, "_NET_SUPPORTED", True);
+    if(XGetWindowProperty(dpy, RootWindow(dpy, scr), a, 0, LONG_MAX, False, AnyPropertyType, &t, &i, &n, &b,
+        (unsigned char**)&sa) == Success && sa && n > 0) {
+        a = XInternAtom(dpy, "_NET_REQUEST_FRAME_EXTENTS", False);
+        for(i = 0; i < (int)n && sa[i] != a; i++);
+        XFree(sa);
+        if(i < (int)n) {
+            e.type = ClientMessage;
+            e.xclient.window = mainwin;
+            e.xclient.format = 32;
+            e.xclient.message_type = a;
+            XSendEvent(dpy, RootWindow(dpy, scr), False, SubstructureNotifyMask | SubstructureRedirectMask, &e);
+            a = XInternAtom(dpy, "_NET_FRAME_EXTENTS", True);
+            for(j = 100; j > 0 && (XGetWindowProperty(dpy, mainwin, a, 0, 4, False, AnyPropertyType, &t, &i,
+                    &n, &b, (unsigned char**)&extents) != Success || n != 4 || b != 0); j--)
+                XCheckTypedEvent(dpy, PropertyNotify, &e);
+        }
+    }
     frame_left = extents && extents[0] > 0 && extents[0] < 64 ? extents[0] : 2;
     frame_top = extents && extents[2] > 0 && extents[2] < 64 ? extents[2] : 16;
     /* if anybody knows a better way, let me know */
@@ -1562,7 +1576,7 @@ int main(int argc, char **argv)
             frame_left += 8; frame_top += 8;
     }
     if(verbose) printf(" X11 frame: left %d top %d\n", frame_left, frame_top);
-    if(extents) free(extents);
+    if(extents) XFree(extents);
     mainRedraw();
 
     while(1) {

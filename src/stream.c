@@ -345,6 +345,7 @@ int stream_read(stream_t *ctx)
                 if(verbose) printf("  zlib inflate error %d\r\n", ret);
                 return -1;
             }
+            size = buffer_size - ctx->zstrm.avail_out;
         break;
         case TYPE_BZIP2:
             ctx->bstrm.next_out = ctx->buffer;

@@ -60,6 +60,7 @@ typedef struct {
     uint64_t compSize;
     uint64_t readSize;
     uint64_t cmrdSize;
+    uint64_t avail;
     uint64_t avgSpeedBytes;
     uint64_t avgSpeedNum;
     unsigned char *compBuf;

@@ -56,6 +56,35 @@ int buffer_size = 1024*1024;
 int baud = 115200;
 
 /**
+ * convert ascii octal number to binary number
+ */
+uint64_t oct2bin(char *str, int size)
+{
+    uint64_t s = 0;
+    while(size-- > 0) { s <<= 3; s += *str++ - '0'; }
+    return s;
+}
+
+/**
+ * convert ascii hex number to binary number
+ */
+uint64_t hex2bin(char *str, int size)
+{
+    uint64_t s = 0;
+    while(size-- > 0) {
+        s <<= 4;
+        if(*str >= '0' && *str <= '9')
+            s += (uint64_t)((uint8_t)(*str)-'0');
+        else if(*str >= 'A' && *str <= 'F')
+            s += (uint64_t)((uint8_t)(*str)-'A'+10);
+        else if(*str >= 'a' && *str <= 'f')
+            s += (uint64_t)((uint8_t)(*str)-'a'+10);
+        str++;
+    }
+    return s;
+}
+
+/**
  * Returns progress percentage and the status string in str
  */
 int stream_status(stream_t *ctx, char *str, int done)
@@ -142,11 +171,13 @@ int stream_status(stream_t *ctx, char *str, int done)
 /**
  * Open file and determine the source's format
  */
+#define HEADER_SIZE 65536
 int stream_open(stream_t *ctx, char *fn, int uncompr)
 {
-    unsigned char hdr[65536], *buff;
-    uint64_t fs = 0;
-    int x, y;
+    unsigned char *buff;
+    uint64_t fs = 0, hs = 0;
+    int64_t insiz;
+    int x = 0, y;
 #ifndef WINVER
     struct stat st;
 #endif
@@ -162,12 +193,14 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         main_getErrorMessage();
         return 1;
     }
+    memset(ctx->compBuf, 0, buffer_size);
     ctx->verifyBuf = (char*)malloc(buffer_size);
     if(!ctx->verifyBuf) {
         main_getErrorMessage();
         free(ctx->compBuf); ctx->compBuf = NULL;
         return 1;
     }
+    memset(ctx->verifyBuf, 0, buffer_size);
     ctx->buffer = (char*)malloc(buffer_size);
     if(!ctx->buffer) {
         main_getErrorMessage();
@@ -175,6 +208,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         free(ctx->verifyBuf); ctx->verifyBuf = NULL;
         return 1;
     }
+    memset(ctx->buffer, 0, buffer_size);
 
     ctx->f = fopen(fn, "rb");
     if(!ctx->f) return 1;
@@ -184,84 +218,233 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     if(!fstat(fileno(ctx->f), &st))
         fs = (uint64_t)st.st_size;
 #endif
-    memset(hdr, 0, sizeof(hdr));
+    ctx->avail = 0;
     if(!uncompr) {
-        if(!fread(hdr, sizeof(hdr), 1, ctx->f)) {}
+        if(!(hs = fread(ctx->compBuf, 1, HEADER_SIZE, ctx->f))) {}
     }
 
     /* detect input format */
-    if(hdr[0] == 0x1f && hdr[1] == 0x8b) {
+    /* only decompress buffer_size - 64k max, so that the first stream_read() call won't fail
+     * decompressing because of output buffer being full */
+    if(ctx->compBuf[0] == 0x1f && ctx->compBuf[1] == 0x8b) {
         /* gzip */
         if(verbose) printf(" gzip\r\n");
         myseek(ctx->f, fs - 4L);
         if(!fread(&ctx->fileSize, 4, 1, ctx->f))
             ctx->fileSize = 0;
+        myseek(ctx->f, hs);
         ctx->compSize = fs - 8;
-        buff = hdr + 3;
+        ctx->cmrdSize = hs;
+        buff = ctx->compBuf + 3;
         x = *buff++; buff += 6;
         if(x & 4) { y = *buff++; y += (*buff++ << 8); buff += y; }
         if(x & 8) { while(*buff++ != 0); }
         if(x & 16) { while(*buff++ != 0); }
         if(x & 2) buff += 2;
-        ctx->compSize -= (uint64_t)(buff - hdr);
-        myseek(ctx->f, (uint64_t)(buff - hdr));
         ctx->type = TYPE_DEFLATE;
+        if((inflateInit2(&ctx->zstrm, -MAX_WBITS)) != Z_OK) { fclose(ctx->f); return 4; }
+        ctx->zstrm.next_out = (unsigned char*)ctx->buffer;
+        ctx->zstrm.avail_out = HEADER_SIZE;
+        ctx->zstrm.next_in = buff;
+        ctx->zstrm.avail_in = hs - (uint64_t)(buff - ctx->compBuf);
+        do {
+            if(!ctx->zstrm.avail_in) {
+                insiz = ctx->compSize - ctx->cmrdSize;
+                if(insiz < 1) { x = Z_STREAM_END; break; }
+                if(insiz > buffer_size) insiz = buffer_size;
+                ctx->zstrm.next_in = ctx->compBuf;
+                ctx->zstrm.avail_in = insiz;
+                if(!fread(ctx->compBuf, insiz, 1, ctx->f)) break;
+                ctx->cmrdSize += (uint64_t)insiz;
+            }
+            x = inflate(&ctx->zstrm, Z_NO_FLUSH);
+        } while(x == Z_OK && ctx->zstrm.avail_out > 0);
+        if(x != Z_OK) {
+            if(verbose) printf("  zlib inflate error %d\r\n", x);
+            fclose(ctx->f); return 4;
+        }
+        ctx->avail = HEADER_SIZE - ctx->zstrm.avail_out;
     } else
-    if(hdr[0] == 'B' && hdr[1] == 'Z' && hdr[2] == 'h') {
+    if(ctx->compBuf[0] == 'B' && ctx->compBuf[1] == 'Z' && ctx->compBuf[2] == 'h') {
         /* bzip2 */
         if(verbose) printf(" bzip2\r\n");
         ctx->compSize = fs;
-        myseek(ctx->f, 0L);
+        ctx->cmrdSize = hs;
         ctx->type = TYPE_BZIP2;
+        if((BZ2_bzDecompressInit(&ctx->bstrm, 0, 0)) != BZ_OK) { fclose(ctx->f); return 4; }
+        ctx->bstrm.next_out = ctx->buffer;
+        ctx->bstrm.avail_out = HEADER_SIZE;
+        ctx->bstrm.next_in = (char*)ctx->compBuf;
+        ctx->bstrm.avail_in = hs;
+        do {
+            if(!ctx->bstrm.avail_in) {
+                insiz = ctx->compSize - ctx->cmrdSize;
+                if(insiz < 1) { x = BZ_STREAM_END; break; }
+                if(insiz > buffer_size) insiz = buffer_size;
+                ctx->bstrm.next_in = (char*)ctx->compBuf;
+                ctx->bstrm.avail_in = insiz;
+                if(!fread(ctx->compBuf, insiz, 1, ctx->f)) break;
+                ctx->cmrdSize += insiz;
+            }
+            x = BZ2_bzDecompress(&ctx->bstrm);
+        } while(x == BZ_OK && ctx->bstrm.avail_out > 0);
+        if(x != BZ_OK) {
+            if(verbose) printf("  bzip2 decompress error %d\r\n", x);
+            fclose(ctx->f); return 4;
+        }
+        ctx->avail = HEADER_SIZE - ctx->bstrm.avail_out;
     } else
-    if(hdr[0] == 0xFD && hdr[1] == '7' && hdr[2] == 'z' && hdr[3] == 'X' && hdr[4] == 'Z') {
+    if(ctx->compBuf[0] == 0xFD && ctx->compBuf[1] == '7' && ctx->compBuf[2] == 'z' && ctx->compBuf[3] == 'X' &&
+        ctx->compBuf[4] == 'Z') {
         /* xz */
         if(verbose) printf(" xz\r\n");
         ctx->compSize = fs;
-        myseek(ctx->f, 0L);
+        ctx->cmrdSize = hs;
         ctx->type = TYPE_XZ;
+        xz_crc32_init();
+        ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26);
+        if (!ctx->xz) { fclose(ctx->f); return 4; }
+        ctx->xstrm.out = (unsigned char*)ctx->buffer;
+        ctx->xstrm.out_pos = 0;
+        ctx->xstrm.out_size = HEADER_SIZE;
+        ctx->xstrm.in = (unsigned char*)ctx->compBuf;
+        ctx->xstrm.in_pos = 0;
+        ctx->xstrm.in_size = hs;
+        do {
+            if(ctx->xstrm.in_pos == ctx->xstrm.in_size) {
+                insiz = ctx->compSize - ctx->cmrdSize;
+                if(insiz < 1) { x = XZ_STREAM_END; break; }
+                if(insiz > buffer_size) insiz = buffer_size;
+                ctx->xstrm.in = (unsigned char*)ctx->compBuf;
+                ctx->xstrm.in_pos = 0;
+                ctx->xstrm.in_size = insiz;
+                if(!fread(ctx->compBuf, insiz, 1, ctx->f)) break;
+                ctx->cmrdSize += (uint64_t)insiz;
+            }
+            x = xz_dec_run(ctx->xz, &ctx->xstrm);
+            if(x == XZ_UNSUPPORTED_CHECK) x = XZ_OK;
+        } while(x == XZ_OK && ctx->xstrm.out_pos < ctx->xstrm.out_size);
+        if(x != XZ_OK) {
+            if(verbose) printf("  xz decompress error %d\r\n", x);
+            fclose(ctx->f); return 4;
+        }
+        ctx->avail = ctx->xstrm.out_pos;
     } else
-    if(hdr[0] == 'P' && hdr[1] == 'K' && hdr[2] == 3 && hdr[3] == 4) {
-        /* pkzip */
-        if(verbose) printf(" pkzip\r\n");
-        if((hdr[6] & 1) || (hdr[6] & (1<<6))) {
-            fclose(ctx->f);
-            return 2;
-        }
-        switch(hdr[8]) {
-            case 0: ctx->type = TYPE_PLAIN; break;
-            case 8: ctx->type = TYPE_DEFLATE; break;
-            case 12: ctx->type = TYPE_BZIP2; break;
-            default: fclose(ctx->f); return 3;
-        }
-        if(memcmp(hdr + 18, "\xff\xff\xff\xff\xff\xff\xff\xff", 8)) {
-            memcpy(&ctx->compSize, hdr + 18, 4);
-            memcpy(&ctx->fileSize, hdr + 22, 4);
-        } else {
-            /* zip64 */
-            if(verbose) printf("   zip64\r\n");
-            for(x = 30 + hdr[26] + (hdr[27]<<8), y = x + hdr[28] + (hdr[29]<<8);
-                x < y && x < (int)sizeof(hdr) - 4; x += 4 + hdr[x + 2] + (hdr[x + 3]<<8))
-                    if(hdr[x] == 1 && hdr[x + 1] == 0) {
-                        memcpy(&ctx->compSize, hdr + x + 12, 8);
-                        memcpy(&ctx->fileSize, hdr + x + 4, 8);
-                        break;
-                    }
-            if(!ctx->compSize || !ctx->fileSize) { fclose(ctx->f); return 4; }
-        }
-        myseek(ctx->f, (uint64_t)(30 + hdr[26] + (hdr[27]<<8) + hdr[28] + (hdr[29]<<8)));
-    } else
-    if(hdr[0] == 0x28 && hdr[1] == 0xB5 && hdr[2] == 0x2F && hdr[3] == 0xFD) {
+    if(ctx->compBuf[0] == 0x28 && ctx->compBuf[1] == 0xB5 && ctx->compBuf[2] == 0x2F && ctx->compBuf[3] == 0xFD) {
         /* zstandard */
         if(verbose) printf(" zstd\r\n");
         ctx->compSize = fs;
-        ctx->fileSize = (size_t)ZSTD_getFrameContentSize(hdr, sizeof(hdr));
+        ctx->cmrdSize = hs;
+        ctx->fileSize = (size_t)ZSTD_getFrameContentSize(ctx->compBuf, sizeof(ctx->compBuf));
         if(ctx->fileSize == ZSTD_CONTENTSIZE_UNKNOWN || ctx->fileSize == ZSTD_CONTENTSIZE_ERROR)
             ctx->fileSize = 0;
-        myseek(ctx->f, 0L);
         ctx->type = TYPE_ZSTD;
+        ctx->zstd = ZSTD_createDCtx();
+        if (!ctx->zstd) { fclose(ctx->f); return 4; }
+        ctx->zo.dst = ctx->buffer;
+        ctx->zo.pos = 0;
+        ctx->zo.size = HEADER_SIZE;
+        ctx->zi.src = ctx->compBuf;
+        ctx->zi.pos = 0;
+        ctx->zi.size = hs;
+        do {
+            if(ctx->zi.pos == ctx->zi.size) {
+                insiz = ctx->compSize - ctx->cmrdSize;
+                if(insiz < 1) { x = 0; break; }
+                if(insiz > buffer_size) insiz = buffer_size;
+                ctx->zi.src = ctx->compBuf;
+                ctx->zi.pos = 0;
+                ctx->zi.size = insiz;
+                if(!fread(ctx->compBuf, insiz, 1, ctx->f)) break;
+                ctx->cmrdSize += (uint64_t)insiz;
+            }
+            x = (int) ZSTD_decompressStream(ctx->zstd, &ctx->zo, &ctx->zi);
+        } while(!ZSTD_isError(x) && ctx->zo.pos < ctx->zo.size);
+        if(ZSTD_isError(x)) {
+            if(verbose) printf("  zstd decompress error %d\r\n", x);
+            fclose(ctx->f); return 4;
+        }
+        ctx->avail = ctx->zo.pos;
     } else
-    if(hdr[0] == '7' && hdr[1] == 'z' && hdr[2] == 0xBC && hdr[3] == 0xAF) {
+    if(ctx->compBuf[0] == 'P' && ctx->compBuf[1] == 'K' && ctx->compBuf[2] == 3 && ctx->compBuf[3] == 4) {
+        /* pkzip */
+        if(verbose) printf(" pkzip\r\n");
+        if((ctx->compBuf[6] & 1) || (ctx->compBuf[6] & (1<<6))) {
+            fclose(ctx->f);
+            return 2;
+        }
+        switch(ctx->compBuf[8]) {
+            case 0: ctx->type = TYPE_PLAIN; break;
+            case 8:
+                ctx->type = TYPE_DEFLATE;
+                if((inflateInit2(&ctx->zstrm, -MAX_WBITS)) != Z_OK) { fclose(ctx->f); return 4; }
+                break;
+            case 12:
+                ctx->type = TYPE_BZIP2;
+                if((BZ2_bzDecompressInit(&ctx->bstrm, 0, 0)) != BZ_OK) { fclose(ctx->f); return 4; }
+                break;
+            case 93:
+                ctx->type = TYPE_ZSTD;
+                if(!(ctx->zstd = ZSTD_createDCtx())) { fclose(ctx->f); return 4; }
+                break;
+            case 95:
+                ctx->type = TYPE_XZ;
+                xz_crc32_init();
+                if(!(ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26))) { fclose(ctx->f); return 4; }
+                break;
+            default: fclose(ctx->f); return 3;
+        }
+        if(memcmp(ctx->compBuf + 18, "\xff\xff\xff\xff\xff\xff\xff\xff", 8)) {
+            memcpy(&ctx->compSize, ctx->compBuf + 18, 4);
+            memcpy(&ctx->fileSize, ctx->compBuf + 22, 4);
+        } else {
+            /* zip64 */
+            if(verbose) printf("   zip64\r\n");
+            for(x = 30 + ctx->compBuf[26] + (ctx->compBuf[27]<<8), y = x + ctx->compBuf[28] + (ctx->compBuf[29]<<8);
+                x < y && x < (int)sizeof(ctx->compBuf) - 4; x += 4 + ctx->compBuf[x + 2] + (ctx->compBuf[x + 3]<<8))
+                    if(ctx->compBuf[x] == 1 && ctx->compBuf[x + 1] == 0) {
+                        memcpy(&ctx->compSize, ctx->compBuf + x + 12, 8);
+                        memcpy(&ctx->fileSize, ctx->compBuf + x + 4, 8);
+                        break;
+                    }
+            if(!ctx->compSize || !ctx->fileSize) { fclose(ctx->f); return 2; }
+        }
+        myseek(ctx->f, (uint64_t)(30 + ctx->compBuf[26] + (ctx->compBuf[27]<<8) + ctx->compBuf[28] + (ctx->compBuf[29]<<8)));
+    } else
+    if(ctx->compBuf[0] == 'Z' && ctx->compBuf[1] == 'Z' && ctx->compBuf[2] == 'z' && ctx->compBuf[3] == 0x1A) {
+        /* ZZZip, per entity compressed */
+        if(verbose) printf(" ZZZip\r\n");
+        x = (ctx->compBuf[7] & 0x80 << 9) | (ctx->compBuf[5] << 8) | ctx->compBuf[4];
+        y = ((ctx->compBuf[7] & 0x7F) << 8) | ctx->compBuf[6];
+        if(y < 2 || (ctx->compBuf[15] & 0xF0) || (ctx->compBuf[15] & 0x0F) > 1) { fclose(ctx->f); return 2; }
+        memcpy(&ctx->compSize, ctx->compBuf + 32, 8);
+        memcpy(&ctx->fileSize, ctx->compBuf + 16, 8);
+        if(!ctx->compSize || !ctx->fileSize) { fclose(ctx->f); return 2; }
+        ctx->type = TYPE_PLAIN;
+        if((ctx->compBuf[15] & 0x0F) == 1)
+            switch(ctx->compBuf[48]) {
+                case 2:
+                    ctx->type = TYPE_DEFLATE;
+                    if((inflateInit2(&ctx->zstrm, -MAX_WBITS)) != Z_OK) { fclose(ctx->f); return 4; }
+                    break;
+                case 3:
+                    ctx->type = TYPE_BZIP2;
+                    if((BZ2_bzDecompressInit(&ctx->bstrm, 0, 0)) != BZ_OK) { fclose(ctx->f); return 4; }
+                    break;
+                case 5:
+                    ctx->type = TYPE_XZ;
+                    xz_crc32_init();
+                    if(!(ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26))) { fclose(ctx->f); return 4; }
+                    break;
+                case 7:
+                    ctx->type = TYPE_ZSTD;
+                    if(!(ctx->zstd = ZSTD_createDCtx())) { fclose(ctx->f); return 4; }
+                    break;
+                default: fclose(ctx->f); return 3;
+            }
+        myseek(ctx->f, (uint64_t)(x + y));
+    } else
+    if(ctx->compBuf[0] == '7' && ctx->compBuf[1] == 'z' && ctx->compBuf[2] == 0xBC && ctx->compBuf[3] == 0xAF) {
         /* 7zip */
         if(verbose) printf(" 7z (deliberately not supported, use xz instead)\r\n");
         /* this is a badly designed, non-transmission-error-proof, inadeqvate for long term preservation format
@@ -272,31 +455,61 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         /* uncompressed image */
         if(verbose) printf(" raw image\r\n");
         ctx->fileSize = fs;
-        myseek(ctx->f, 0L);
         ctx->type = TYPE_PLAIN;
+        memcpy(ctx->buffer, ctx->compBuf, hs);
+        ctx->avail = hs;
     }
-    switch(ctx->type) {
-        case TYPE_DEFLATE:
-            x = inflateInit2(&ctx->zstrm, -MAX_WBITS);
-            if (x != Z_OK) { fclose(ctx->f); return 4; }
-        break;
-        case TYPE_BZIP2:
-            x = BZ2_bzDecompressInit(&ctx->bstrm, 0, 0);
-            if (x != BZ_OK) { fclose(ctx->f); return 4; }
-        break;
-        case TYPE_XZ:
-            xz_crc32_init();
-            ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26);
-            if (!ctx->xz) { fclose(ctx->f); return 4; }
-        break;
-        case TYPE_ZSTD:
-            ctx->zstd = ZSTD_createDCtx();
-            if (!ctx->zstd) { fclose(ctx->f); return 4; }
-        break;
+    if(ctx->avail) {
+        fs = 0;
+        if(ctx->buffer[257] == 'u' && ctx->buffer[258] == 's' && ctx->buffer[259] == 't' && ctx->buffer[260] == 'a' &&
+            ctx->buffer[261] == 'r') {
+            /* ustar */
+            if(verbose) printf(" tar\r\n");
+            if(ctx->buffer[156] != 0 && ctx->buffer[156] != '0') { fclose(ctx->f); return 2; }
+            ctx->fileSize = oct2bin(ctx->buffer + 0x7C, 11);
+            fs = 512;
+        } else
+        if(ctx->buffer[0] == '0' && ctx->buffer[1] == '7' && ctx->buffer[2] == '0' && ctx->buffer[3] == '7' &&
+            ctx->buffer[4] == '0') {
+            /* cpio */
+            fs = ctx->avail + 1;
+            if(ctx->buffer[5] == '7') {
+                if(verbose) printf(" cpio hpodc\r\n");
+                ctx->fileSize = oct2bin(ctx->buffer + 8*6 + 11 + 6, 11);
+                x = (int)oct2bin(ctx->buffer + 8*6 + 11, 6);
+                fs = 9*6 + 2*11 + x;
+            } else
+            if(ctx->buffer[5] == '1' || ctx->buffer[5] == '2') {
+                if(verbose) printf(" cpio\r\n");
+                ctx->fileSize = hex2bin(ctx->buffer + 8*6 + 6, 8);
+                x = (int)hex2bin(ctx->buffer + 8*11 + 6, 8);
+                fs = (110 + x + 3) & ~3;
+            }
+        } else
+        if(ctx->buffer[0] == 'Z' && ctx->buffer[1] == 'Z' && ctx->buffer[2] == 'z' && ctx->buffer[3] == 0x1A) {
+            /* ZZip overall compressed */
+            if(verbose) printf(" ZZZip\r\n");
+            x = ((ctx->buffer[7] & 0x7F) << 8) | ctx->buffer[6];
+            fs = ((ctx->buffer[7] & 0x80 << 9) | (ctx->buffer[5] << 8) | ctx->buffer[4]) + x;
+            if(x < 2 || ctx->buffer[15]) { fclose(ctx->f); return 2; }
+            memcpy(&ctx->fileSize, ctx->buffer + 16, 8);
+        }
+        if(ctx->type == TYPE_PLAIN) {
+            myseek(ctx->f, fs);
+            ctx->avail = 0;
+        } else if(fs > 0) {
+            if(!ctx->fileSize) { fclose(ctx->f); return 4; }
+            /* this can only happen if header is bigger than the 64k we've decompressed so far. Hopefully
+             * will never happen with sane archives, that would require an extra huge filename (> PATH_MAX) */
+            if(fs > ctx->avail) { fclose(ctx->f); return 2; }
+            memcpy(ctx->buffer, ctx->buffer + fs, ctx->avail - fs);
+            ctx->avail -= fs;
+        }
+        ctx->readSize = ctx->avail;
     }
     if(verbose) printf(" type %d compSize %" PRIu64 " fileSize %" PRIu64
-        " data offset %" PRIu64 "\r\n",
-        ctx->type, ctx->compSize, ctx->fileSize, mytell(ctx->f));
+        " avail %" PRIu64 " data offset %" PRIu64 "\r\n",
+        ctx->type, ctx->compSize, ctx->fileSize, ctx->avail, mytell(ctx->f));
     if(!ctx->compSize && !ctx->fileSize) { fclose(ctx->f); return 1; }
 
     ctx->start = time(NULL);
@@ -322,11 +535,11 @@ int stream_read(stream_t *ctx)
 
     switch(ctx->type) {
         case TYPE_PLAIN:
-            if(!fread(ctx->buffer, size, 1, ctx->f)) {}
+            if(!(size = fread(ctx->buffer + ctx->avail, 1, size, ctx->f))) {}
         break;
         case TYPE_DEFLATE:
-            ctx->zstrm.next_out = (unsigned char*)ctx->buffer;
-            ctx->zstrm.avail_out = size;
+            ctx->zstrm.next_out = (unsigned char*)ctx->buffer + ctx->avail;
+            ctx->zstrm.avail_out = buffer_size - ctx->avail;
             do {
                 if(!ctx->zstrm.avail_in) {
                     insiz = ctx->compSize - ctx->cmrdSize;
@@ -348,8 +561,8 @@ int stream_read(stream_t *ctx)
             size = buffer_size - ctx->zstrm.avail_out;
         break;
         case TYPE_BZIP2:
-            ctx->bstrm.next_out = ctx->buffer;
-            ctx->bstrm.avail_out = buffer_size;
+            ctx->bstrm.next_out = ctx->buffer + ctx->avail;
+            ctx->bstrm.avail_out = buffer_size - ctx->avail;
             do {
                 if(!ctx->bstrm.avail_in) {
                     insiz = ctx->compSize - ctx->cmrdSize;
@@ -372,7 +585,7 @@ int stream_read(stream_t *ctx)
         break;
         case TYPE_XZ:
             ctx->xstrm.out = (unsigned char*)ctx->buffer;
-            ctx->xstrm.out_pos = 0;
+            ctx->xstrm.out_pos = ctx->avail;
             ctx->xstrm.out_size = buffer_size;
             do {
                 if(ctx->xstrm.in_pos == ctx->xstrm.in_size) {
@@ -385,8 +598,6 @@ int stream_read(stream_t *ctx)
                     ctx->xstrm.in_pos = 0;
                     ctx->xstrm.in_size = insiz;
                     if(!fread(ctx->compBuf, insiz, 1, ctx->f)) break;
-                    if(insiz < buffer_size)
-                        memset(ctx->compBuf + insiz, 0, buffer_size - insiz);
                     ctx->cmrdSize += (uint64_t)insiz;
                 }
                 ret = xz_dec_run(ctx->xz, &ctx->xstrm);
@@ -400,14 +611,14 @@ int stream_read(stream_t *ctx)
         break;
         case TYPE_ZSTD:
             ctx->zo.dst = ctx->buffer;
-            ctx->zo.pos = 0;
+            ctx->zo.pos = ctx->avail;
             ctx->zo.size = buffer_size;
             do {
                 if(ctx->zi.pos == ctx->zi.size) {
                     insiz = ctx->compSize - ctx->cmrdSize;
                     if(insiz < 1) { ret = 0; break; }
                     if(insiz > buffer_size) insiz = buffer_size;
-                    if(verbose) printf("  xstd cmrdSize %" PRIu64
+                    if(verbose) printf("  zstd cmrdSize %" PRIu64
                         " insiz %" PRId64 "\r\n", ctx->cmrdSize, insiz);
                     ctx->zi.src = ctx->compBuf;
                     ctx->zi.pos = 0;
@@ -418,7 +629,7 @@ int stream_read(stream_t *ctx)
                 ret = (int) ZSTD_decompressStream(ctx->zstd, &ctx->zo, &ctx->zi);
             } while(!ZSTD_isError(ret) && ctx->zo.pos < ctx->zo.size);
             if(ZSTD_isError(ret)) {
-                if(verbose) printf("  xstd decompress error %d\r\n", ret);
+                if(verbose) printf("  zstd decompress error %d\r\n", ret);
                 return -1;
             }
             size = ctx->zo.pos;
@@ -427,6 +638,7 @@ int stream_read(stream_t *ctx)
     while(size & 511) ctx->buffer[size++] = 0;
     if(verbose) printf("stream_read() output size %" PRId64 "\r\n", size);
     ctx->readSize += (uint64_t)size;
+    ctx->avail = 0;
     return size;
 }
 

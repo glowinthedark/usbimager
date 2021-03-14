@@ -27,7 +27,7 @@
  *
  */
 
-#define USBIMAGER_VERSION "1.0.6"
+#define USBIMAGER_VERSION "1.0.7"
 #define USBIMAGER_BUILD "18"
 
 /* filters */

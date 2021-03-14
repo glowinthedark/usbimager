@@ -57,7 +57,7 @@ Fícsörök
 - Képes ellenőrizni az írást visszaolvasással és az eredeti lemezképpel való összevetéssel
 - Képes nyers lemezképeket olvasni: .img, .bin, .raw, .iso, .dd, stb.
 - Képes futási időben kitömöríteni: .gz, .bz2, .xz, .zst
-- Képes csomagolt fájlokat kitömöríteni: .zip (PKZIP és ZIP64) (*)
+- Képes csomagolt fájlokat kitömöríteni: .zip (PKZIP és ZIP64), .zzz (ZZZip), .tar, .cpio, .pax (*)
 - Képes lemezképeket készíteni, nyers és ZStandard tömörített formátumban
 - Képes mikrokontrollerek számára soros vonalon leküldeni a lemezképeket
 - 17 nyelvre lefordítva

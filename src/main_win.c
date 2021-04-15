@@ -314,6 +314,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
                 }
             }
             stream_close(&ctx);
+            if(GetLastError() == ERROR_DISK_FULL) DeleteFileW(wFn);
         } else {
             MainDlgMsgBox(hwndDlg, lang[L_OPENIMGERR]);
         }

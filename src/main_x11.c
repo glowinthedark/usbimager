@@ -818,6 +818,7 @@ static void *readerRoutine()
                 }
             }
             stream_close(&ctx);
+            if(errno == ENOSPC) remove(fn);
         } else {
             if(errno) main_errorMessage = strerror(errno);
             onThreadError(lang[L_OPENIMGERR]);

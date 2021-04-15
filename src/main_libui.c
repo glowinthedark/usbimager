@@ -274,6 +274,7 @@ static void *readerRoutine(void *data)
                 }
             }
             stream_close(&ctx);
+            if(errno == ENOSPC) remove(fn);
         } else {
             if(errno) main_errorMessage = strerror(errno);
             uiQueueMain(onThreadError, lang[L_OPENIMGERR]);

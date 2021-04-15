@@ -37,6 +37,7 @@
 #include <windows.h>
 /*extern int _fileno(FILE *f);*/
 #else
+#include <sys/statvfs.h>
 extern int fileno(FILE *f);
 #endif
 #if !defined(WINVER) && !defined(MACOSX)
@@ -54,6 +55,7 @@ int myseek (FILE* stream, uint64_t offset)
 int verbose = 0;
 int buffer_size = 1024*1024;
 int baud = 115200;
+int dstfd = 0;
 
 /**
  * convert ascii octal number to binary number
@@ -643,6 +645,42 @@ int stream_read(stream_t *ctx)
 }
 
 /**
+ * Get a reference to the destination file system
+ */
+int stream_dst(char *fn, FILE *f)
+{
+#ifdef WINVER
+    char tmp[MAX_PATH + 1];
+    (void)f;
+    GetFullPathNameA(fn, MAX_PATH, tmp, NULL);
+    return tmp[1] == ':' ? (int)tmp[0] : 0;
+#else
+    (void)fn;
+    return fileno(f);
+#endif
+}
+
+/**
+ * Return available space on destination file system
+ */
+uint64_t stream_avail(int fd)
+{
+#ifdef WINVER
+    char tmp[MAX_PATH + 1];
+    DWORD spc = 0, bps = 0, fc = 0, tc;
+    tmp[0] = fd; tmp[1] = ':'; tmp[2] = '\\'; tmp[3] = 0;
+    if(fd && GetDiskFreeSpaceA(tmp, &spc, &bps, &fc, &tc))
+        return (uint64_t)fc * (uint64_t)spc * (uint64_t)bps;
+#else
+    struct statvfs vfs;
+    if(fd && !fstatvfs(fd, &vfs))
+        return (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_bsize;
+#endif
+    /* return the largest unsigned number if we don't know the limit */
+    return (uint64_t)-1UL;
+}
+
+/**
  * Open file for writing
  */
 int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
@@ -681,6 +719,7 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
             free(ctx->compBuf); ctx->compBuf = NULL;
             return 1;
         }
+        dstfd = stream_dst(fn, ctx->g);
         ZSTD_CCtx_setParameter(ctx->zcmp, ZSTD_c_compressionLevel, 1);
         ZSTD_CCtx_setParameter(ctx->zcmp, ZSTD_c_nbWorkers, 4);
         ZSTD_CCtx_setPledgedSrcSize(ctx->zcmp, size);
@@ -693,6 +732,7 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
             free(ctx->compBuf); ctx->compBuf = NULL;
             return 1;
         }
+        dstfd = stream_dst(fn, ctx->f);
     }
 
     ctx->fileSize = size;
@@ -705,6 +745,8 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
  */
 int stream_write(stream_t *ctx, char *buffer, int size)
 {
+    int i;
+    uint64_t avail;
     size_t remaining;
     if(verbose)
         printf("stream_write() readSize %" PRIu64 " / fileSize %" PRIu64 " (output size %d)\r\n",
@@ -712,10 +754,27 @@ int stream_write(stream_t *ctx, char *buffer, int size)
     errno = 0;
     ctx->readSize += (uint64_t)size;
 
+    /* don't rely on OS reporting "no space left on device", go ahead that by buffer size times 2. See issue #50 */
+    if(dstfd && (avail = stream_avail(dstfd)) && avail <= (((uint64_t)buffer_size) << 1)) {
+        if(verbose) printf("stream_write() available size %" PRIu64 " <= 2 * buffer_size\r\n", avail);
+#ifdef WINVER
+        SetLastError(ERROR_DISK_FULL);
+#else
+        errno = ENOSPC;
+#endif
+        return 0;
+    }
+
     switch(ctx->type) {
         case TYPE_PLAIN:
-            if(!fwrite(buffer, size, 1, ctx->f))
-                size = 0;
+            /* make sure the kernel creates a sparse file */
+            for(i = 0; i < size && !buffer[i]; i++);
+            if(i == size) {
+                fseek(ctx->f, (long)size, SEEK_CUR);
+            } else {
+                if(!fwrite(buffer, size, 1, ctx->f))
+                    size = 0;
+            }
         break;
         case TYPE_ZSTD:
             ctx->zi.src = buffer; ctx->zi.size = size; ctx->zi.pos = 0;
@@ -753,6 +812,7 @@ void stream_close(stream_t *ctx)
             if(ctx->zcmp) ZSTD_freeCCtx(ctx->zcmp);
         break;
     }
+    dstfd = 0;
 }
 
 /**

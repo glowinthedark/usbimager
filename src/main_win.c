@@ -305,6 +305,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
                         ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
                     } else {
                         MainDlgMsgBox(hwndDlg, lang[L_WRIMGERR]);
+                        break;
                     }
                 } else {
                     if(verbose) printf("ReadFile(%d) numberOfBytesRead %lu ERROR\r\n", size, numberOfBytesRead);

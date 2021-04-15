@@ -265,6 +265,7 @@ static void *readerRoutine(void *data)
                     } else {
                         if(errno) main_errorMessage = strerror(errno);
                         uiQueueMain(onThreadError, lang[L_WRIMGERR]);
+                        break;
                     }
                 } else {
                     if(errno) main_errorMessage = strerror(errno);

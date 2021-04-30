@@ -1412,7 +1412,7 @@ int main(int argc, char **argv)
     Atom a, t, *sa = NULL;
     char colorName[16], *title = "USBImager " USBIMAGER_VERSION;
     int i, j, ser;
-    long *extents;
+    long *extents = NULL;
     unsigned long n, b;
     char *lc = getenv("LANG"), *sd = getenv("XDG_SESSION_DESKTOP");
     char help[] = "USBImager " USBIMAGER_VERSION

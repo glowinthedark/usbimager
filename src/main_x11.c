@@ -1416,6 +1416,12 @@ int main(int argc, char **argv)
     unsigned long n, b;
     char *lc = getenv("LANG"), *sd = getenv("XDG_SESSION_DESKTOP");
     char help[] = "USBImager " USBIMAGER_VERSION
+#if USE_WRONLY
+        "_wo"
+#endif
+#if USE_UDISKS2
+        "_udisks2"
+#endif
 #ifdef USBIMAGER_BUILD
         " (build " USBIMAGER_BUILD ")"
 #endif

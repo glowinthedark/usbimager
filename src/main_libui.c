@@ -394,6 +394,9 @@ int main(int argc, char **argv)
 #if USE_WRONLY
         "_wo"
 #endif
+#if USE_UDISKS2
+        "_udisks2"
+#endif
 #ifdef USBIMAGER_BUILD
         " (build " USBIMAGER_BUILD ")"
 #endif

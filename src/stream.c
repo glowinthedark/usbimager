@@ -58,6 +58,20 @@ int baud = 115200;
 int dstfd = 0;
 
 /**
+ * helper for xz to dynamically get the largest dictionary size possible
+ */
+struct xz_dec *xzinit()
+{
+    struct xz_dec *ret = xz_dec_init(XZ_DYNALLOC, 1 << 31); /* 2G dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 30);       /* 1G dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 29);       /* 512M dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 28);       /* 256M dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 27);       /* 128M dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 26);       /* 64M dictionary */
+    return ret;
+}
+
+/**
  * convert ascii octal number to binary number
  */
 uint64_t oct2bin(char *str, int size)
@@ -304,7 +318,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         ctx->cmrdSize = hs;
         ctx->type = TYPE_XZ;
         xz_crc32_init();
-        ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26);
+        ctx->xz = xzinit();
         if (!ctx->xz) { fclose(ctx->f); return 4; }
         ctx->xstrm.out = (unsigned char*)ctx->buffer;
         ctx->xstrm.out_pos = 0;
@@ -392,7 +406,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
             case 95:
                 ctx->type = TYPE_XZ;
                 xz_crc32_init();
-                if(!(ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26))) { fclose(ctx->f); return 4; }
+                if(!(ctx->xz = xzinit())) { fclose(ctx->f); return 4; }
                 break;
             default: fclose(ctx->f); return 3;
         }
@@ -436,7 +450,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
                 case 5:
                     ctx->type = TYPE_XZ;
                     xz_crc32_init();
-                    if(!(ctx->xz = xz_dec_init(XZ_DYNALLOC, 1 << 26))) { fclose(ctx->f); return 4; }
+                    if(!(ctx->xz = xzinit())) { fclose(ctx->f); return 4; }
                     break;
                 case 7:
                     ctx->type = TYPE_ZSTD;
@@ -767,11 +781,17 @@ int stream_write(stream_t *ctx, char *buffer, int size)
 
     switch(ctx->type) {
         case TYPE_PLAIN:
-            /* make sure the kernel creates a sparse file */
+            /* check if the data contains only zeros nothing else */
             for(i = 0; i < size && !buffer[i]; i++);
+            /* there's a bug in the newest Windows 10 kernel, see issue #53, so do not use sparse file under Win */
+#if !defined(WINVER) || defined(WINKRNL_NOT_BUGGY_ANY_MORE)
             if(i == size) {
+                /* if all bytes zero, then don't write just seek, that will create a sparse file */
                 fseek(ctx->f, (long)size, SEEK_CUR);
-            } else {
+            } else
+#endif
+            {
+                /* we have some non-zero data, write the block as-is */
                 if(!fwrite(buffer, size, 1, ctx->f))
                     size = 0;
             }

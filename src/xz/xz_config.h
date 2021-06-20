@@ -10,8 +10,8 @@
 #ifndef XZ_CONFIG_H
 #define XZ_CONFIG_H
 
-/* added to support Linux kernel madness */
-#define fallthrough
+/* Uncomment to enable building of xz_dec_catrun(). */
+/* #define XZ_DEC_CONCATENATED */
 
 /* Uncomment to enable CRC64 support. */
 /* #define XZ_USE_CRC64 */

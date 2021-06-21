@@ -782,7 +782,7 @@ int stream_write(stream_t *ctx, char *buffer, int size)
     switch(ctx->type) {
         case TYPE_PLAIN:
             /* check if the data contains only zeros nothing else */
-            for(i = 0; i < size && !buffer[i]; i++);
+            for(i = 0; i < size && !buffer[i]; i++) {}
             /* there's a bug in the newest Windows 10 kernel, see issue #53, so do not use sparse file under Win */
 #if !defined(WINVER) || defined(WINKRNL_NOT_BUGGY_ANY_MORE)
             if(i == size) {

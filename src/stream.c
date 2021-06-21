@@ -62,12 +62,12 @@ int dstfd = 0;
  */
 struct xz_dec *xzinit()
 {
-    struct xz_dec *ret = xz_dec_init(XZ_DYNALLOC, 1 << 31); /* 2G dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 30);       /* 1G dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 29);       /* 512M dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 28);       /* 256M dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 27);       /* 128M dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 26);       /* 64M dictionary */
+    struct xz_dec *ret = xz_dec_init(XZ_DYNALLOC, 2147483647U); /* 2G dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 30);           /* 1G dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 29);           /* 512M dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 28);           /* 256M dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 27);           /* 128M dictionary */
+    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 26);           /* 64M dictionary */
     return ret;
 }
 

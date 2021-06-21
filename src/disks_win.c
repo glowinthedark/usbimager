@@ -268,7 +268,7 @@ sererr:     main_getErrorMessage();
         sprintf(fn, ".\\test.bin");
         ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_FLAG_NO_BUFFERING, NULL);
         if(verbose)
-            printf("disks_open(%s)\r\n  fd=%d\r\n", fn, ret);
+            printf("disks_open(%s)\r\n  fd=%p\r\n", fn, ret);
         if (ret == INVALID_HANDLE_VALUE) {
             main_getErrorMessage();
             return NULL;

@@ -62,12 +62,14 @@ int dstfd = 0;
  */
 struct xz_dec *xzinit()
 {
-    struct xz_dec *ret = xz_dec_init(XZ_DYNALLOC, 2147483647U); /* 2G dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 30);           /* 1G dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 29);           /* 512M dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 28);           /* 256M dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 27);           /* 128M dictionary */
-    if(!ret) ret = xz_dec_init(XZ_DYNALLOC, 1 << 26);           /* 64M dictionary */
+    struct xz_dec *ret = NULL;
+    uint32_t siz = 2147483648UL; /* do not use (1UL << 31) mingw will convert that to signed and overflows */
+    for(; !ret && siz > (1 << 25); siz >>= 1) {
+        if(verbose) printf("  xz dictionary size %u M... ", siz / 1024 / 1024);
+        ret = xz_dec_init(XZ_DYNALLOC, siz);
+        if(verbose) printf(ret ? "OK\r\n" : "failed\r\n");
+    }
+    if(!ret && verbose) printf("  xz unable to allocate dictionary\r\n");
     return ret;
 }
 

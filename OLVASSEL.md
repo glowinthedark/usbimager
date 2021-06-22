@@ -64,6 +64,11 @@ Fícsörök
 
 (* - a több fájlt is tartalmazó csomagolt fájlok esetén a csomagolt fájl legelső fájlját használja bemenetnek)
 
+Korlátok
+--------
+
+Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogatja (az alapértelmezett 64 Mb).
+
 Összehasonlítás
 ---------------
 

@@ -62,6 +62,11 @@ Features
 
 (* - for archives with multiple files, the first file in the archive is used as input)
 
+Limitations
+-----------
+
+With xz compression dictionaries bigger than 1 Gigabytes not supported (default size is 64 Mb).
+
 Comparition
 -----------
 

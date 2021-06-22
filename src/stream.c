@@ -63,8 +63,8 @@ int dstfd = 0;
 struct xz_dec *xzinit()
 {
     struct xz_dec *ret = NULL;
-    uint32_t siz = 2147483648UL; /* do not use (1UL << 31) mingw will convert that to signed and overflows */
-    for(; !ret && siz > (1 << 25); siz >>= 1) {
+    uint32_t siz = (1UL << 30); /* start at 1G */
+    for(; !ret && siz > (1UL << 25); siz >>= 1) {
         if(verbose) printf("  xz dictionary size %u M... ", siz / 1024 / 1024);
         ret = xz_dec_init(XZ_DYNALLOC, siz);
         if(verbose) printf(ret ? "OK\r\n" : "failed\r\n");
@@ -343,7 +343,12 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
             if(x == XZ_UNSUPPORTED_CHECK) x = XZ_OK;
         } while(x == XZ_OK && ctx->xstrm.out_pos < ctx->xstrm.out_size);
         if(x != XZ_OK) {
-            if(verbose) printf("  xz decompress error %d\r\n", x);
+            if(verbose) {
+                if(x == XZ_MEMLIMIT_ERROR)
+                    printf("  xz dictionary so big, doesn't fit into memory\r\n");
+                else
+                    printf("  xz decompress error %d\r\n", x);
+            }
             fclose(ctx->f); return 4;
         }
         ctx->avail = ctx->xstrm.out_pos;

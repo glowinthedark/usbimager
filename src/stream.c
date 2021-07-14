@@ -36,9 +36,29 @@
 #ifdef WINVER
 #include <windows.h>
 /*extern int _fileno(FILE *f);*/
+FILE *stream_fopen(char *fn, char *mode)
+{
+    wchar_t *szFilePathName, wmode[8];
+    int wlen;
+    FILE *f = NULL;
+    memset(wmode, 0, sizeof(wmode));
+    MultiByteToWideChar(CP_UTF8, 0, mode, -1, wmode, 8);
+    wlen = MultiByteToWideChar(CP_UTF8, 0, fn, -1, NULL, 0);
+    if(wlen > 0) {
+        szFilePathName = (wchar_t*)malloc((wlen+1) * sizeof(wchar_t));
+        if(szFilePathName) {
+            MultiByteToWideChar(CP_UTF8, 0, fn, -1, szFilePathName, wlen);
+            szFilePathName[wlen] = 0;
+            f = _wfopen(szFilePathName, wmode);
+            free(szFilePathName);
+        }
+    }
+    return f;
+}
 #else
 #include <sys/statvfs.h>
 extern int fileno(FILE *f);
+#define stream_fopen fopen
 #endif
 #if !defined(WINVER) && !defined(MACOSX)
 uint64_t mytell (FILE * stream)
@@ -228,7 +248,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     }
     memset(ctx->buffer, 0, buffer_size);
 
-    ctx->f = fopen(fn, "rb");
+    ctx->f = stream_fopen(fn, "rb");
     if(!ctx->f) return 1;
 #ifdef WINVER
     fs = (uint64_t)_filelengthi64(_fileno(ctx->f));
@@ -729,7 +749,7 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
     if(comp) {
         ctx->type = TYPE_ZSTD;
         ctx->zcmp = ZSTD_createCCtx();
-        ctx->g = fopen(fn, "wb");
+        ctx->g = stream_fopen(fn, "wb");
         if(!ctx->g || !ctx->zcmp) {
             main_getErrorMessage();
             if(ctx->g) fclose(ctx->g);
@@ -746,7 +766,7 @@ int stream_create(stream_t *ctx, char *fn, int comp, uint64_t size)
         ZSTD_CCtx_setPledgedSrcSize(ctx->zcmp, size);
     } else {
         ctx->type = TYPE_PLAIN;
-        ctx->f = fopen(fn, "wb");
+        ctx->f = stream_fopen(fn, "wb");
         if(!ctx->f) {
             main_getErrorMessage();
             free(ctx->buffer); ctx->buffer = NULL;

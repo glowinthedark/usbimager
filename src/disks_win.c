@@ -195,6 +195,12 @@ void *disks_open(int targetId, uint64_t size)
     COMMTIMEOUTS timeouts;
     int k, nLocks = 0;
 
+    if(verbose) {
+        if(targetId < 0 || targetId >= DISKS_MAX) printf("disks_open(%d) out of bounds\r\n", targetId);
+        else if(disks_targets[targetId] == -1) printf("disks_open(%d) invalid handle\r\n", targetId);
+        else if(disks_targets[targetId] == cdrive) printf("disks_open(%d) system disk\r\n", targetId);
+        else if(size && disks_capacity[targetId] && size > disks_capacity[targetId]) printf("disks_open(%d) too small\r\n", targetId);
+    }
     if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] == -1 || (!disks_all && disks_targets[targetId] == cdrive)) return (HANDLE)-1;
     if(size && disks_capacity[targetId] && size > disks_capacity[targetId]) return (HANDLE)-1;
 
@@ -317,6 +323,7 @@ sererr:     main_getErrorMessage();
  */
 void disks_close(void *data)
 {
+    DWORD drives = GetLogicalDrives();
     DWORD bytesReturned;
     int i;
 
@@ -328,4 +335,8 @@ void disks_close(void *data)
         hLocks[i] = NULL;
     }
     nLocks = 0;
+    /* give time to the NT kernel to re-mount volumes */
+    SleepEx(500, 0);
+    for(i = 10; i > 0 && drives == GetLogicalDrives(); i--)
+        SleepEx(100, 0);
 }

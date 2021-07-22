@@ -243,7 +243,7 @@ Hozzájárulások
 Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, és különösen
 @tvjon-nak, @CaptainMidnight-nak és @gitlabhack-nek amiért több különböző platformon és számos különböző eszközzel is letesztelték az USBImager-t.
 
-Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel).
+Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel), @tomasz86 (kóreai).
 
 További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért.
 

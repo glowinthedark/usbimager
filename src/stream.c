@@ -213,7 +213,7 @@ int stream_status(stream_t *ctx, char *str, int done)
 int stream_open(stream_t *ctx, char *fn, int uncompr)
 {
     unsigned char *buff;
-    uint64_t fs = 0, hs = 0;
+    uint64_t fs = 0, hs = 0, zr;
     int64_t insiz;
     int x = 0, y;
 #ifndef WINVER
@@ -378,8 +378,10 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         if(verbose) printf(" zstd\r\n");
         ctx->compSize = fs;
         ctx->cmrdSize = hs;
-        ctx->fileSize = (size_t)ZSTD_getFrameContentSize(ctx->compBuf, sizeof(ctx->compBuf));
-        if(ctx->fileSize == ZSTD_CONTENTSIZE_UNKNOWN || ctx->fileSize == ZSTD_CONTENTSIZE_ERROR)
+        zr = (uint64_t)ZSTD_getFrameContentSize(ctx->compBuf, sizeof(ctx->compBuf));
+        if(zr != ZSTD_CONTENTSIZE_UNKNOWN && zr != ZSTD_CONTENTSIZE_ERROR)
+            ctx->fileSize = zr;
+        else
             ctx->fileSize = 0;
         ctx->type = TYPE_ZSTD;
         ctx->zstd = ZSTD_createDCtx();

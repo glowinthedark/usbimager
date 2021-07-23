@@ -331,6 +331,7 @@ void disks_close(void *data)
 
     for(i = 0; i < nLocks; i++) {
         DeviceIoControl(hLocks[i], FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        DeviceIoControl(hLocks[i], IOCTL_VOLUME_ONLINE, NULL, 0, NULL, 0, &bytesReturned, NULL);
         CloseHandle(hLocks[i]);
         hLocks[i] = NULL;
     }

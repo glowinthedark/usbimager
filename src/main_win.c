@@ -172,7 +172,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                         DWORD numberOfBytesWritten, numberOfBytesVerify;
 
                         if (WriteFile(hTargetDevice, ctx.buffer, numberOfBytesRead, &numberOfBytesWritten, NULL)) {
-                            if(verbose) printf("WriteFile(%d) numberOfBytesWritten %lu\r\n", numberOfBytesRead, numberOfBytesWritten);
+                            if(verbose > 1) printf("WriteFile(%d) numberOfBytesWritten %lu\r\n", numberOfBytesRead, numberOfBytesWritten);
                             if(needVerify) {
                                 SetFilePointerEx(hTargetDevice, totalNumberOfBytesWritten, NULL, FILE_BEGIN);
                                 if(!ReadFile(hTargetDevice, ctx.verifyBuf, numberOfBytesWritten, &numberOfBytesVerify, NULL) ||
@@ -180,7 +180,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                     MessageBoxW(hwndDlg, lang[L_VRFYERR], lang[L_ERROR], MB_ICONERROR);
                                     break;
                                 }
-                                if(verbose) printf("  numberOfBytesVerify %lu\n", numberOfBytesVerify);
+                                if(verbose > 1) printf("  numberOfBytesVerify %lu\n", numberOfBytesVerify);
                                 totalNumberOfBytesWritten.QuadPart += numberOfBytesWritten;
                             }
 
@@ -190,7 +190,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                             ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
                             ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
                         } else {
-                            if(verbose) printf("WriteFile(%d) numberOfBytesWritten %lu ERROR\r\n", numberOfBytesRead, numberOfBytesWritten);
+                            if(verbose > 1) printf("WriteFile(%d) numberOfBytesWritten %lu ERROR\r\n", numberOfBytesRead, numberOfBytesWritten);
                             main_getErrorMessage();
                             MainDlgMsgBox(hwndDlg, lang[L_WRTRGERR]);
                             break;
@@ -299,7 +299,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
                 if(ReadFile(src, ctx.buffer, size, &numberOfBytesRead, NULL)) {
-                    if(verbose) printf("ReadFile(%d) numberOfBytesRead %lu\r\n", size, numberOfBytesRead);
+                    if(verbose > 1) printf("ReadFile(%d) numberOfBytesRead %lu\r\n", size, numberOfBytesRead);
                     if(stream_write(&ctx, ctx.buffer, size)) {
                         DWORD pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
                         SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
@@ -311,7 +311,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
                         break;
                     }
                 } else {
-                    if(verbose) printf("ReadFile(%d) numberOfBytesRead %lu ERROR\r\n", size, numberOfBytesRead);
+                    if(verbose > 1) printf("ReadFile(%d) numberOfBytesRead %lu ERROR\r\n", size, numberOfBytesRead);
                     MainDlgMsgBox(hwndDlg, lang[L_RDSRCERR]);
                     break;
                 }

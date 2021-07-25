@@ -140,13 +140,13 @@ static void *writerRoutine(void *data)
                     } else {
                         errno = 0;
                         numberOfBytesWritten = (int)write(dst, ctx.buffer, numberOfBytesRead);
-                        if(verbose) printf("write(%d) numberOfBytesWritten %d errno=%d\n",
+                        if(verbose > 1) printf("write(%d) numberOfBytesWritten %d errno=%d\n",
                             numberOfBytesRead, numberOfBytesWritten, errno);
                         if(numberOfBytesWritten == numberOfBytesRead) {
                             if(needVerify) {
                                 lseek(dst, -((off_t)numberOfBytesWritten), SEEK_CUR);
                                 numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesWritten);
-                                if(verbose) printf("  numberOfBytesVerify %d\n", numberOfBytesVerify);
+                                if(verbose > 1) printf("  numberOfBytesVerify %d\n", numberOfBytesVerify);
                                 if(numberOfBytesVerify != numberOfBytesWritten ||
                                     memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesWritten)) {
                                         uiQueueMain(onThreadError, lang[L_VRFYERR]);
@@ -258,7 +258,7 @@ static void *readerRoutine(void *data)
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
                 numberOfBytesRead = (int)read(src, ctx.buffer, size);
-                if(verbose) printf("read(%d) numberOfBytesRead %d errno=%d\n", size, numberOfBytesRead, errno);
+                if(verbose > 1) printf("read(%d) numberOfBytesRead %d errno=%d\n", size, numberOfBytesRead, errno);
                 if(numberOfBytesRead == size) {
                     if(stream_write(&ctx, ctx.buffer, size)) {
                         uiQueueMain(onProgress, &ctx);

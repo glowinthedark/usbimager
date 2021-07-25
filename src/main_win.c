@@ -321,7 +321,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
         } else {
             MainDlgMsgBox(hwndDlg, lang[L_OPENIMGERR]);
         }
-        disks_close((void*)((long int)src));
+        disks_close((void*)src);
     } else {
         MainDlgMsgBox(hwndDlg, lang[src == (HANDLE)-1 ? L_TRGERR : (src == (HANDLE)-2 ? L_UMOUNTERR : (src == (HANDLE)-4 ? L_COMMERR : L_OPENTRGERR))]);
     }

@@ -847,6 +847,7 @@ int stream_write(stream_t *ctx, char *buffer, int size)
  */
 void stream_close(stream_t *ctx)
 {
+    if(verbose) printf("stream_close()\r\n");
     if(ctx->compBuf) free(ctx->compBuf);
     if(ctx->verifyBuf) free(ctx->verifyBuf);
     if(ctx->buffer) free(ctx->buffer);

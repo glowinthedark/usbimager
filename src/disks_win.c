@@ -193,7 +193,7 @@ void *disks_open(int targetId, uint64_t size)
     DWORD bytesReturned;
     DCB config;
     COMMTIMEOUTS timeouts;
-    int k, nLocks = 0;
+    int k;
 
     if(verbose) {
         if(targetId < 0 || targetId >= DISKS_MAX) printf("disks_open(%d) out of bounds\r\n", targetId);
@@ -313,7 +313,7 @@ sererr:     main_getErrorMessage();
     sprintf(fn, "\\\\.\\PhysicalDrive%d", disks_targets[targetId]);
     ret = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
     if(verbose)
-        printf("disks_open(%s)\r\n  fd=%d\r\n", fn, (int)ret);
+        printf("disks_open(%s)\r\n  fd=%d nLocks=%d\r\n", fn, (int)ret, nLocks);
     if (ret == INVALID_HANDLE_VALUE) {
         main_getErrorMessage();
         disks_close(NULL);
@@ -328,7 +328,14 @@ sererr:     main_getErrorMessage();
 void disks_close(void *data)
 {
     DWORD bytesReturned;
+    HANDLE hnd = (HANDLE)data;
     int i, k;
+
+    if(verbose)
+        printf("disks_close(%d) nLocks=%d\r\n", (int)data, nLocks);
+
+    if(hnd != NULL && hnd != (HANDLE)-1 && hnd != (HANDLE)-2 && hnd != (HANDLE)-3 && hnd != (HANDLE)-4)
+        CloseHandle(hnd);
 
     for(i = 0; i < nLocks; i++) {
         k = DeviceIoControl(hLocks[i], FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
@@ -338,6 +345,4 @@ void disks_close(void *data)
         hLocks[i] = NULL;
     }
     nLocks = 0;
-
-    if(data) CloseHandle((HANDLE)data);
 }

@@ -294,17 +294,20 @@ sererr:     main_getErrorMessage();
                 CloseHandle(ret);
                 continue;
         }
-        if(DeviceIoControl(ret, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL))
-            k = DeviceIoControl(ret, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-        else
-            k = -1;
+        k = DeviceIoControl(ret, FSCTL_LOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
         if(verbose)
-            printf("umount(%s) ret=%d\r\n", fn, k);
+            printf("lock(%d) (%s) ret=%d\r\n", nLocks, fn, k);
+        if(k) {
+            hLocks[nLocks++] = ret;
+            k = DeviceIoControl(ret, FSCTL_DISMOUNT_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+            if(verbose)
+                printf("umount(%s) ret=%d\r\n", fn, k);
+        }
         if(!k) {
             main_getErrorMessage();
+            disks_close(NULL);
             return (HANDLE)-2;
         }
-        hLocks[nLocks++] = ret;
     }
     /* open raw disk */
     sprintf(fn, "\\\\.\\PhysicalDrive%d", disks_targets[targetId]);
@@ -313,6 +316,7 @@ sererr:     main_getErrorMessage();
         printf("disks_open(%s)\r\n  fd=%d\r\n", fn, (int)ret);
     if (ret == INVALID_HANDLE_VALUE) {
         main_getErrorMessage();
+        disks_close(NULL);
         return (HANDLE)-3;
     }
     return (void*)ret;
@@ -323,21 +327,17 @@ sererr:     main_getErrorMessage();
  */
 void disks_close(void *data)
 {
-    DWORD drives = GetLogicalDrives();
     DWORD bytesReturned;
-    int i;
-
-    CloseHandle((HANDLE)data);
+    int i, k;
 
     for(i = 0; i < nLocks; i++) {
-        DeviceIoControl(hLocks[i], FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
-        DeviceIoControl(hLocks[i], IOCTL_VOLUME_ONLINE, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        k = DeviceIoControl(hLocks[i], FSCTL_UNLOCK_VOLUME, NULL, 0, NULL, 0, &bytesReturned, NULL);
+        if(verbose)
+            printf("unlock(%d) ret=%d\r\n", i, k);
         CloseHandle(hLocks[i]);
         hLocks[i] = NULL;
     }
     nLocks = 0;
-    /* give time to the NT kernel to re-mount volumes */
-    SleepEx(500, 0);
-    for(i = 10; i > 0 && drives == GetLogicalDrives(); i--)
-        SleepEx(100, 0);
+
+    if(data) CloseHandle((HANDLE)data);
 }

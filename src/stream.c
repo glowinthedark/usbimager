@@ -165,7 +165,7 @@ int stream_status(stream_t *ctx, char *str, int done)
             ctx->avgSpeedBytes += d;
             ctx->avgSpeedNum++;
             d = ctx->avgSpeedBytes / ctx->avgSpeedNum;
-            if(verbose) printf("  average speed %" PRIu64" bytes / sec\r\n", d);
+            if(verbose > 1) printf("  average speed %" PRIu64" bytes / sec\r\n", d);
         }
         if(ctx->avgSpeedNum > 2) {
             d = d ? (ctx->fileSize ? ctx->fileSize - ctx->readSize : ctx->compSize - ctx->cmrdSize) / d : 0;
@@ -573,7 +573,7 @@ int stream_read(stream_t *ctx)
     size = ctx->fileSize - ctx->readSize;
     if(size < 1) { if(ctx->fileSize) return 0; size = 0; }
     if(size > buffer_size) size = buffer_size;
-    if(verbose)
+    if(verbose > 1)
         printf("stream_read() readSize %" PRIu64 " / fileSize %" PRIu64 " (input size %"
             PRId64 "), cmrdSize %" PRIu64 " / compSize %" PRIu64 "u\r\n",
             ctx->readSize, ctx->fileSize, size, ctx->cmrdSize, ctx->compSize);
@@ -590,7 +590,7 @@ int stream_read(stream_t *ctx)
                     insiz = ctx->compSize - ctx->cmrdSize;
                     if(insiz < 1) { ret = Z_STREAM_END; break; }
                     if(insiz > buffer_size) insiz = buffer_size;
-                    if(verbose) printf("  deflate cmrdSize %" PRIu64
+                    if(verbose > 1) printf("  deflate cmrdSize %" PRIu64
                         " insiz %" PRId64 "\r\n", ctx->cmrdSize, insiz);
                     ctx->zstrm.next_in = ctx->compBuf;
                     ctx->zstrm.avail_in = insiz;
@@ -613,7 +613,7 @@ int stream_read(stream_t *ctx)
                     insiz = ctx->compSize - ctx->cmrdSize;
                     if(insiz < 1) { ret = BZ_STREAM_END; break; }
                     if(insiz > buffer_size) insiz = buffer_size;
-                    if(verbose) printf("  bzip2 cmrdSize %" PRIu64
+                    if(verbose > 1) printf("  bzip2 cmrdSize %" PRIu64
                         " insiz %" PRId64 "\r\n", ctx->cmrdSize, insiz);
                     ctx->bstrm.next_in = (char*)ctx->compBuf;
                     ctx->bstrm.avail_in = insiz;
@@ -637,7 +637,7 @@ int stream_read(stream_t *ctx)
                     insiz = ctx->compSize - ctx->cmrdSize;
                     if(insiz < 1) { ret = XZ_STREAM_END; break; }
                     if(insiz > buffer_size) insiz = buffer_size;
-                    if(verbose) printf("  xz cmrdSize %" PRIu64
+                    if(verbose > 1) printf("  xz cmrdSize %" PRIu64
                         " insiz %" PRId64 "\r\n", ctx->cmrdSize, insiz);
                     ctx->xstrm.in = (unsigned char*)ctx->compBuf;
                     ctx->xstrm.in_pos = 0;
@@ -663,7 +663,7 @@ int stream_read(stream_t *ctx)
                     insiz = ctx->compSize - ctx->cmrdSize;
                     if(insiz < 1) { ret = 0; break; }
                     if(insiz > buffer_size) insiz = buffer_size;
-                    if(verbose) printf("  zstd cmrdSize %" PRIu64
+                    if(verbose > 1) printf("  zstd cmrdSize %" PRIu64
                         " insiz %" PRId64 "\r\n", ctx->cmrdSize, insiz);
                     ctx->zi.src = ctx->compBuf;
                     ctx->zi.pos = 0;
@@ -681,7 +681,7 @@ int stream_read(stream_t *ctx)
         break;
     }
     while(size & 511) ctx->buffer[size++] = 0;
-    if(verbose) printf("stream_read() output size %" PRId64 "\r\n", size);
+    if(verbose > 1) printf("stream_read() output size %" PRId64 "\r\n", size);
     ctx->readSize += (uint64_t)size;
     ctx->avail = 0;
     return size;
@@ -791,7 +791,7 @@ int stream_write(stream_t *ctx, char *buffer, int size)
     int i;
     uint64_t avail;
     size_t remaining;
-    if(verbose)
+    if(verbose > 1)
         printf("stream_write() readSize %" PRIu64 " / fileSize %" PRIu64 " (output size %d)\r\n",
             ctx->readSize, ctx->fileSize, size);
     errno = 0;
@@ -838,7 +838,7 @@ int stream_write(stream_t *ctx, char *buffer, int size)
             } while(ctx->readSize >= ctx->fileSize ? (remaining != 0) : (ctx->zi.pos != (size_t)size));
         break;
     }
-    if(verbose) printf("stream_write() output size %d\r\n", size);
+    if(verbose > 1) printf("stream_write() output size %d\r\n", size);
     return size;
 }
 

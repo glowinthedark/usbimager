@@ -101,7 +101,10 @@ static void MainDlgMsgBox(HWND hwndDlg, wchar_t *message)
 
 static void onDone(HWND hwndDlg)
 {
-    LRESULT index = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
+    LRESULT index;
+    /* give time to the NT kernel to re-mount volumes */
+    SleepEx(500, 0);
+    index = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
     EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), TRUE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SELECT), TRUE);
     EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_TARGET_LIST),TRUE);

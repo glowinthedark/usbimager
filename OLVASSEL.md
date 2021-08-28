@@ -76,7 +76,7 @@ Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogat
 |---------------------------------|---------------|-------------------|-----------|
 | Többplatformos                  | ✔             | ✗                 | ✔         |
 | Minimum Windows                 | Win 7         | Win XP            | Win XP    |
-| Minimum MacOSX (1)              | ?             | ✗                 | 10.13     |
+| Minimum MacOSX (1)              | ?             | ✗                 | 10.10     |
 | Elérhető Raspbian-on            | ✗             | ✗                 | ✔         |
 | Program mérete (2)              | 130 Mb        | ✗                 | 300 Kb    |
 | Függőségek                      | sok, ~300 Mb  | Qt, ~8 Mb         | ✗ nincs   |
@@ -88,7 +88,7 @@ Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogat
 | Nyers kiírási idő (4)           | 23:16         | 23:28             | 24:05     |
 | Tömörített kiírás (4)           | 01:12:51      | ✗                 | 30:47     |
 
-(1) - a mellékelt bináris 10.14-en lett fordítva (mert nekem az van), de visszaigazolták, hogy a forrás 10.13 alatt is gond nélkül lefordul.
+(1) - a mellékelt bináris 10.14-en lett fordítva (mert nekem az van), de visszaigazolták, hogy a forrás 10.13 alatt is gond nélkül lefordul. Ezen felül [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) sikeresen tesztelte 10.10 alatt is.
 
 (2) - a szállítható futtatható mérete Windowson. A WIN32 Disk Imagerhez nem tudtam letölteni előre lefordított hivatalos csomagokat, csak forrást.
 

@@ -74,7 +74,7 @@ Comparition
 |--------------------------------|---------------|-------------------|-----------|
 | Multiplatform                  | ✔             | ✗                 | ✔         |
 | Minimum Windows                | Win 7         | Win XP            | Win XP    |
-| Minimum MacOSX (1)             | ?             | ✗                 | 10.13     |
+| Minimum MacOSX (1)             | ?             | ✗                 | 10.10     |
 | Available on Raspbian          | ✗             | ✗                 | ✔         |
 | Program size (2)               | 130 Mb        | ✗                 | 300 Kb    |
 | Dependencies                   | lots, ~300 Mb | Qt, ~8 Mb         | ✗ none    |
@@ -86,7 +86,7 @@ Comparition
 | Raw write time (4)             | 23:16         | 23:28             | 24:05     |
 | Compressed write time (4)      | 01:12:51      | ✗                 | 30:47     |
 
-(1) - the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems.
+(1) - the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10.
 
 (2) - the portable executable's size on Windows platform. I couldn't download an official pre-compiled version of WIN32 Disk Imager, just the source.
 

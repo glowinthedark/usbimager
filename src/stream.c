@@ -223,6 +223,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     errno = 0;
     memset(ctx, 0, sizeof(stream_t));
     if(!fn || !*fn) return 1;
+    if(!memcmp(fn, "file://", 7)) fn += 7;
 
     if(verbose) printf("stream_open(%s)\r\n", fn);
 

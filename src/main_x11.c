@@ -1523,7 +1523,7 @@ int main(int argc, char **argv)
     pointer = XCreateFontCursor(dpy, XC_left_ptr);
 
     mainwin = XCreateSimpleWindow(dpy, RootWindow(dpy, scr), 0, 0,
-        320, 90+5*fonth, 0, 0, colors[color_winbg].pixel);
+        480, 90+5*fonth, 0, 0, colors[color_winbg].pixel);
     XSelectInput(dpy, mainwin, ExposureMask | ButtonPressMask | ButtonReleaseMask |
         KeyPressMask | KeyReleaseMask);
     XStoreName(dpy, mainwin, title);

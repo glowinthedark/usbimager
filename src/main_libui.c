@@ -482,7 +482,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    mainwin = uiNewWindow("USBImager " USBIMAGER_VERSION, 320, 160, 1);
+    mainwin = uiNewWindow("USBImager " USBIMAGER_VERSION, 480, 160, 1);
     uiWindowOnClosing(mainwin, onClosing, NULL);
     uiOnShouldQuit(onShouldQuit, mainwin);
     uiWindowSetMargined(mainwin, 1);

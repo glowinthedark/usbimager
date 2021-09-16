@@ -213,6 +213,7 @@ int stream_status(stream_t *ctx, char *str, int done)
 int stream_open(stream_t *ctx, char *fn, int uncompr)
 {
     unsigned char *buff;
+    char *url = NULL, *s, *d;
     uint64_t fs = 0, hs = 0, zr;
     int64_t insiz;
     int x = 0, y;
@@ -223,19 +224,39 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     errno = 0;
     memset(ctx, 0, sizeof(stream_t));
     if(!fn || !*fn) return 1;
-    if(!memcmp(fn, "file://", 7)) fn += 7;
+    /* some DE uses URL on file drag'n'drop instead of a path */
+    if(!memcmp(fn, "file://", 7)) {
+        url = d = malloc(strlen(fn) + 1);
+        if(!url) {
+            main_getErrorMessage();
+            return 1;
+        }
+        for(s = fn + 7; *s > ' ' && *s != '?' && *s != '#'; s++)
+            if(*s == '%') {
+                *d++ = (char)hex2bin(s + 1, 2);
+                s += 2;
+            } else
+                *d++ = *s;
+        *d = 0; fn = url;
+        if(!*fn) {
+            free(url);
+            return 1;
+        }
+    }
 
     if(verbose) printf("stream_open(%s)\r\n", fn);
 
     ctx->compBuf = (unsigned char*)malloc(buffer_size);
     if(!ctx->compBuf) {
         main_getErrorMessage();
+        if(url) free(url);
         return 1;
     }
     memset(ctx->compBuf, 0, buffer_size);
     ctx->verifyBuf = (char*)malloc(buffer_size);
     if(!ctx->verifyBuf) {
         main_getErrorMessage();
+        if(url) free(url);
         free(ctx->compBuf); ctx->compBuf = NULL;
         return 1;
     }
@@ -243,6 +264,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     ctx->buffer = (char*)malloc(buffer_size);
     if(!ctx->buffer) {
         main_getErrorMessage();
+        if(url) free(url);
         free(ctx->compBuf); ctx->compBuf = NULL;
         free(ctx->verifyBuf); ctx->verifyBuf = NULL;
         return 1;
@@ -250,6 +272,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     memset(ctx->buffer, 0, buffer_size);
 
     ctx->f = stream_fopen(fn, "rb");
+    if(url) free(url);
     if(!ctx->f) return 1;
 #ifdef WINVER
     fs = (uint64_t)_filelengthi64(_fileno(ctx->f));

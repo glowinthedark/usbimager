@@ -15,6 +15,17 @@ and creates backups. Available platforms: Windows, MacOSX and Linux. Its interfa
 | Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-gtk.zip) | recommended<br>compatibility (requires udisks2) |
 | Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-aarch64-linux-x11.zip) | native interface, AArch32 (armv7l)<br>native interface, AArch64 (arm64) |
 
+NOTE: I have to say a few words on this, because this question is keep popping up constantly: Why not just use `dd`? My answers:
+
+1. USBImager's main audiance is the non-expert average user, who is (sadly) afraid of the command line. But even if they weren't:
+2. `dd` isn't cross-platform (for example not on Windows, so disk-writing requires an application anyway).
+3. `dd` can't use compressed image files on-the-fly (yes, yes, I can use pipes, but average Joe can't).
+4. `dd` can't verify if the write was successful.
+5. `dd` doesn't quarantee that the data is actually physically written to the storage (not unless you use some additional options).
+6. `dd` doesn't stop you from making a terrible mistake (which is perfect for an expert, but not so much for a needs-to-image-once-in-a-century folks).
+7. no, USBImager isn't a frontend to `dd`, it is a fully-featured native application on all platforms.
+8. no, USBImager doesn`t need any DLLs, all the file format parsers and uncompressors are already included.
+
 Screenshots
 -----------
 

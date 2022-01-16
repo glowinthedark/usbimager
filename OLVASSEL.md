@@ -16,6 +16,17 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-gtk.zip)  | javalott<br>kompatíbilitás (udisks2 is kell hozzá) |
 | Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-aarch64-linux-x11.zip) | natív interfész, AArch32 (armv7l)<br>natív interfész, AArch64 (arm64) |
 
+FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást felvetődik: miért ne `dd` inkább? A válaszom:
+
+1. az USBImager célközönsége az egyszeri felhasználó, aki (sajnos) fél a parancssortól. De ha nem is félne, akkor is:
+2. a `dd` nem elérhető minden rendszeren (pl. Windowson, így mindenképp egy külön alkalmazás kell a lemezre íráshoz).
+3. a `dd` nem képes tömörített fájolkból dolgozni (igen, igen, én tudok csővezetékeket használni, de az átlag Pista nem).
+4. a `dd` nem képes visszaellenőrizni, hogy sikeres volt-e az írás.
+5. a `dd` nem garantálja, hogy az adat ténylegesen, fizikailag kikerült az adathordozóra (hacsak nem adsz meg külön spéci opciókat).
+6. a `dd` nem gátol meg abban, hogy hatalmas baklövést kövess el (ami tök jó egy szakinak, viszont gáz a néha-kell-csak-lemezképet-írnia jónépnek).
+7. nem, az USBImager nem egy `dd` frontend, hanem egy teljes értékű, ám mégis függőségmentes natív alkalmazás minden platformon.
+8. nem, az USBImagernek nem kell semmilyen DLL, az összes fájlformátum értelmező és kitömörítő már eleve benne van.
+
 Képernyőképek
 -------------
 

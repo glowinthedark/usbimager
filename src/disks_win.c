@@ -87,6 +87,7 @@ void disks_refreshlist() {
                         cdrive != (int)volumeDiskExtents.Extents[0].DiskNumber) {
                     disks_targets[i] = (int)volumeDiskExtents.Extents[0].DiskNumber;
                 } else {
+                    if(verbose > 1) printf("%c: SKIP sysdisk\r\n", letter);
                     CloseHandle(hTargetDevice);
                     continue;
                 }
@@ -102,13 +103,18 @@ void disks_refreshlist() {
             totalNumberOfBytes = 0;
             if (DeviceIoControl(hTargetDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX, NULL, 0, &diskGeometryEx, sizeof diskGeometryEx, &bytesReturned, NULL)) {
                 totalNumberOfBytes = (long long int)diskGeometryEx.DiskSize.QuadPart;
+                if(verbose > 1) printf("%c: GeoEx %llu\r\n", letter, totalNumberOfBytes);
             } else
             if (DeviceIoControl(hTargetDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY, NULL, 0, &diskGeometry, sizeof diskGeometry, &bytesReturned, NULL)) {
                 totalNumberOfBytes = (long long int)diskGeometry.Cylinders.QuadPart * (long long int)diskGeometry.TracksPerCylinder * (long long int)diskGeometry.SectorsPerTrack * (long long int)diskGeometry.BytesPerSector;
+                if(verbose > 1) printf("%c: Geo Cyl %llu Track %lu Sec %lu Bps %lu\r\n", letter, diskGeometry.Cylinders.QuadPart, diskGeometry.TracksPerCylinder, diskGeometry.SectorsPerTrack, diskGeometry.BytesPerSector);
             }
             if(!disks_all) {
 #if USE_WRONLY
-                if(totalNumberOfBytes/1024LL > DISKS_MAXSIZE*1024LL*1024LL) continue;
+                if(totalNumberOfBytes/1024LL > DISKS_MAXSIZE*1024LL*1024LL) {
+                    if(verbose > 1) printf("%c: SKIP too big\r\n", letter);
+                    continue;
+                }
 #endif
                 /* don't use GetVolumeInformationByHandleW, that requires Vista / Server 2008 */
                 memset(volName, 0, sizeof(volName));

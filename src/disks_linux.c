@@ -188,8 +188,8 @@ void disks_refreshlist()
             filegetcontent(path, productName, sizeof(productName));
             str[0] = 0;
             if(size) {
-                sizeInGbTimes10 = (int)((uint64_t)(10 * (size + 1024L*1024L*1024L-1L)) >> 30L);
-                if(!sizeInGbTimes10) { unit = lang[L_MIB]; sizeInGbTimes10 = (int)((uint64_t)(10 * (size + 1024L*1024L-1L)) >> 20L); }
+                sizeInGbTimes10 = (int)((uint64_t)(10 * size) >> 30L);
+                if(sizeInGbTimes10 < 10) { unit = lang[L_MIB]; sizeInGbTimes10 = (int)((uint64_t)(10 * (size + 1024L*1024L-1L)) >> 20L); }
                 else unit = lang[L_GIB];
                 snprintf(str, sizeof(str)-1, "%s [%d.%d %s] %s %s", de->d_name,
                     sizeInGbTimes10 / 10, sizeInGbTimes10 % 10, unit, vendorName, productName);

@@ -180,9 +180,9 @@ void disks_refreshlist()
         if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) continue;
 #endif
         if(size) {
-            int sizeInGbTimes10 = (int)((long int)(10 * (size + 1024L*1024L*1024L-1L)) >> 30L);
+            int sizeInGbTimes10 = (int)((long int)(10 * size) >> 30L);
             char *unit = lang[L_GIB];
-            if(!sizeInGbTimes10) { unit = lang[L_MIB]; sizeInGbTimes10 = (int)((uint64_t)(10 * (size + 1024L*1024L-1L)) >> 20L); }
+            if(sizeInGbTimes10 < 10) { unit = lang[L_MIB]; sizeInGbTimes10 = (int)((uint64_t)(10 * (size + 1024L*1024L-1L)) >> 20L); }
             snprintf(str, sizeof(str)-1, "%s [%d.%d %s] %s %s", deviceName,
                 sizeInGbTimes10 / 10, sizeInGbTimes10 % 10, unit, vendorName, productName);
         } else

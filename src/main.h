@@ -28,7 +28,7 @@
  */
 
 #define USBIMAGER_VERSION "1.0.8"
-#define USBIMAGER_BUILD "27"
+#define USBIMAGER_BUILD "28"
 
 /* filters */
 enum {

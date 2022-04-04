@@ -127,9 +127,9 @@ void disks_refreshlist() {
                 j = 7;
             }
             if (totalNumberOfBytes > 0) {
-                long long int sizeInGbTimes10 = ((long long int)(10 * (totalNumberOfBytes + 1024LL*1024LL*1024LL-1LL)) >> 30LL);
+                long long int sizeInGbTimes10 = ((long long int)(10 * totalNumberOfBytes) >> 30LL);
                 wchar_t *unit = lang[L_GIB];
-                if(!sizeInGbTimes10) { unit = lang[L_MIB]; sizeInGbTimes10 = ((long long int)(10 * (totalNumberOfBytes + 1024LL*1024LL-1LL)) >> 20LL); }
+                if(sizeInGbTimes10 < 10) { unit = lang[L_MIB]; sizeInGbTimes10 = ((long long int)(10 * (totalNumberOfBytes + 1024LL*1024LL-1LL)) >> 20LL); }
                 wsprintfW(siz, L" [%d.%d %s]", (int)(sizeInGbTimes10 / 10), (int)(sizeInGbTimes10 % 10), unit);
                 for(wc = siz; *wc; wc++, j++) szLbText[j] = *wc;
             }

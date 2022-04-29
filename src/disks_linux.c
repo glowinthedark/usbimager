@@ -329,7 +329,7 @@ void *disks_open(int targetId, uint64_t size)
 {
     struct termios termios;
     int ret = 0, l, k, tiobaud;
-    char deviceName[64], *c, buf[1024], *path, *device;
+    char deviceName[64], *c, *d, buf[1024], unesc[1024], *path, *device;
     FILE *m;
 #if USE_UDISKS2
     UDisksClient *client;
@@ -480,12 +480,29 @@ sererr:         main_getErrorMessage();
                     while(*c && *c != ' ' && *c != '\t' && *c != '\n') c++;
                 }
                 if(device && !strncmp(device, deviceName, l)) {
-                    if(!strcmp(path, "/") || !strcmp(path, "/boot")) { fclose(m); return (void*)-2; }
-                    if(verbose) printf("  umount(%s)\r\n", path);
-                    if(umount2(path, MNT_FORCE)) {
+                    if(!path || !strcmp(path, "/") || !strcmp(path, "/boot")) {
+                        if(verbose) printf("  failsafe not umounting (%s)\r\n", path);
+                        fclose(m); return (void*)-2;
+                    }
+                    memset(unesc, 0, sizeof(unesc));
+                    for(c = path, d = unesc; *c && d < unesc + sizeof(unesc) - 1; c++, d++) {
+                        if(*c == '\\') {
+                            c++;
+                            switch(*c) {
+                                case 't': *d = '\t'; break;
+                                case 'r': *d = '\r'; break;
+                                case 'n': *d = '\n'; break;
+                                case '0': *d = (c[1] - '0') * 8 + (c[2] - '0'); c += 2; break;
+                            }
+                        } else
+                            *d = *c;
+                    }
+                    if(verbose) printf("  umount(%s)\r\n", unesc);
+                    if(umount2(unesc, MNT_FORCE)) {
 #if USE_UDISKS2
+                        if(verbose > 1) printf("  trying udisks2 umount\r\n");
                         /* fallback to udisks2 umount */
-                        if((errno == EPERM || errno == EACCES) && !stat(path, &st) && (client = udisks_client_new_sync(NULL, NULL))) {
+                        if((errno == EPERM || errno == EACCES) && !stat(unesc, &st) && (client = udisks_client_new_sync(NULL, NULL))) {
                             objects = g_dbus_object_manager_get_objects(udisks_client_get_object_manager (client));
                             for (o = objects, filesystem = NULL; o != NULL; o = o->next) {
                                 block = udisks_object_peek_block(UDISKS_OBJECT(o->data));
@@ -503,6 +520,7 @@ sererr:         main_getErrorMessage();
                                     main_errorMessage = error ? error->message : "No block device???";
                                     if(verbose) printf("  udisks2 umount err=%s\r\n", main_errorMessage);
                                     g_object_unref(client);
+                                    fclose(m);
                                     return (void*)-2;
                             }
                             g_object_unref(client);
@@ -511,6 +529,7 @@ sererr:         main_getErrorMessage();
                         {
                             if(verbose) printf("  errno=%d err=%s\r\n", errno, strerror(errno));
                             main_getErrorMessage();
+                            fclose(m);
                             return (void*)-2;
                         }
                     }

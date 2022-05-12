@@ -225,9 +225,9 @@ char *dict[NUMLANGS][NUMTEXTS + 1] = {
     {
         "fr",
         "Vérifier",
-        "Compresse",
+        "Compresser",
         "Écrire",
-        "Lis",
+        "Lire",
         "Envoyer",
         "Port série",
         "Mio",

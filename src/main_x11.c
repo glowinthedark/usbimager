@@ -464,11 +464,9 @@ static void mainRedraw()
 {
 #if !defined(USE_WRONLY) || !USE_WRONLY
     XRectangle clip = { 17, 25+fonth, 0, fonth+8 };
-    int old = inactive;
-#else
-    XRectangle clip = { 17, 40+2*fonth, 0, fonth+8 };
+    int x, old = inactive;
 #endif
-    int x, ser = targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024 ? 1 : 0;
+    int ser = targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024 ? 1 : 0;
 
     XWindowAttributes  wa;
     XGetWindowAttributes(dpy, mainwin, &wa);
@@ -478,12 +476,12 @@ static void mainRedraw()
         XFillRectangle(dpy, mainwin, gc, 10, wa.height-4-fonth, wa.width - 20, fonth);
         mainPrint(mainwin, statgc, 10, wa.height-4-fonth, wa.width - 20, 0, status);
     }
-    half = clip.width = wa.width/2;
     XSetForeground(dpy, txtgc, colors[inactive ? color_btnbrd2 : color_fg].pixel);
     mainInputBox(mainwin, 10,10, wa.width-55, mainsel==0, source);
     mainButton(mainwin, wa.width>50?wa.width-40:10,10, 30, mainsel==0, pressedBtn == 1 ? 1 : 0, 5, "...");
 
 #if !defined(USE_WRONLY) || !USE_WRONLY
+    half = clip.width = wa.width/2;
     if(ser && mainsel == 2) mainsel--;
     mainButton(mainwin, 10, 25+fonth, half - 15, mainsel==1, pressedBtn == 2 ? 3 : 2, 5, lang[ser ? L_SEND : L_WRITE]);
     x = mainPrint(mainwin, txtgc, 0, 0, 0, 0, lang[L_WRITE]);
@@ -560,24 +558,6 @@ static void mainRedraw()
 
     mainButton(mainwin, 10, 40+2*fonth, wa.width>30?wa.width-20:10, mainsel==2, pressedBtn == 2 ? 3 : 2, 5,
         lang[ser ? L_SEND : L_WRITE]);
-    x = ((wa.width>30?wa.width-20:10) - mainPrint(mainwin, txtgc, 0, 0, 0, 0, lang[L_WRITE])) / 2 - 6;
-    XSetClipRectangles(dpy, gc, 0, 0, &clip, 1, Unsorted);
-    XSetForeground(dpy, gc, colors[inactive ? color_btnbrd2 : color_btnbrd0].pixel);
-    XDrawLine(dpy, mainwin, gc, x, 40+2*fonth+fonth/2+2, x+11, 40+2*fonth+fonth/2+2);
-    XSetForeground(dpy, gc, colors[inactive ? color_btnbrd2 : color_wbtnbg0].pixel);
-    XDrawLine(dpy, mainwin, gc, x+1, 40+2*fonth+fonth/2+3, x+5, 40+2*fonth+fonth/2+7);
-    XSetForeground(dpy, gc, colors[inactive ? color_btnbrd2 : color_inputbg].pixel);
-    XDrawLine(dpy, mainwin, gc, x+6, 40+2*fonth+fonth/2+8, x+12, 40+2*fonth+fonth/2+2);
-    if(!inactive) {
-        XSetForeground(dpy, gc, colors[color_wrbtn].pixel);
-        XDrawLine(dpy, mainwin, gc, x+2, 40+2*fonth+fonth/2+3, x+10, 40+2*fonth+fonth/2+3);
-        XDrawLine(dpy, mainwin, gc, x+3, 40+2*fonth+fonth/2+4, x+9, 40+2*fonth+fonth/2+4);
-        XDrawLine(dpy, mainwin, gc, x+4, 40+2*fonth+fonth/2+5, x+8, 40+2*fonth+fonth/2+5);
-        XDrawLine(dpy, mainwin, gc, x+5, 40+2*fonth+fonth/2+6, x+7, 40+2*fonth+fonth/2+6);
-        XDrawPoint(dpy, mainwin, gc, x+6, 40+2*fonth+fonth/2+7);
-    }
-    XSetClipMask(dpy, gc, None);
-
 #endif
 }
 

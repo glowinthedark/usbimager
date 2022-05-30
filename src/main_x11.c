@@ -462,16 +462,28 @@ static int mainCombo(int sel, int num, char *list, int dx, int dy, int w)
 
 static void mainRedraw()
 {
+#if !defined(USE_WRONLY) || !USE_WRONLY
     XRectangle clip = { 17, 25+fonth, 0, fonth+8 };
-    int x, old = inactive, ser = targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024 ? 1 : 0;
+    int old = inactive;
+#else
+    XRectangle clip = { 17, 40+2*fonth, 0, fonth+8 };
+#endif
+    int x, ser = targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024 ? 1 : 0;
 
     XWindowAttributes  wa;
     XGetWindowAttributes(dpy, mainwin, &wa);
+    if(wa.height > 14+fonth) mainProgress(mainwin, 10, wa.height-14-fonth, wa.width - 20, progress);
+    if(wa.height > 4+fonth) {
+        XSetForeground(dpy, gc, colors[color_winbg].pixel);
+        XFillRectangle(dpy, mainwin, gc, 10, wa.height-4-fonth, wa.width - 20, fonth);
+        mainPrint(mainwin, statgc, 10, wa.height-4-fonth, wa.width - 20, 0, status);
+    }
     half = clip.width = wa.width/2;
     XSetForeground(dpy, txtgc, colors[inactive ? color_btnbrd2 : color_fg].pixel);
     mainInputBox(mainwin, 10,10, wa.width-55, mainsel==0, source);
     mainButton(mainwin, wa.width>50?wa.width-40:10,10, 30, mainsel==0, pressedBtn == 1 ? 1 : 0, 5, "...");
 
+#if !defined(USE_WRONLY) || !USE_WRONLY
     if(ser && mainsel == 2) mainsel--;
     mainButton(mainwin, 10, 25+fonth, half - 15, mainsel==1, pressedBtn == 2 ? 3 : 2, 5, lang[ser ? L_SEND : L_WRITE]);
     x = mainPrint(mainwin, txtgc, 0, 0, 0, 0, lang[L_WRITE]);
@@ -538,10 +550,35 @@ static void mainRedraw()
         XDrawLine(dpy, mainwin, txtgc, wa.width - 21, 60+3*fonth+fonth/2, wa.width - 19, 60+3*fonth+fonth/2);
         XDrawLine(dpy, mainwin, txtgc, wa.width - 20, 61+3*fonth+fonth/2, wa.width - 20, 61+3*fonth+fonth/2);
     }
-    mainProgress(mainwin, 10, 70+4*fonth, wa.width - 20, progress);
-    XSetForeground(dpy, gc, colors[color_winbg].pixel);
-    XFillRectangle(dpy, mainwin, gc, 10, 80+4*fonth, wa.width - 20, fonth);
-    mainPrint(mainwin, statgc, 10, 80+4*fonth, wa.width - 20, 0, status);
+#else
+    mainButton(mainwin, 10, 25+fonth, wa.width>30?wa.width-20:10, mainsel==1, pressedBtn == 4 ? 1 : 0, 4,
+        targetId >= 0 && targetId < numTargetList ? targetList[targetId] : "");
+    XDrawLine(dpy, mainwin, txtgc, wa.width - 23, 28+fonth+fonth/2, wa.width - 17, 28+fonth+fonth/2);
+    XDrawLine(dpy, mainwin, txtgc, wa.width - 22, 29+fonth+fonth/2, wa.width - 18, 29+fonth+fonth/2);
+    XDrawLine(dpy, mainwin, txtgc, wa.width - 21, 30+fonth+fonth/2, wa.width - 19, 30+fonth+fonth/2);
+    XDrawLine(dpy, mainwin, txtgc, wa.width - 20, 31+fonth+fonth/2, wa.width - 20, 31+fonth+fonth/2);
+
+    mainButton(mainwin, 10, 40+2*fonth, wa.width>30?wa.width-20:10, mainsel==2, pressedBtn == 2 ? 3 : 2, 5,
+        lang[ser ? L_SEND : L_WRITE]);
+    x = ((wa.width>30?wa.width-20:10) - mainPrint(mainwin, txtgc, 0, 0, 0, 0, lang[L_WRITE])) / 2 - 6;
+    XSetClipRectangles(dpy, gc, 0, 0, &clip, 1, Unsorted);
+    XSetForeground(dpy, gc, colors[inactive ? color_btnbrd2 : color_btnbrd0].pixel);
+    XDrawLine(dpy, mainwin, gc, x, 40+2*fonth+fonth/2+2, x+11, 40+2*fonth+fonth/2+2);
+    XSetForeground(dpy, gc, colors[inactive ? color_btnbrd2 : color_wbtnbg0].pixel);
+    XDrawLine(dpy, mainwin, gc, x+1, 40+2*fonth+fonth/2+3, x+5, 40+2*fonth+fonth/2+7);
+    XSetForeground(dpy, gc, colors[inactive ? color_btnbrd2 : color_inputbg].pixel);
+    XDrawLine(dpy, mainwin, gc, x+6, 40+2*fonth+fonth/2+8, x+12, 40+2*fonth+fonth/2+2);
+    if(!inactive) {
+        XSetForeground(dpy, gc, colors[color_wrbtn].pixel);
+        XDrawLine(dpy, mainwin, gc, x+2, 40+2*fonth+fonth/2+3, x+10, 40+2*fonth+fonth/2+3);
+        XDrawLine(dpy, mainwin, gc, x+3, 40+2*fonth+fonth/2+4, x+9, 40+2*fonth+fonth/2+4);
+        XDrawLine(dpy, mainwin, gc, x+4, 40+2*fonth+fonth/2+5, x+8, 40+2*fonth+fonth/2+5);
+        XDrawLine(dpy, mainwin, gc, x+5, 40+2*fonth+fonth/2+6, x+7, 40+2*fonth+fonth/2+6);
+        XDrawPoint(dpy, mainwin, gc, x+6, 40+2*fonth+fonth/2+7);
+    }
+    XSetClipMask(dpy, gc, None);
+
+#endif
 }
 
 /* the usual high-level stuff */
@@ -599,10 +636,12 @@ void main_onProgress(void *data)
     }
     XGetWindowAttributes(dpy, mainwin, &wa);
     half = wa.width/2;
-    mainProgress(mainwin, 10, 70+4*fonth, wa.width - 20, progress);
-    XSetForeground(dpy, gc, colors[color_winbg].pixel);
-    XFillRectangle(dpy, mainwin, gc, 10, 80+4*fonth, wa.width - 20, fonth);
-    mainPrint(mainwin, statgc, 10, 80+4*fonth, wa.width - 20, 0, status);
+    if(wa.height > 14 + fonth) mainProgress(mainwin, 10, wa.height-14-fonth, wa.width - 20, progress);
+    if(wa.height > 4 + fonth) {
+        XSetForeground(dpy, gc, colors[color_winbg].pixel);
+        XFillRectangle(dpy, mainwin, gc, 10, wa.height-4-fonth, wa.width - 20, fonth);
+        mainPrint(mainwin, statgc, 10, wa.height-4-fonth, wa.width - 20, 0, status);
+    }
     XFlush(dpy);
 }
 
@@ -863,7 +902,13 @@ static void onTargetClicked()
 
     refreshTarget();
     if(numTargetList < 1) return;
-    sel = mainCombo(targetId, numTargetList, (char*)&targetList[0][0], 13, 40+2*fonth, 0);
+    sel = mainCombo(targetId, numTargetList, (char*)&targetList[0][0], 13,
+#if !defined(USE_WRONLY) || !USE_WRONLY
+        40+2*fonth
+#else
+        25+fonth
+#endif
+        , 0);
     if(sel != -1) targetId = sel;
     mainRedraw();
     XRaiseWindow(dpy, mainwin);
@@ -1522,8 +1567,13 @@ int main(int argc, char **argv)
     loading = XCreateFontCursor(dpy, XC_watch);
     pointer = XCreateFontCursor(dpy, XC_left_ptr);
 
-    mainwin = XCreateSimpleWindow(dpy, RootWindow(dpy, scr), 0, 0,
-        480, 90+5*fonth, 0, 0, colors[color_winbg].pixel);
+    mainwin = XCreateSimpleWindow(dpy, RootWindow(dpy, scr), 0, 0, 480,
+#if !defined(USE_WRONLY) || !USE_WRONLY
+        90+5*fonth,
+#else
+        70+4*fonth,
+#endif
+        0, 0, colors[color_winbg].pixel);
     XSelectInput(dpy, mainwin, ExposureMask | ButtonPressMask | ButtonReleaseMask |
         KeyPressMask | KeyReleaseMask);
     XStoreName(dpy, mainwin, title);
@@ -1600,6 +1650,7 @@ int main(int argc, char **argv)
                 case XK_Tab:
                     if(mainsel == -1) mainsel = 0;
                     else {
+#if !defined(USE_WRONLY) || !USE_WRONLY
                         if(shift) {
                             if(mainsel > 0) mainsel--; else mainsel = 6;
                             if(ser && mainsel == 2) mainsel--;
@@ -1607,15 +1658,26 @@ int main(int argc, char **argv)
                             if(mainsel < 6) mainsel++; else mainsel = 0;
                             if(ser && mainsel == 2) mainsel++;
                         }
+#else
+                        if(shift) {
+                            if(mainsel > 0) mainsel--; else mainsel = 2;
+                        } else {
+                            if(mainsel < 2) mainsel++; else mainsel = 0;
+                        }
+#endif
                     }
                 break;
                 case XK_space:
                 case XK_Return:
                     switch(mainsel) {
                         case -1: mainsel = 0; pressedBtn = 1; break;
+#if !defined(USE_WRONLY) || !USE_WRONLY
                         case 4: needVerify ^= 1; break;
                         case 5: needCompress ^= 1; break;
                         case 6: pressedBtn = 5; break;
+#else
+                        case 1: pressedBtn = 4; break;
+#endif
                         default: pressedBtn = mainsel + 1; break;
                     }
                 break;
@@ -1635,6 +1697,7 @@ int main(int argc, char **argv)
         if(e.type == ButtonPress && !inactive) {
             pressedBtn = 0; mainsel = -1;
             if(e.xbutton.y >=10 && e.xbutton.y < 10 + fonth + 8) pressedBtn = 1; else
+#if !defined(USE_WRONLY) || !USE_WRONLY
             if(e.xbutton.y >=26 + fonth && e.xbutton.y < 25 + 2*fonth + 8) {
                 if(e.xbutton.x < half) pressedBtn = 2;
                 else pressedBtn = 3;
@@ -1645,6 +1708,10 @@ int main(int argc, char **argv)
                 else if(2*half-80-2*fonth > 0 && e.xbutton.x > 2*half - 60) pressedBtn = 5;
                 else needCompress ^= 1;
             }
+#else
+            if(e.xbutton.y >=26 + fonth && e.xbutton.y < 25 + 2*fonth + 8) pressedBtn = 4; else
+            if(e.xbutton.y >=40 + 2*fonth && e.xbutton.y < 40 + 3*fonth + 8) pressedBtn = 2;
+#endif
             mainRedraw();
         }
         if(e.type == ButtonRelease) {

@@ -87,9 +87,6 @@ else
 # Linux
 LINUX = 1
 ARCH = $(shell uname -m)
-ifneq ($(USE_WRONLY),)
-USE_LIBUI = 1
-endif
 ifeq ($(USE_LIBUI),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11

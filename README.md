@@ -85,7 +85,7 @@ Comparition
 |--------------------------------|---------------|-------------------|-----------|
 | Multiplatform                  | ✔             | ✗                 | ✔         |
 | Minimum Windows                | Win 7         | Win XP            | Win XP    |
-| Minimum MacOSX (1)             | ?             | ✗                 | 10.10     |
+| Minimum MacOSX (1)             | 10.10         | ✗                 | 10.10     |
 | Available on Raspbian          | ✗             | ✗                 | ✔         |
 | Program size (2)               | 130 Mb        | ✗                 | 300 Kb    |
 | Dependencies                   | lots, ~300 Mb | Qt, ~8 Mb         | ✗ none    |

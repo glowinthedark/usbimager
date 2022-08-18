@@ -105,12 +105,37 @@ void disks_refreshlist()
     main_addToCombobox("disk999 ./test.bin");
 #endif
     k_result = IOMasterPort(MACH_PORT_NULL, &master_port);
-    if (KERN_SUCCESS != k_result) return;
-    if ((matching_dictionary = IOServiceMatching(kIOUSBDeviceClassName)) == NULL) return;
+    if (KERN_SUCCESS != k_result) {
+        if(verbose > 1) printf("IOMasterPort failed %d\n", k_result);
+        return;
+    }
+    if ((matching_dictionary = IOServiceMatching(kIOUSBDeviceClassName)) == NULL) {
+        if(verbose > 1) printf("IOServiceMatching failed %d\n", k_result);
+        return;
+    }
     k_result = IOServiceGetMatchingServices(master_port, matching_dictionary, &iterator);
-    if (KERN_SUCCESS != k_result) return;
+    if (KERN_SUCCESS != k_result) {
+        if(verbose > 1) printf("IOServiceGetMatchingServices failed %d\n", k_result);
+        return;
+    }
 
     while ((usb_device_ref = IOIteratorNext(iterator))) {
+        bsdName = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
+                                                               kIOServicePlane,
+                                                               CFSTR ( "BSD Name" ),
+                                                               kCFAllocatorDefault,
+                                                               kIORegistryIterateRecursively );
+        if (!bsdName) continue;
+
+        if(verbose > 1) printf("%s: ", bsdname);
+        deviceName = [[NSString stringWithFormat: @"%@", bsdName] UTF8String];
+        /* kIOUSBDeviceClassName lists some non-disks as writable disks (like USB-dongles with device driver storages) */
+        if (!disks_all && (deviceName[0] == 'e' && deviceName[1] == 'n' && deviceName[2] >= '0' && deviceName[2] <= '9')) {
+            CFRelease(bsdName); bsdName = NULL;
+            if(verbose > 1) printf("SKIP not a storage\n");
+            continue;
+        }
+
         writable = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
                                                                kIOServicePlane,
                                                                CFSTR( "Writable" ),
@@ -119,20 +144,10 @@ void disks_refreshlist()
         if (writable) {
             CFNumberGetValue((CFNumberRef)writable, kCFNumberSInt32Type, &writ);
             CFRelease(writable);
-            if(!writ) continue;
-        }
-
-        bsdName = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
-                                                               kIOServicePlane,
-                                                               CFSTR ( "BSD Name" ),
-                                                               kCFAllocatorDefault,
-                                                               kIORegistryIterateRecursively );
-        if (!bsdName) continue;
-        deviceName = [[NSString stringWithFormat: @"%@", bsdName] UTF8String];
-        /* kIOUSBDeviceClassName lists some non-disks as writable disks (like USB-dongles with device driver storages) */
-        if (!disks_all && (deviceName[0] == 'e' && deviceName[1] == 'n' && deviceName[2] >= '0' && deviceName[2] <= '9')) {
-            CFRelease(bsdName); bsdName = NULL;
-            continue;
+            if(!writ) {
+                if(verbose > 1) printf("SKIP read-only\n");
+                continue;
+            }
         }
 
         vendor = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
@@ -177,8 +192,12 @@ void disks_refreshlist()
                 size = st.st_blocks ? st.st_blocks * 512 : st.st_size;
         }
 #if USE_WRONLY
-        if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) continue;
+        if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) {
+            if(verbose > 1) printf("SKIP too big\n");
+            continue;
+        }
 #endif
+        if(verbose > 1) printf("OK size %s", disksize);
         if(size) {
             int sizeInGbTimes10 = (int)((long int)(10 * size) >> 30L);
             char *unit = lang[L_GIB];

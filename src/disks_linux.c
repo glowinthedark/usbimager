@@ -94,7 +94,7 @@ void disks_refreshlist()
 {
     DIR *dir;
     struct dirent *de;
-    char str[1024], vendorName[128], productName[128], path[512], *skip[6];
+    char str[1024], vendorName[128], productName[128], path[512], *skip[8];
     uint64_t size;
     int i = 0, j = 0, k, sizeInGbTimes10;
     char *unit, *c, *p, *d;
@@ -121,8 +121,8 @@ void disks_refreshlist()
                     k++;
                     while(*c && *c != ' ' && *c != '\t' && *c != '\n') c++;
                 }
-                if(p && d && !memcmp(d, "/dev/", 5) && (!strcmp(p, "/") || !strcmp(p, "/boot")
-                    || !strcmp(p, "/home") || !strcmp(p, "/var") || !strcmp(p, "/usr"))) {
+                if(p && d && !memcmp(d, "/dev/", 5) && (!strcmp(p, "/") || !memcmp(p, "/boot", 5)
+                    || !memcmp(p, "/home", 5) || !memcmp(p, "/var", 4) || !memcmp(p, "/usr", 4) || !memcmp(p, "/srv", 4))) {
                         if(d[5] == 'm')
                             for(c = d + 5; *c && *c != 'p'; c++);
                         else
@@ -134,7 +134,7 @@ void disks_refreshlist()
                             if(verbose > 1)
                                 printf(" %s", skip[j]);
                             j++;
-                            if(j >= 6) break;
+                            if(j >= 8) break;
                         } else break;
                 }
             }

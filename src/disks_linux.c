@@ -109,6 +109,8 @@ void disks_refreshlist()
     /* get list of system disks */
     f = fopen("/proc/self/mountinfo", "r");
     if(f) {
+        if(verbose > 1)
+            printf("detected sysdisks:");
         while(!feof(f)) {
             if(fgets(str, sizeof(str), f)) {
                 for(k = 0, c = str, p = d = NULL; k < 11 && *c && *c != '\n';) {
@@ -129,6 +131,8 @@ void disks_refreshlist()
                         skip[j] = malloc(c - d - 5 + 1);
                         if(skip[j]) {
                             memcpy(skip[j], d + 5, c - d - 5 + 1);
+                            if(verbose > 1)
+                                printf(" %s", skip[j]);
                             j++;
                             if(j >= 6) break;
                         } else break;
@@ -136,7 +140,11 @@ void disks_refreshlist()
             }
         }
         fclose(f);
-    }
+        if(verbose > 1)
+            printf("\n");
+    } else
+    if(verbose > 1)
+        printf("unable to get mount points???\n");
 
     dir = opendir("/sys/block");
     if(dir) {
@@ -163,7 +171,7 @@ void disks_refreshlist()
                 if(verbose > 1) printf("SKIP non-removable\n");
                 continue;
             }
-        */
+            */
             sprintf(path, "/sys/block/%s/ro", de->d_name);
             filegetcontent(path, vendorName, 2);
             if(vendorName[0] != '0') {

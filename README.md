@@ -78,8 +78,8 @@ Limitations
 
 With xz compression dictionaries bigger than 1 Gigabytes not supported (default size is 64 Mb).
 
-Comparition
------------
+Comparison
+----------
 
 | Description                    | balenaEtcher  | WIN32 Disk Imager | USBImager |
 |--------------------------------|---------------|-------------------|-----------|

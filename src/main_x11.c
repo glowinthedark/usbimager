@@ -27,7 +27,6 @@
  *
  */
 
-#define LOADFONT    0   /* load our own font */
 #define USEUTF8     1   /* do UTF-8 to UNICODE conversion */
 
 #include <X11/Xlib.h>
@@ -87,7 +86,7 @@ static Cursor loading, pointer;
 static char *bkpdir = NULL;
 static char source[PATH_MAX], targetList[DISKS_MAX][128], status[128];
 static char blksizeList[10][128];
-static int fonth = 0, fonta = 0, inactive = 0, pressedBtn = 0, half;
+static int fonth = 0, fonta = 0, fontfree = 0, inactive = 0, pressedBtn = 0, half;
 static int needVerify = 1, needCompress = 0, progress = 0, numTargetList = 0, targetId = -1;
 static int mainsel = -1, sorting = 0, shift = 0, blksizesel = 0;
 
@@ -542,7 +541,7 @@ static void mainRedraw()
     x = half - 20 + fonth > 25 + 2*fonth ? half - 20 + fonth : 25 + 2*fonth;
     if(wa.width-70-x > 0) mainPrint(mainwin, txtgc, x, 59+3*fonth, wa.width-60-x, 0, lang[L_COMPRESS]);
     if(wa.width-80-2*fonth > 0) {
-        mainButton(mainwin, wa.width-60, 55+3*fonth, 50, mainsel==6, pressedBtn == 5 ? 1 : 0, 4, blksizeList[blksizesel]);
+        mainButton(mainwin, wa.width-64, 55+3*fonth, 54, mainsel==6, pressedBtn == 5 ? 1 : 0, 4, blksizeList[blksizesel]);
         XDrawLine(dpy, mainwin, txtgc, wa.width - 23, 58+3*fonth+fonth/2, wa.width - 17, 58+3*fonth+fonth/2);
         XDrawLine(dpy, mainwin, txtgc, wa.width - 22, 59+3*fonth+fonth/2, wa.width - 18, 59+3*fonth+fonth/2);
         XDrawLine(dpy, mainwin, txtgc, wa.width - 21, 60+3*fonth+fonth/2, wa.width - 19, 60+3*fonth+fonth/2);
@@ -575,9 +574,7 @@ void main_getErrorMessage()
 
 static void onQuit()
 {
-#if LOADFONT == 1
-    if(font) XFreeFont(dpy, font);
-#endif
+    if(font && fontfree) XFreeFont(dpy, font);
     XFreeGC(dpy, gc);
     XFreeGC(dpy, shdgc);
     XFreeGC(dpy, statgc);
@@ -898,7 +895,7 @@ static void onBlkSizeClicked()
 {
     int sel;
 
-    sel = mainCombo(blksizesel, 10, (char*)&blksizeList[0][0], -58, 56+3*fonth, 45);
+    sel = mainCombo(blksizesel, 10, (char*)&blksizeList[0][0], -62, 56+3*fonth, 49);
     if(sel != -1) { blksizesel = sel; buffer_size = (1UL<<sel) * 1024UL * 1024UL; }
     mainRedraw();
     XRaiseWindow(dpy, mainwin);
@@ -1530,16 +1527,18 @@ int main(int argc, char **argv)
 
     txtgc = DefaultGC(dpy, scr);
     XSetForeground(dpy, txtgc, BlackPixel(dpy, scr));
-#if LOADFONT == 1
-    font = XLoadQueryFont(dpy, "-*-clean-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
-    if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
-    if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-16-*-*-*-*-*-*-*");
-    if(font)
+    /* do some magic trying to get the default font with UNICODE glyphs */
+    font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
+    if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-18-*-*-*-*-*-iso10646-1");
+    if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-16-*-*-*-*-*-iso10646-1");
+    if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1");
+    if(font) {
         XSetFont(dpy, txtgc, font->fid);
-    else
-        /* fallback to default bitmap font */
-#endif
+        fontfree = 1;
+    } else {
+        /* fallback to default bitmap font. This probably only wotks with the English language */
         font = XQueryFont(dpy, XGContextFromGC(txtgc));
+    }
     if(!font) { fprintf(stderr, "Unable to get font\n"); return 1; }
     fonth = font->max_bounds.ascent + font->max_bounds.descent;
     fonta = font->max_bounds.ascent;

@@ -1433,7 +1433,7 @@ int main(int argc, char **argv)
     KeySym k;
     XTextProperty title_property;
     Atom a, t, *sa = NULL;
-    char colorName[16], *title = "USBImager " USBIMAGER_VERSION;
+    char colorName[16], *fontName = NULL, *title = "USBImager " USBIMAGER_VERSION;
     int i, j, ser;
     long *extents = NULL;
     unsigned long n, b;
@@ -1449,7 +1449,7 @@ int main(int argc, char **argv)
         " (build " USBIMAGER_BUILD ")"
 #endif
         " - MIT license, Copyright (C) 2020 bzt\r\n\r\n"
-        "./usbimager [-v|-vv|-a|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)] <backup path>\r\n\r\n"
+        "./usbimager [-v|-vv|-a|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-f(x)] <backup path>\r\n\r\n"
         "https://gitlab.com/bztsrc/usbimager\r\n\r\n";
 
     for(j = 1; j < argc && argv[j]; j++) {
@@ -1493,6 +1493,7 @@ int main(int argc, char **argv)
                     case '8': blksizesel = 8; buffer_size = 256*1024*1024; break;
                     case '9': blksizesel = 9; buffer_size = 512*1024*1024; break;
                     case 'L': lc = &argv[j][++i]; ++i; break;
+                    case 'f': fontName = &argv[j][++i]; ++j; i = 0; break;
                 }
         } else
             bkpdir = argv[j];
@@ -1528,11 +1529,17 @@ int main(int argc, char **argv)
 
     txtgc = DefaultGC(dpy, scr);
     XSetForeground(dpy, txtgc, BlackPixel(dpy, scr));
-    /* do some magic trying to get the default font with UNICODE glyphs */
-    font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
-    if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-18-*-*-*-*-*-iso10646-1");
-    if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-16-*-*-*-*-*-iso10646-1");
-    if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1");
+    if(fontName) {
+        /* try to use user specified font */
+        font = XLoadQueryFont(dpy, fontName);
+    } else {
+        /* do some magic trying to get the default font with UNICODE glyphs */
+        font = XLoadQueryFont(dpy, "-*-unifont-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-18-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-16-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1");
+    }
     if(font) {
         XSetFont(dpy, txtgc, font->fid);
         fontfree = 1;

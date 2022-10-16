@@ -177,6 +177,7 @@ home mappába lesz lementve. A többi platformon mindig van Asztal, ha mégse ta
 | -1..9               | Buffer méret beállítása   |
 | -a                  | Minden meghajtó listázása |
 | -s\[baud]/-S\[baud] | Soros portok használata   |
+| -f(xlfd)            | X11 font megadása kézzel  |
 | --version           | Kiírja a verziót          |
 | (könyvtár)          | Az első nem-kapcsoló a mentési könyvtár |
 
@@ -226,6 +227,13 @@ Ha más baud-ot szeretnél, csak add meg a kapcsoló után, pl. "-s57600" vagy "
 57600, 115200, 230400, 460800, 500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000, 2500000, 3000000, 3500000, 4000000
 
 FIGYELEM: nem minden soros port kezeli az összes baud rátát. Ellenőrizd a kézikönyvében.
+
+A '-f(xlfd)' (font) kapcsoló lehetővé teszi, hogy kézzel megadhassuk, melyik X11 fontot használja (az X11 variánsok esetén működik csak).
+A megadott XLFD-nek mindenképp "iso10646-1"-ra kell végződnie, mert csak az UNICODE fontokat kezeli. Például (a macskaköröm azért
+kell, hogy a shell ne oldja fel a csillagot):
+```
+./usbimager "-f-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1" -v
+```
 
 Fordítás
 --------

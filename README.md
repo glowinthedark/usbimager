@@ -172,6 +172,7 @@ directory is specified on the command line, that is used to save backups.
 | -1..9               | Set buffer size     |
 | -a                  | List all devices    |
 | -s\[baud]/-S\[baud] | Use serial devices  |
+| -f(xlfd)            | specify X11 font    |
 | --version           | Prints version      |
 | (dir)               | First non-flag is the backup directory |
 
@@ -220,6 +221,12 @@ If you want to use a different baud, just simply add it to the flag, like "-s576
 57600, 115200, 230400, 460800, 500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000, 2500000, 3000000, 3500000, 4000000
 
 WARNING: not every serial port supports all baud rates. Check you device's manual.
+
+The '-f(xlfd)' (font) flag allows to manually specify which X11 font to use (X11 variants only). Make sure that the specified XLFD ends
+in "iso10646-1", because only UNICODE fonts supported. For example (quotes needed so that the shell won't try to resolve the asterix):
+```
+./usbimager "-f-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1" -v
+```
 
 Compilation
 -----------

@@ -31,6 +31,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -1542,7 +1543,9 @@ int main(int argc, char **argv)
     if(!font) { fprintf(stderr, "Unable to get font\n"); return 1; }
     fonth = font->max_bounds.ascent + font->max_bounds.descent;
     fonta = font->max_bounds.ascent;
-
+    if(verbose && XGetFontProperty(font, XA_FONT, &n)) {
+        printf(" X11 font: '%s' height: %d ascent: %d\n", XGetAtomName(dpy, (Atom)n), fonth, fonta);
+    }
     loading = XCreateFontCursor(dpy, XC_watch);
     pointer = XCreateFontCursor(dpy, XC_left_ptr);
 

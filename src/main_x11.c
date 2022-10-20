@@ -1395,8 +1395,11 @@ ok:             if(selFile >=0 && selFile < numFiles) {
                     mainPrint(win, i == selFile ? shdgc : txtgc, mw-ds-6, y+4, ds-12, 2, tmp);
                     y += fonth + 8;
                 }
-            XSetForeground(dpy, gc, colors[color_inputbg].pixel);
-            XFillRectangle(dpy, win, gc, 205, y, mw-220, mh-fonth-25-y);
+            /* if the list is smaller than the entire area, and only then, clear the remaining part */
+            if(y < mh-fonth-25) {
+                XSetForeground(dpy, gc, colors[color_inputbg].pixel);
+                XFillRectangle(dpy, win, gc, 205, y, mw-220, mh-fonth-25-y);
+            }
             x = mh-3*fonth-51;
             i = x / (fonth+8);
             if(i < numFiles) {

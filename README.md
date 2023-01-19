@@ -165,15 +165,16 @@ directory is specified on the command line, that is used to save backups.
 
 ### Advanced Functionalities
 
-| Flag                | Description         |
-|---------------------|---------------------|
-| -v/-vv              | Be verbose          |
-| -Lxx                | Force language      |
-| -1..9               | Set buffer size     |
-| -a                  | List all devices    |
-| -s\[baud]/-S\[baud] | Use serial devices  |
-| -f(xlfd)            | specify X11 font    |
-| --version           | Prints version      |
+| Flag                | Description          |
+|---------------------|----------------------|
+| -v/-vv              | Be verbose           |
+| -Lxx                | Force language       |
+| -1..9               | Set buffer size      |
+| -a                  | List all devices     |
+| -c                  | Compare before write |
+| -s\[baud]/-S\[baud] | Use serial devices   |
+| -f(xlfd)            | specify X11 font     |
+| --version           | Prints version       |
 | (dir)               | First non-flag is the backup directory |
 
 For Windows users: right-click on usbimager.exe, and select "Create Shortcut". Then right-click on the newly created ".lnk" file, and
@@ -195,6 +196,9 @@ automatic detection. If there's no such dictionary, then English is used.
 
 The number flags sets the buffer size to the power of two Megabytes (0 = 1M, 1 = 2M, 2 = 4M, 3 = 8M, 4 = 16M, ... 9 = 512M). When not
 specified, buffer size defaults to 1 Megabyte.
+
+The '-c' flag reads in the data first, compares it to the buffer, and only writes if they differ. Can be useful on media which are
+very slow to write, but fast to read.
 
 If you start USBImager with the '-s' flag (lowercase), then it will allow you to send images to serial ports as well. For this, your user
 has to be the member of the "uucp" or "dialout" groups (differs in distributions, use "ls -la /dev/|grep tty" to see which one). In this

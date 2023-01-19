@@ -28,7 +28,7 @@
  */
 
 #define USBIMAGER_VERSION "1.0.8"
-#define USBIMAGER_BUILD "34"
+#define USBIMAGER_BUILD "35"
 
 /* filters */
 enum {
@@ -42,6 +42,7 @@ enum {
 extern int verbose;
 extern int buffer_size;
 extern int baud;
+extern int usecompare;
 
 /**
  * Add an option to the combobox

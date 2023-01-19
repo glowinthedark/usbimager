@@ -75,6 +75,7 @@ int myseek (FILE* stream, uint64_t offset)
 int verbose = 0;
 int buffer_size = 1024*1024;
 int baud = 115200;
+int usecompare = 0;
 int dstfd = 0;
 
 /**

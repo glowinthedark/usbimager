@@ -170,15 +170,16 @@ home mappába lesz lementve. A többi platformon mindig van Asztal, ha mégse ta
 
 ### Haladó funkciók
 
-| Kapcsoló            | Leírás                    |
-|---------------------|---------------------------|
-| -v/-vv              | Részletes kimenet         |
-| -Lxx                | Nyelvkód kikényszerítés   |
-| -1..9               | Buffer méret beállítása   |
-| -a                  | Minden meghajtó listázása |
-| -s\[baud]/-S\[baud] | Soros portok használata   |
-| -f(xlfd)            | X11 font megadása kézzel  |
-| --version           | Kiírja a verziót          |
+| Kapcsoló            | Leírás                     |
+|---------------------|----------------------------|
+| -v/-vv              | Részletes kimenet          |
+| -Lxx                | Nyelvkód kikényszerítés    |
+| -1..9               | Buffer méret beállítása    |
+| -a                  | Minden meghajtó listázása  |
+| -c                  | Összehasonlítás írás előtt |
+| -s\[baud]/-S\[baud] | Soros portok használata    |
+| -f(xlfd)            | X11 font megadása kézzel   |
+| --version           | Kiírja a verziót           |
 | (könyvtár)          | Az első nem-kapcsoló a mentési könyvtár |
 
 Windows felhasználóknak: jobb-klikk az usbimager.exe-n, majd választd a "Parancsikon létrehozása" menüt. Aztán jobb-klikk az újonnan
@@ -200,6 +201,9 @@ szótárat használja. Ha nincs ilyen szótár, akkor angol nyelvre vált.
 
 A szám kapcsolók a buffer méretét állítják a kettő hatványa Megabájtra (0 = 1M, 1 = 2M, 2 = 4M, 3 = 8M, 4 = 16M, ... 9 = 512M). Ha nincs
 megadva, a buffer méret alapértelmezetten 1 Megabájt.
+
+A '-c' kapcsoló hatására előbb beolvassa a lemezről az adatot, összehasonlítja a bufferben lévővel, és csak akkor írja ki, ha eltérnek.
+Ez hasznos lehet olyan eszközök esetén, amiknél az írás nagyon lassú, az olvasás viszont gyors.
 
 Ha az USBImager-t '-s' (kisbetű) kapcsolóval indítod, akkor a soros portra is engedi küldeni a lemezképeket. Ehhez szükséges, hogy a
 felhasználó az "uucp" illetve a "dialout" csoport tagja legyen (disztribúciónként eltérő, használd a "ls -la /dev|grep tty" parancsot).

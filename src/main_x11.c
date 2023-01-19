@@ -700,7 +700,7 @@ static void onThreadError(void *data)
 static void *writerRoutine()
 {
     int dst, numberOfBytesRead;
-    int numberOfBytesWritten, numberOfBytesVerify;
+    int numberOfBytesWritten, numberOfBytesVerify, needWrite;
     static stream_t ctx;
 
     ctx.readSize = 0;
@@ -714,26 +714,38 @@ static void *writerRoutine()
                         if(!ctx.fileSize) ctx.fileSize = ctx.readSize;
                         break;
                     } else {
-                        errno = 0;
-                        numberOfBytesWritten = (int)write(dst, ctx.buffer, numberOfBytesRead);
-                        if(verbose > 1) printf("write(%d) numberOfBytesWritten %d errno=%d\n",
-                            numberOfBytesRead, numberOfBytesWritten, errno);
-                        if(numberOfBytesWritten == numberOfBytesRead) {
-                            if(needVerify) {
-                                lseek(dst, -((off_t)numberOfBytesWritten), SEEK_CUR);
-                                numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesWritten);
-                                if(verbose > 1) printf("  numberOfBytesVerify %d\n", numberOfBytesVerify);
-                                if(numberOfBytesVerify != numberOfBytesWritten ||
-                                    memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesWritten)) {
-                                    onThreadError(lang[L_VRFYERR]);
-                                    break;
-                                }
+                        errno = 0; needWrite = 1;
+                        if(usecompare) {
+                            numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesRead);
+                            lseek(dst, -((off_t)numberOfBytesVerify), SEEK_CUR);
+                            if(numberOfBytesVerify == numberOfBytesRead &&
+                                !memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesRead)) {
+                                if(verbose > 1) printf("  numberOfBytesVerify %d matches disk, skipping write\n", numberOfBytesRead);
+                                needWrite = 0;
+                                main_onProgress(&ctx);
                             }
-                            main_onProgress(&ctx);
-                        } else {
-                            if(errno) main_errorMessage = strerror(errno);
-                            onThreadError(lang[L_WRTRGERR]);
-                            break;
+                        }
+                        if(needWrite) {
+                            numberOfBytesWritten = (int)write(dst, ctx.buffer, numberOfBytesRead);
+                            if(verbose > 1) printf("write(%d) numberOfBytesWritten %d errno=%d\n",
+                                numberOfBytesRead, numberOfBytesWritten, errno);
+                            if(numberOfBytesWritten == numberOfBytesRead) {
+                                if(needVerify) {
+                                    lseek(dst, -((off_t)numberOfBytesWritten), SEEK_CUR);
+                                    numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesWritten);
+                                    if(verbose > 1) printf("  numberOfBytesVerify %d\n", numberOfBytesVerify);
+                                    if(numberOfBytesVerify != numberOfBytesWritten ||
+                                        memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesWritten)) {
+                                        onThreadError(lang[L_VRFYERR]);
+                                        break;
+                                    }
+                                }
+                                main_onProgress(&ctx);
+                            } else {
+                                if(errno) main_errorMessage = strerror(errno);
+                                onThreadError(lang[L_WRTRGERR]);
+                                break;
+                            }
                         }
                     }
                 } else {
@@ -1452,7 +1464,7 @@ int main(int argc, char **argv)
         " (build " USBIMAGER_BUILD ")"
 #endif
         " - MIT license, Copyright (C) 2020 bzt\r\n\r\n"
-        "./usbimager [-v|-vv|-a|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-f(x)] <backup path>\r\n\r\n"
+        "./usbimager [-v|-vv|-a|-c|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-f(x)] <backup path>\r\n\r\n"
         "https://gitlab.com/bztsrc/usbimager\r\n\r\n";
 
     for(j = 1; j < argc && argv[j]; j++) {
@@ -1467,6 +1479,7 @@ int main(int argc, char **argv)
             }
             for(i = 1; argv[j][i]; i++)
                 switch(argv[j][i]) {
+                    case 'c': usecompare++; break;
                     case 'v':
                         verbose++;
                         if(verbose == 1) printf("%s", help);
@@ -1512,8 +1525,8 @@ int main(int argc, char **argv)
     if(!lang) lang = &dict[0][1];
 
     if(verbose) {
-        printf("LANG '%s', dict '%s', serial %d, buffer_size %d MiB\r\n",
-            lc, lang[-1], disks_serial, buffer_size/1024/1024);
+        printf("LANG '%s', dict '%s', serial %d, buffer_size %d MiB, usecompare %d\r\n",
+            lc, lang[-1], disks_serial, buffer_size/1024/1024, usecompare);
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
         if(bkpdir) printf("bkpdir '%s'\r\n", bkpdir);
     }

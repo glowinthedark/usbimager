@@ -87,16 +87,18 @@ else
 # Linux
 LINUX = 1
 ARCH = $(shell uname -m)
-ifeq ($(USE_LIBUI),)
+ifeq ($(USE_LIBUI)$(USE_GTK),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11
 LIBS += -lX11
 FRM = linux-x11
 GRP = disk
 else
+ifneq ($(USE_GTK),)
+SRC += main_gtk.c
+CFLAGS += $(shell pkg-config --cflags gtk+-3.0)
+else
 SRC += main_libui.c
-CFLAGS += -pthread
-LDFLAGS += -pthread
 ifeq ($(ARCH),x86_64)
 LIBS += libui/linux.a
 else
@@ -106,6 +108,9 @@ else
 LIBS += libui/raspbian.a
 endif
 endif
+endif
+CFLAGS += -pthread
+LDFLAGS += -pthread
 ifneq ("$(wildcard /usr/bin/pkg-config)","")
 LIBS += $(shell pkg-config --libs gtk+-3.0)
 else
@@ -113,7 +118,7 @@ LIBS += -lgtk-3 -lgdk-3 -lgobject-2.0 -lglib-2.0
 endif
 FRM = linux-gtk
 endif
-ifneq ($(USE_UDISKS2),)
+ifneq ($(USE_UDISKS2)$(USE_GTK),)
 CFLAGS += -DUSE_UDISKS2=1 $(shell pkg-config --cflags udisks2) -I/usr/include/gio-unix-2.0
 LIBS += $(shell pkg-config --libs udisks2)
 endif

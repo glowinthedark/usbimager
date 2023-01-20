@@ -171,7 +171,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                     } else {
                         DWORD numberOfBytesWritten, numberOfBytesVerify;
                         errno = 0; needWrite = 1;
-                        if(usecompare) {
+                        if(!force) {
                             if(ReadFile(hTargetDevice, ctx.verifyBuf, numberOfBytesWritten, &numberOfBytesVerify, NULL) &&
                                 numberOfBytesRead == (int)numberOfBytesVerify && !memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesRead)) {
                                 if(verbose > 1) printf("  numberOfBytesVerify %d matches disk, skipping write\n", numberOfBytesRead);
@@ -181,8 +181,8 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                 SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
                                 ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
                                 ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
-                            }
-                            SetFilePointerEx(hTargetDevice, totalNumberOfBytesWritten, NULL, FILE_BEGIN);
+                            } else
+                                SetFilePointerEx(hTargetDevice, totalNumberOfBytesWritten, NULL, FILE_BEGIN);
                         }
                         if(needWrite) {
                             if (WriteFile(hTargetDevice, ctx.buffer, numberOfBytesRead, &numberOfBytesWritten, NULL)) {
@@ -523,7 +523,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
             if(*s == '-') {
                 for(s++; *s && *s != ' '; s++) {
                     switch(*s) {
-                        case 'c': usecompare++; break;
+                        case 'f': force++; break;
                         case 'v':
                             verbose++;
                             if(verbose == 1) {
@@ -547,7 +547,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
                                     " (build " USBIMAGER_BUILD ")"
 #endif
                                     " - MIT license, Copyright (C) 2020 bzt\r\n\r\n"
-                                    "usbimager.exe [-v|-vv|-a|-c|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)] <backup path>\r\n\r\n"
+                                    "usbimager.exe [-v|-vv|-a|-f|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)] <backup path>\r\n\r\n"
                                     "https://gitlab.com/bztsrc/usbimager\r\n\r\n");
                             }
                         break;
@@ -654,8 +654,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
         *d = 0;
     }
     if(verbose) {
-        printf("GetUserDefaultLangID %04x '%s', dict '%s', serial %d, buffer_size %d MiB, usecompare %d\r\n",
-            lid, loc, dict[i][0], disks_serial, buffer_size/1024/1024, usecompare);
+        printf("GetUserDefaultLangID %04x '%s', dict '%s', serial %d, buffer_size %d MiB, force %d\r\n",
+            lid, loc, dict[i][0], disks_serial, buffer_size/1024/1024, force);
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
 #if !defined(USE_WRONLY) || !USE_WRONLY
         if(bkpdir) wprintf(L"bkpdir '%s'\r\n", bkpdir);

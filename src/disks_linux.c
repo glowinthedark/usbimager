@@ -330,6 +330,14 @@ char *disks_volumes(int *num, char ***mounts)
     return recent;
 }
 
+#if USE_UDISKS2
+void dummy_glib_func_wrapper(gpointer data, gpointer user_data)
+{
+    (void)user_data;
+    g_object_unref(data);
+}
+#endif
+
 /**
  * Lock, umount and open the target disk for writing
  */
@@ -519,7 +527,7 @@ sererr:         main_getErrorMessage();
                                     break;
                                 }
                             }
-                            g_list_foreach(objects, (GFunc) g_object_unref, NULL);
+                            g_list_foreach(objects, dummy_glib_func_wrapper, NULL);
                             g_list_free(objects);
                             g_variant_builder_init(&builder, G_VARIANT_TYPE_VARDICT);
                             error = NULL;
@@ -574,7 +582,7 @@ sererr:         main_getErrorMessage();
                 ret = fds[0];
             if(verbose) printf("  udisks2 open_device fd=%d err=%s\r\n", ret, main_errorMessage);
             if(fds) g_free(fds);
-            g_list_foreach(objects, (GFunc)g_object_unref, NULL);
+            g_list_foreach(objects, dummy_glib_func_wrapper, NULL);
             g_list_free(objects);
             g_object_unref(fdlist);
             g_object_unref(options);

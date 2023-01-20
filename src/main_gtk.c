@@ -1,7 +1,7 @@
 /*
- * usbimager/main_libui.c
+ * usbimager/main_gtk.c
  *
- * Copyright (C) 2020 bzt (bztsrc@gitlab)
+ * Copyright (C) 2023 bzt (bztsrc@gitlab)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,36 +23,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * @brief User interface for Linux and MacOSX using libui
+ * @brief Native GTK User interface for Linux
  *
  */
 
 #include <pthread.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <gtk/gtk.h>
 #include "lang.h"
 #include "stream.h"
 #include "disks.h"
-#include "libui/ui.h"
 
 char **lang = NULL;
 extern char *dict[NUMLANGS][NUMTEXTS + 1];
 
 static char *bkpdir = NULL;
-static uiWindow *mainwin;
-static uiButton *sourceButton;
-static uiEntry *source;
-static uiBox *targetCont;
-static uiCombobox *target;
+static GtkWidget *mainwin, *vbox, *hbox1, *source, *sourceButton, *writeButton, *target, *pbar, *status;
 #if !defined(USE_WRONLY) || !USE_WRONLY
-static uiCheckbox *verify;
-static uiCheckbox *compr;
-static uiCombobox *blksize;
-static uiButton *readButton;
+GtkWidget *hbox2, *hbox3, *readButton, *verify, *compr, *blksize;
 #endif
-static uiButton *writeButton;
-static uiProgressBar *pbar;
-static uiLabel *status;
 static int blksizesel = 0;
 pthread_t thrd;
 pthread_attr_t tha;
@@ -60,7 +50,7 @@ char *main_errorMessage;
 
 void main_addToCombobox(char *option)
 {
-    uiComboboxAppend(target, option);
+    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(target), NULL, option);
 }
 
 void main_getErrorMessage()
@@ -71,25 +61,25 @@ void main_getErrorMessage()
 static void onDone(void *data)
 {
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    int targetId = uiComboboxSelected(target);
+    int targetId = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
 #endif
-    uiControlEnable(uiControl(source));
-    uiControlEnable(uiControl(sourceButton));
-    uiControlEnable(uiControl(target));
-    uiControlEnable(uiControl(writeButton));
+    gtk_widget_set_sensitive(source, TRUE);
+    gtk_widget_set_sensitive(sourceButton, TRUE);
+    gtk_widget_set_sensitive(target, TRUE);
+    gtk_widget_set_sensitive(writeButton, TRUE);
 #if !defined(USE_WRONLY) || !USE_WRONLY
     if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] < 1024)
-        uiControlEnable(uiControl(readButton));
-    uiControlEnable(uiControl(verify));
-    uiControlEnable(uiControl(compr));
-    uiControlEnable(uiControl(blksize));
+        gtk_widget_set_sensitive(readButton, TRUE);
+    gtk_widget_set_sensitive(verify, TRUE);
+    gtk_widget_set_sensitive(compr, TRUE);
+    gtk_widget_set_sensitive(blksize, TRUE);
 #endif
-    uiProgressBarSetValue(pbar, 0);
-    uiLabelSetText(status, (char*)data);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), 0);
+    gtk_label_set_label(GTK_LABEL(status), (char*)data);
     main_errorMessage = NULL;
 }
 
-static void onProgress(void *data)
+void main_onProgress(void *data)
 {
     char textstat[128];
     int pos = 0;
@@ -97,18 +87,17 @@ static void onProgress(void *data)
     if(data)
         pos = stream_status((stream_t*)data, textstat, 0);
 
-    uiProgressBarSetValue(pbar, pos);
-    uiLabelSetText(status, !data ? lang[L_WAITING] : textstat);
-}
-
-void main_onProgress(void *data)
-{
-    uiQueueMain(onProgress, data);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), (gdouble)pos);
+    gtk_label_set_label(GTK_LABEL(status), !data ? lang[L_WAITING] : textstat);
 }
 
 static void onThreadError(void *data)
 {
-    uiMsgBoxError(mainwin, main_errorMessage && *main_errorMessage ? main_errorMessage : lang[L_ERROR], (char*)data);
+    GtkWidget *mbox = gtk_message_dialog_new(GTK_WINDOW(mainwin), 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", (char*)data);
+    gtk_window_set_title(GTK_WINDOW(mbox), main_errorMessage && *main_errorMessage ? main_errorMessage : lang[L_ERROR]);
+    gtk_window_set_default_size(GTK_WINDOW(mbox), 200, 64);
+    gtk_dialog_run(GTK_DIALOG(mbox));
+    gtk_widget_destroy(mbox);
 }
 
 /**
@@ -117,18 +106,18 @@ static void onThreadError(void *data)
 static void *writerRoutine(void *data)
 {
     int dst, needVerify, numberOfBytesRead;
-    int numberOfBytesWritten, numberOfBytesVerify, needWrite, targetId = uiComboboxSelected(target);
+    int numberOfBytesWritten, numberOfBytesVerify, needWrite, targetId = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
     static char lpStatus[128];
     static stream_t ctx;
     (void)data;
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    needVerify = uiCheckboxChecked(verify);
+    needVerify = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(verify));
 #else
     needVerify = 1;
 #endif
 
     ctx.fileSize = 0;
-    dst = stream_open(&ctx, uiEntryText(source), targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024);
+    dst = stream_open(&ctx, (char*)gtk_entry_get_text(GTK_ENTRY(source)), targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024);
     if(!dst) {
         dst = (int)((long int)disks_open(targetId, ctx.fileSize));
         if(dst > 0) {
@@ -160,54 +149,54 @@ static void *writerRoutine(void *data)
                                     if(verbose > 1) printf("  numberOfBytesVerify %d\n", numberOfBytesVerify);
                                     if(numberOfBytesVerify != numberOfBytesWritten ||
                                         memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesWritten)) {
-                                            uiQueueMain(onThreadError, lang[L_VRFYERR]);
+                                            onThreadError(lang[L_VRFYERR]);
                                         break;
                                     }
                                 }
-                                uiQueueMain(onProgress, &ctx);
+                                main_onProgress(&ctx);
                             } else {
                                 if(errno) main_errorMessage = strerror(errno);
-                                uiQueueMain(onThreadError, lang[L_WRTRGERR]);
+                                onThreadError(lang[L_WRTRGERR]);
                                 break;
                             }
                         }
                     }
                 } else {
-                    uiQueueMain(onThreadError, lang[L_RDSRCERR]);
+                    onThreadError(lang[L_RDSRCERR]);
                     break;
                 }
             }
             disks_close((void*)((long int)dst));
         } else {
-            uiQueueMain(onThreadError, lang[dst == -1 ? L_TRGERR : (dst == -2 ? L_UMOUNTERR : (dst == -4 ? L_COMMERR : L_OPENTRGERR))]);
+            onThreadError(lang[dst == -1 ? L_TRGERR : (dst == -2 ? L_UMOUNTERR : (dst == -4 ? L_COMMERR : L_OPENTRGERR))]);
         }
         stream_close(&ctx);
     } else {
         if(errno) main_errorMessage = strerror(errno);
-        uiQueueMain(onThreadError, lang[dst == 2 ? L_ENCZIPERR : (dst == 3 ? L_CMPZIPERR : (dst == 4 ? L_CMPERR : L_SRCERR))]);
+        onThreadError(lang[dst == 2 ? L_ENCZIPERR : (dst == 3 ? L_CMPZIPERR : (dst == 4 ? L_CMPERR : L_SRCERR))]);
     }
     stream_status(&ctx, lpStatus, 1);
-    uiQueueMain(onDone, &lpStatus);
+    onDone(&lpStatus);
     if(verbose) printf("Worker thread finished.\r\n");
     return NULL;
 }
 
-static void onWriteButtonClicked(uiButton *b, void *data)
+static void onWriteButtonClicked(GtkButton *btn, gpointer data)
 {
-    (void)b;
+    (void)btn;
     (void)data;
-    uiControlDisable(uiControl(source));
-    uiControlDisable(uiControl(sourceButton));
-    uiControlDisable(uiControl(target));
-    uiControlDisable(uiControl(writeButton));
+    gtk_widget_set_sensitive(source, FALSE);
+    gtk_widget_set_sensitive(sourceButton, FALSE);
+    gtk_widget_set_sensitive(target, FALSE);
+    gtk_widget_set_sensitive(writeButton, FALSE);
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    uiControlDisable(uiControl(readButton));
-    uiControlDisable(uiControl(verify));
-    uiControlDisable(uiControl(compr));
-    uiControlDisable(uiControl(blksize));
+    gtk_widget_set_sensitive(readButton, FALSE);
+    gtk_widget_set_sensitive(verify, FALSE);
+    gtk_widget_set_sensitive(compr, FALSE);
+    gtk_widget_set_sensitive(blksize, FALSE);
 #endif
-    uiProgressBarSetValue(pbar, 0);
-    uiLabelSetText(status, "");
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), 0);
+    gtk_label_set_label(GTK_LABEL(status), "");
     main_errorMessage = NULL;
 
     if(verbose) printf("Starting worker thread for writing.\r\n");
@@ -215,26 +204,20 @@ static void onWriteButtonClicked(uiButton *b, void *data)
 }
 
 #if !defined(USE_WRONLY) || !USE_WRONLY
-static void onSourceSet(void *data)
-{
-    uiControlEnable(uiControl(source));
-    uiEntrySetText(source, data);
-    uiControlDisable(uiControl(source));
-}
 
 /**
  * Function that reads from disk and writes to output file
  */
 static void *readerRoutine(void *data)
 {
-    int src, size, needCompress = uiCheckboxChecked(compr), numberOfBytesRead;
+    int src, size, needCompress = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(compr)), numberOfBytesRead;
     static char lpStatus[128];
     static stream_t ctx;
     char *env, fn[PATH_MAX];
     struct stat st;
     struct tm *lt;
     time_t now = time(NULL);
-    int i, targetId = uiComboboxSelected(target);
+    int i, targetId = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
     (void)data;
 
     if(targetId >= 0 && targetId < DISKS_MAX && disks_targets[targetId] >= 1024) return NULL;
@@ -263,7 +246,7 @@ static void *readerRoutine(void *data)
         snprintf(fn + i, sizeof(fn)-1-i, "/usbimager-%04d%02d%02dT%02d%02d.dd%s",
             lt->tm_year+1900, lt->tm_mon+1, lt->tm_mday, lt->tm_hour, lt->tm_min,
             needCompress ? ".zst" : "");
-        uiQueueMain(onSourceSet, fn);
+        gtk_entry_set_text(GTK_ENTRY(source), fn);
 
         if(!stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {
             while(ctx.readSize < ctx.fileSize) {
@@ -273,15 +256,15 @@ static void *readerRoutine(void *data)
                 if(verbose > 1) printf("read(%d) numberOfBytesRead %d errno=%d\n", size, numberOfBytesRead, errno);
                 if(numberOfBytesRead == size) {
                     if(stream_write(&ctx, ctx.buffer, size)) {
-                        uiQueueMain(onProgress, &ctx);
+                        main_onProgress(&ctx);
                     } else {
                         if(errno) main_errorMessage = strerror(errno);
-                        uiQueueMain(onThreadError, lang[L_WRIMGERR]);
+                        onThreadError(lang[L_WRIMGERR]);
                         break;
                     }
                 } else {
                     if(errno) main_errorMessage = strerror(errno);
-                    uiQueueMain(onThreadError, lang[L_RDSRCERR]);
+                    onThreadError(lang[L_RDSRCERR]);
                     break;
                 }
             }
@@ -289,117 +272,103 @@ static void *readerRoutine(void *data)
             if(errno == ENOSPC) remove(fn);
         } else {
             if(errno) main_errorMessage = strerror(errno);
-            uiQueueMain(onThreadError, lang[L_OPENIMGERR]);
+            onThreadError(lang[L_OPENIMGERR]);
         }
         disks_close((void*)((long int)src));
     } else {
-        uiQueueMain(onThreadError, lang[src == -1 ? L_TRGERR : (src == -2 ? L_UMOUNTERR : (src == -4 ? L_COMMERR : L_OPENTRGERR))]);
+        onThreadError(lang[src == -1 ? L_TRGERR : (src == -2 ? L_UMOUNTERR : (src == -4 ? L_COMMERR : L_OPENTRGERR))]);
     }
     stream_status(&ctx, lpStatus, 1);
-    uiQueueMain(onDone, &lpStatus);
+    onDone(&lpStatus);
     if(verbose) printf("Worker thread finished.\r\n");
     return NULL;
 }
 
-static void onReadButtonClicked(uiButton *b, void *data)
+static void onReadButtonClicked(GtkButton *btn, gpointer data)
 {
-    (void)b;
+    (void)btn;
     (void)data;
 
-    uiControlDisable(uiControl(source));
-    uiControlDisable(uiControl(sourceButton));
-    uiControlDisable(uiControl(target));
-    uiControlDisable(uiControl(writeButton));
-    uiControlDisable(uiControl(readButton));
-    uiControlDisable(uiControl(verify));
-    uiControlDisable(uiControl(compr));
-    uiControlDisable(uiControl(blksize));
-    uiProgressBarSetValue(pbar, 0);
-    uiLabelSetText(status, "");
+    gtk_widget_set_sensitive(source, FALSE);
+    gtk_widget_set_sensitive(sourceButton, FALSE);
+    gtk_widget_set_sensitive(target, FALSE);
+    gtk_widget_set_sensitive(writeButton, FALSE);
+    gtk_widget_set_sensitive(readButton, FALSE);
+    gtk_widget_set_sensitive(verify, FALSE);
+    gtk_widget_set_sensitive(compr, FALSE);
+    gtk_widget_set_sensitive(blksize, FALSE);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), 0);
+    gtk_label_set_label(GTK_LABEL(status), "");
     main_errorMessage = NULL;
     if(verbose) printf("Starting worker thread for reading.\r\n");
     pthread_create(&thrd, &tha, readerRoutine, NULL);
 }
 
-static void refreshBlkSize(uiCombobox *cb, void *data)
+static void refreshBlkSize(GtkWidget *w, gpointer data)
 {
-    int current = uiComboboxSelected(blksize);
-    (void)cb;
+    int current = gtk_combo_box_get_active(GTK_COMBO_BOX(blksize));
+    (void)w;
     (void)data;
     buffer_size = (1UL << current) * 1024UL * 1024UL;
 }
 #endif
 
-static void refreshTarget(uiCombobox *cb, void *data)
+static void refreshTarget(GtkWidget *w, gpointer data)
 {
-    int current = uiComboboxSelected(target);
+    int current = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
     char btntext[256];
-    (void)cb;
+    (void)w;
     (void)data;
-    uiBoxDelete(targetCont, 0);
-    target = uiNewCombobox();
-    uiBoxAppend(targetCont, uiControl(target), 1);
-    uiComboboxOnSelected(target, refreshTarget, NULL);
+    if(current < 0) current = 0;
+    gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(target))));
     disks_refreshlist();
-    uiComboboxSetSelected(target, current);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(target), current);
     if(current >= 0 && current < DISKS_MAX && disks_targets[current] >= 1024) {
 #if !defined(USE_WRONLY) || !USE_WRONLY
         snprintf(btntext, sizeof(btntext)-1, "▼ %s", lang[L_SEND]);
-        uiControlDisable(uiControl(readButton));
+        gtk_widget_set_sensitive(readButton, FALSE);
 #else
         snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_SEND]);
 #endif
     } else {
 #if !defined(USE_WRONLY) || !USE_WRONLY
         snprintf(btntext, sizeof(btntext)-1, "▼ %s", lang[L_WRITE]);
-        uiControlEnable(uiControl(readButton));
+        gtk_widget_set_sensitive(readButton, TRUE);
 #else
         snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_WRITE]);
 #endif
     }
-    uiButtonSetText(writeButton, btntext);
+    gtk_button_set_label(GTK_BUTTON(writeButton), btntext);
 }
 
-static void onSelectClicked(uiButton *b, void *data)
+static void onSelectClicked(GtkButton *btn, gpointer data)
 {
-    uiEntry *entry = uiEntry(data);
-    char *filename;
-
-    (void)b;
-    refreshTarget(target, NULL);
-    uiLabelSetText(status, "");
-    filename = uiOpenFile(mainwin);
-    if (filename == NULL) return;
-    uiEntrySetText(entry, filename);
-    uiFreeText(filename);
+    char *fn;
+    GtkWidget *chooser = gtk_file_chooser_dialog_new("Open", NULL, GTK_FILE_CHOOSER_ACTION_OPEN, "gtk-cancel",
+        GTK_RESPONSE_CANCEL, "gtk-open", GTK_RESPONSE_ACCEPT, NULL);
+    (void)btn;
+    (void)data;
+    if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT) {
+        fn = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
+        if(fn) {
+            gtk_entry_set_text(GTK_ENTRY(source), fn);
+            free(fn);
+        }
+    }
+    gtk_widget_destroy(chooser);
 }
 
-static int onClosing(uiWindow *w, void *data)
+static void onClosing(GtkWidget *w, gpointer data)
 {
     (void)w;
     (void)data;
     if(thrd) { pthread_cancel(thrd); thrd = 0; }
-    uiQuit();
-    return 1;
-}
-
-static int onShouldQuit(void *data)
-{
-    if(thrd) { pthread_cancel(thrd); thrd = 0; }
-    uiControlDestroy(uiControl(uiWindow(data)));
-    return 1;
+    gtk_widget_destroy(mainwin);
+    gtk_main_quit();
 }
 
 int main(int argc, char **argv)
 {
-    uiInitOptions options;
-    const char *err;
-    uiGrid *grid;
-    uiBox *vbox;
-    uiBox *bbox;
-#if !defined(USE_WRONLY) || !USE_WRONLY
-    uiLabel *sep;
-#endif
     int i, j;
     char *lc = getenv("LANG"), btntext[256];
     char help[] = "USBImager " USBIMAGER_VERSION
@@ -487,102 +456,92 @@ int main(int argc, char **argv)
     pthread_attr_init(&tha);
     memset(&thrd, 0, sizeof(pthread_t));
 
-    memset(&options, 0, sizeof (uiInitOptions));
-    err = uiInit(&options);
-    if (err != NULL) {
-        fprintf(stderr, "error initializing libui: %s", err);
-        uiFreeInitError(err);
-        return 1;
-    }
+    gtk_init(&argc, &argv);
 
-    mainwin = uiNewWindow("USBImager " USBIMAGER_VERSION, 480, 160, 1);
-    uiWindowOnClosing(mainwin, onClosing, NULL);
-    uiOnShouldQuit(onShouldQuit, mainwin);
-    uiWindowSetMargined(mainwin, 1);
+    mainwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(mainwin), "USBImager " USBIMAGER_VERSION);
+    gtk_window_set_default_size(GTK_WINDOW(mainwin), 480, 160);
+    g_signal_connect(mainwin, "destroy", G_CALLBACK(onClosing), NULL);
 
-    grid = uiNewGrid();
-    uiGridSetPadded(grid, 1);
-    uiWindowSetChild(mainwin, uiControl(grid));
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_margin_top(vbox, 5);
+    gtk_widget_set_margin_start(vbox, 5);
+    gtk_widget_set_margin_bottom(vbox, 5);
+    gtk_widget_set_margin_end(vbox, 5);
+    gtk_container_add(GTK_CONTAINER(mainwin), vbox);
 
-    sourceButton = uiNewButton("...");
-    source = uiNewEntry();
-    uiButtonOnClicked(sourceButton, onSelectClicked, source);
-    uiGridAppend(grid, uiControl(source), 0, 0, 7, 1, 1, uiAlignFill, 0, uiAlignFill);
-    uiGridAppend(grid, uiControl(sourceButton), 7, 0, 1, 1, 0, uiAlignFill, 0, uiAlignFill);
+    hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox1, FALSE, TRUE, 0);
+
+    source = gtk_entry_new();
+    gtk_box_pack_start(GTK_BOX(hbox1), source, TRUE, TRUE, 0);
+
+    sourceButton = gtk_button_new_with_label("...");
+    g_signal_connect(sourceButton, "clicked", G_CALLBACK(onSelectClicked), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox1), sourceButton, FALSE, TRUE, 0);
 
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    bbox = uiNewHorizontalBox();
+    hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, TRUE, 0);
 
-    uiGridAppend(grid, uiControl(bbox), 0, 1, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
     snprintf(btntext, sizeof(btntext)-1, "▼ %s", lang[L_WRITE]);
-    writeButton = uiNewButton(btntext);
-    uiButtonOnClicked(writeButton, onWriteButtonClicked, NULL);
-    uiBoxAppend(bbox, uiControl(writeButton), 1);
-
-    sep = uiNewLabel(" ");
-    uiBoxAppend(bbox, uiControl(sep), 0);
+    writeButton = gtk_button_new_with_label(btntext);
+    g_signal_connect(writeButton, "clicked", G_CALLBACK(onWriteButtonClicked), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox2), writeButton, TRUE, TRUE, 5);
 
     snprintf(btntext, sizeof(btntext)-1, "▲ %s", lang[L_READ]);
-    readButton = uiNewButton(btntext);
-    uiButtonOnClicked(readButton, onReadButtonClicked, NULL);
-    uiBoxAppend(bbox, uiControl(readButton), 1);
+    readButton = gtk_button_new_with_label(btntext);
+    g_signal_connect(readButton, "clicked", G_CALLBACK(onReadButtonClicked), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox2), readButton, TRUE, TRUE, 5);
 
-    targetCont = uiNewHorizontalBox();
-    uiGridAppend(grid, uiControl(targetCont), 0, 2, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
-    target = uiNewCombobox();
-    uiBoxAppend(targetCont, uiControl(target), 1);
-    uiComboboxOnSelected(target, refreshTarget, NULL);
+    target = gtk_combo_box_text_new();
+    g_signal_connect(target, "popdown", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "popup", G_CALLBACK(refreshTarget), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), target, FALSE, FALSE, 2);
 
-    verify = uiNewCheckbox(lang[L_VERIFY]);
-    uiCheckboxSetChecked(verify, 1);
-    uiGridAppend(grid, uiControl(verify), 0, 3, 3, 1, 0, uiAlignFill, 0, uiAlignFill);
+    hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, TRUE, 0);
 
-    compr = uiNewCheckbox(lang[L_COMPRESS]);
-    uiGridAppend(grid, uiControl(compr), 3, 3, 4, 1, 0, uiAlignFill, 0, uiAlignFill);
+    verify = gtk_check_button_new_with_label(lang[L_VERIFY]);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(verify), 1);
+    gtk_box_pack_start(GTK_BOX(hbox3), verify, TRUE, TRUE, 5);
 
-    blksize = uiNewCombobox();
-    uiGridAppend(grid, uiControl(blksize), 7, 3, 1, 1, 0, uiAlignFill, 0, uiAlignFill);
+    compr = gtk_check_button_new_with_label(lang[L_COMPRESS]);
+    gtk_box_pack_start(GTK_BOX(hbox3), compr, TRUE, TRUE, 5);
+
+    blksize = gtk_combo_box_text_new();
+    g_signal_connect(target, "changed", G_CALLBACK(refreshBlkSize), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox3), blksize, FALSE, TRUE, 5);
     for(i = 0; i < 10; i++) {
         sprintf(btntext, "%3dM", (1<<i));
-        uiComboboxAppend(blksize, btntext);
+        gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(blksize), NULL, btntext);
     }
-    uiComboboxSetSelected(blksize, blksizesel);
-    uiComboboxOnSelected(blksize, refreshBlkSize, NULL);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(blksize), blksizesel);
 
-    pbar = uiNewProgressBar();
-    uiGridAppend(grid, uiControl(pbar), 0, 4, 8, 1, 0, uiAlignFill, 4, uiAlignFill);
-
-    vbox = uiNewVerticalBox();
-    uiGridAppend(grid, uiControl(vbox), 0, 5, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
 #else
-    targetCont = uiNewHorizontalBox();
-    uiGridAppend(grid, uiControl(targetCont), 0, 1, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
-    target = uiNewCombobox();
-    uiBoxAppend(targetCont, uiControl(target), 1);
-    uiComboboxOnSelected(target, refreshTarget, NULL);
+    target = gtk_combo_box_text_new();
+    g_signal_connect(target, "popdown", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "popup", G_CALLBACK(refreshTarget), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), target, FALSE, FALSE, 2);
 
-    bbox = uiNewHorizontalBox();
-    uiGridAppend(grid, uiControl(bbox), 0, 2, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
     snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_WRITE]);
-    writeButton = uiNewButton(btntext);
-    uiButtonOnClicked(writeButton, onWriteButtonClicked, NULL);
-    uiBoxAppend(bbox, uiControl(writeButton), 1);
+    writeButton = gtk_button_new_with_label(btntext);
+    g_signal_connect(writeButton, "clicked", G_CALLBACK(onWriteButtonClicked), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), writeButton, FALSE, TRUE, 5);
 
-    pbar = uiNewProgressBar();
-    uiGridAppend(grid, uiControl(pbar), 0, 3, 8, 1, 0, uiAlignFill, 4, uiAlignFill);
-
-    vbox = uiNewVerticalBox();
-    uiGridAppend(grid, uiControl(vbox), 0, 4, 8, 1, 0, uiAlignFill, 0, uiAlignFill);
 #endif
+    pbar = gtk_progress_bar_new();
+    gtk_box_pack_start(GTK_BOX(vbox), pbar, TRUE, TRUE, 0);
+
+    status = gtk_label_new("");
+    gtk_label_set_xalign(GTK_LABEL(status), 0);
+    gtk_box_pack_start(GTK_BOX(vbox), status, FALSE, FALSE, 2);
+
     refreshTarget(target, NULL);
 
-    status = uiNewLabel("");
-    uiBoxAppend(vbox, uiControl(status), 0);
-
-    uiControlShow(uiControl(mainwin));
-    uiMain();
+    gtk_widget_show_all(GTK_WIDGET(mainwin));
+    gtk_main();
     if(thrd) { pthread_cancel(thrd); thrd = 0; }
     pthread_attr_destroy(&tha);
-    uiQuit();
     return 0;
 }

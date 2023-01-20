@@ -715,15 +715,15 @@ static void *writerRoutine()
                         break;
                     } else {
                         errno = 0; needWrite = 1;
-                        if(usecompare) {
+                        if(!force) {
                             numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesRead);
-                            lseek(dst, -((off_t)numberOfBytesVerify), SEEK_CUR);
                             if(numberOfBytesVerify == numberOfBytesRead &&
                                 !memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesRead)) {
                                 if(verbose > 1) printf("  numberOfBytesVerify %d matches disk, skipping write\n", numberOfBytesRead);
                                 needWrite = 0;
                                 main_onProgress(&ctx);
-                            }
+                            } else
+                                lseek(dst, -((off_t)numberOfBytesVerify), SEEK_CUR);
                         }
                         if(needWrite) {
                             numberOfBytesWritten = (int)write(dst, ctx.buffer, numberOfBytesRead);
@@ -1464,7 +1464,7 @@ int main(int argc, char **argv)
         " (build " USBIMAGER_BUILD ")"
 #endif
         " - MIT license, Copyright (C) 2020 bzt\r\n\r\n"
-        "./usbimager [-v|-vv|-a|-c|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-f(x)] <backup path>\r\n\r\n"
+        "./usbimager [-v|-vv|-a|-f|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-F(x)] <backup path>\r\n\r\n"
         "https://gitlab.com/bztsrc/usbimager\r\n\r\n";
 
     for(j = 1; j < argc && argv[j]; j++) {
@@ -1479,7 +1479,7 @@ int main(int argc, char **argv)
             }
             for(i = 1; argv[j][i]; i++)
                 switch(argv[j][i]) {
-                    case 'c': usecompare++; break;
+                    case 'f': force++; break;
                     case 'v':
                         verbose++;
                         if(verbose == 1) printf("%s", help);
@@ -1509,7 +1509,7 @@ int main(int argc, char **argv)
                     case '8': blksizesel = 8; buffer_size = 256*1024*1024; break;
                     case '9': blksizesel = 9; buffer_size = 512*1024*1024; break;
                     case 'L': lc = &argv[j][++i]; ++i; break;
-                    case 'f': fontName = &argv[j][++i]; ++j; i = 0; break;
+                    case 'F': fontName = &argv[j][++i]; ++j; i = 0; break;
                 }
         } else
             bkpdir = argv[j];
@@ -1525,8 +1525,8 @@ int main(int argc, char **argv)
     if(!lang) lang = &dict[0][1];
 
     if(verbose) {
-        printf("LANG '%s', dict '%s', serial %d, buffer_size %d MiB, usecompare %d\r\n",
-            lc, lang[-1], disks_serial, buffer_size/1024/1024, usecompare);
+        printf("LANG '%s', dict '%s', serial %d, buffer_size %d MiB, force %d\r\n",
+            lc, lang[-1], disks_serial, buffer_size/1024/1024, force);
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
         if(bkpdir) printf("bkpdir '%s'\r\n", bkpdir);
     }

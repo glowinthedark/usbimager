@@ -39,7 +39,7 @@ char **lang = NULL;
 extern char *dict[NUMLANGS][NUMTEXTS + 1];
 
 static char *bkpdir = NULL;
-static GtkWidget *mainwin, *vbox, *hbox1, *source, *sourceButton, *writeButton, *target, *pbar, *status;
+static GtkWidget *mainwin, *vbox, *hbox1, *source, *sourceButton, *writeButton, *target, *pbar, *status, *hboxhack;
 #if !defined(USE_WRONLY) || !USE_WRONLY
 GtkWidget *hbox2, *hbox3, *readButton, *verify, *compr, *blksize;
 #endif
@@ -317,11 +317,28 @@ static void refreshTarget(GtkWidget *w, gpointer data)
 {
     int current = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
     char btntext[256];
+    GdkEvent *evt = gtk_get_current_event();
     (void)w;
     (void)data;
-    if(current < 0) current = 0;
+/*
+ * fuck me... these are always return FALSE... how am I supposed to query if the popup is actually to be shown and not closed????
+ * only grab-notify signal works, but that's sent on open and close too, without telling which one it is...
+ *
+printf("refreshTarget evt '%x' focus %d vis %d grab %d default %d state %d flags %d\n", evt ? evt->type : 0,
+  gtk_widget_has_focus(target), gtk_widget_has_visible_focus(target), gtk_widget_has_grab(target), gtk_widget_has_default(target),
+  gtk_widget_get_state(target), gtk_widget_get_state_flags(target));
+*/
+    if(evt && evt->type != 4) return;
     gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(target))));
     disks_refreshlist();
+    /* we should resize the popup now, but neither of these work... */
+    gtk_widget_compute_expand(target, GTK_ORIENTATION_VERTICAL);
+    gtk_widget_queue_resize(target);
+    gtk_widget_queue_allocate(target);
+    gtk_widget_queue_draw(target);
+    gtk_widget_set_sensitive(target, TRUE);
+    if(current < 0 || current >= gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(target))), NULL))
+        current = 0;
     gtk_combo_box_set_active(GTK_COMBO_BOX(target), current);
     if(current >= 0 && current < DISKS_MAX && disks_targets[current] >= 1024) {
 #if !defined(USE_WRONLY) || !USE_WRONLY
@@ -480,6 +497,8 @@ int main(int argc, char **argv)
     g_signal_connect(sourceButton, "clicked", G_CALLBACK(onSelectClicked), NULL);
     gtk_box_pack_start(GTK_BOX(hbox1), sourceButton, FALSE, TRUE, 0);
 
+    hboxhack = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
 #if !defined(USE_WRONLY) || !USE_WRONLY
     hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, TRUE, 0);
@@ -495,9 +514,29 @@ int main(int argc, char **argv)
     gtk_box_pack_start(GTK_BOX(hbox2), readButton, TRUE, TRUE, 5);
 
     target = gtk_combo_box_text_new();
+    /* according to the doc, this should be it, but it crashes the app with
+(usbimager:1668493): GLib-GObject-WARNING **: 10:08:55.855: ../glib/gobject/gsignal.c:2620: signal 'popup-shown' is invalid for instance '0x55ad9483e220' of type 'GtkComboBoxText'
+Segmentation fault (core dumped)
+    */
+    /* g_signal_connect(target, "popup-shown", G_CALLBACK(refreshTarget), NULL); */
+/*
+    gtk_widget_set_can_focus(target, 1);
+    gtk_widget_set_focus_on_click(target, 1);
+    g_signal_connect(target, "button-press-event", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "key-press-event", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "enter-notify-event", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "focus-in-event", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "focus", G_CALLBACK(refreshTarget), NULL);
     g_signal_connect(target, "popdown", G_CALLBACK(refreshTarget), NULL);
     g_signal_connect(target, "popup", G_CALLBACK(refreshTarget), NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), target, FALSE, FALSE, 2);
+    g_signal_connect(target, "popup-menu", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "popup-shown", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "state-changed", G_CALLBACK(refreshTarget), NULL);
+    g_signal_connect(target, "grab-focus", G_CALLBACK(refreshTarget), NULL);
+*/
+    g_signal_connect(target, "grab-notify", G_CALLBACK(refreshTarget), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), hboxhack, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hboxhack), target, TRUE, TRUE, 2);
 
     hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, TRUE, 0);
@@ -520,9 +559,9 @@ int main(int argc, char **argv)
 
 #else
     target = gtk_combo_box_text_new();
-    g_signal_connect(target, "popdown", G_CALLBACK(refreshTarget), NULL);
-    g_signal_connect(target, "popup", G_CALLBACK(refreshTarget), NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), target, FALSE, FALSE, 2);
+    g_signal_connect(target, "grab-notify", G_CALLBACK(refreshTarget), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), hboxhack, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hboxhack), target, TRUE, TRUE, 2);
 
     snprintf(btntext, sizeof(btntext)-1, "%s", lang[L_WRITE]);
     writeButton = gtk_button_new_with_label(btntext);

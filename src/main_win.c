@@ -176,6 +176,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                 numberOfBytesRead == (int)numberOfBytesVerify && !memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesRead)) {
                                 if(verbose > 1) printf("  numberOfBytesVerify %d matches disk, skipping write\n", numberOfBytesRead);
                                 needWrite = 0;
+                                totalNumberOfBytesWritten.QuadPart += numberOfBytesVerify;
                                 pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
                                 SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
                                 SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);

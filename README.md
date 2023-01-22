@@ -7,13 +7,13 @@ and creates backups. Available platforms: Windows, MacOSX and Linux. Its interfa
 
 | Platform     | Frontend     | Description                  |
 |--------------|--------------|------------------------------|
-| Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-i686-win-gdi.zip) | native interface<br>simplified, write-only interface |
+| Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-i686-win-gdi.zip) | native interface<br>simplified, write-only interface |
 | MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-intel-macosx-cocoa.zip)<br>[Cocoa wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-intel-macosx-cocoa.zip) | native interface<br>simplified, write-only interface |
-| Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-amd64.deb) | same as the Linux PC GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
-| RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-armhf.deb) | same as the Raspberry Pi GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
+| Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-amd64.deb) | same as the Linux PC GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
+| RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-armhf.deb) | same as the Raspberry Pi GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | same as the Linux PC GTK version with udisks2 support, but in an AUR package<br>generated from the binaries<br>minimal X11 version |
-| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-gtk.zip) | recommended<br>simplified, write-only interface<br>compatibility (requires udisks2) |
-| Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-aarch64-linux-x11.zip) | native interface, AArch32 (armv7l)<br>native interface, AArch64 (arm64) |
+| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-gtk.zip) | recommended<br>simplified, write-only interface<br>compatibility (requires udisks2) |
+| Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-aarch64-linux-x11.zip) | native interface, AArch32 (armv7l)<br>native interface, AArch64 (arm64) |
 
 NOTE: I have to say a few words on this, because this question is keep popping up constantly: Why not just use `dd`? My answers:
 
@@ -85,7 +85,7 @@ Comparison
 |--------------------------------|---------------|-------------------|-----------|
 | Multiplatform                  | ✔             | ✗                 | ✔         |
 | Minimum Windows                | Win 7         | Win XP            | Win XP    |
-| Minimum MacOSX (1)             | 10.10         | ✗                 | 10.10     |
+| Minimum MacOSX (1)             | 10.15         | ✗                 | 10.10     |
 | Available on Raspbian          | ✗             | ✗                 | ✔         |
 | Program size (2)               | 130 Mb        | ✗                 | 300 Kb    |
 | Dependencies                   | lots, ~300 Mb | Qt, ~8 Mb         | ✗ none    |
@@ -171,9 +171,9 @@ directory is specified on the command line, that is used to save backups.
 | -Lxx                | Force language       |
 | -1..9               | Set buffer size      |
 | -a                  | List all devices     |
-| -c                  | Compare before write |
+| -f                  | Force write          |
 | -s\[baud]/-S\[baud] | Use serial devices   |
-| -f(xlfd)            | specify X11 font     |
+| -F(xlfd)            | specify X11 font     |
 | --version           | Prints version       |
 | (dir)               | First non-flag is the backup directory |
 
@@ -197,8 +197,9 @@ automatic detection. If there's no such dictionary, then English is used.
 The number flags sets the buffer size to the power of two Megabytes (0 = 1M, 1 = 2M, 2 = 4M, 3 = 8M, 4 = 16M, ... 9 = 512M). When not
 specified, buffer size defaults to 1 Megabyte.
 
-The '-c' flag reads in the data first, compares it to the buffer, and only writes if they differ. Can be useful on media which are
-very slow to write, but fast to read.
+By default, one block of data is read in, compared to the buffer, and only written if they differ. This is useful on media which
+are very slow to write, have limited write cycles, but fast to read. With the '-f' force flag this comparision is ommited, and the
+data is always written to the disk.
 
 If you start USBImager with the '-s' flag (lowercase), then it will allow you to send images to serial ports as well. For this, your user
 has to be the member of the "uucp" or "dialout" groups (differs in distributions, use "ls -la /dev/|grep tty" to see which one). In this
@@ -226,10 +227,10 @@ If you want to use a different baud, just simply add it to the flag, like "-s576
 
 WARNING: not every serial port supports all baud rates. Check you device's manual.
 
-The '-f(xlfd)' (font) flag allows to manually specify which X11 font to use (X11 variants only). Make sure that the specified XLFD ends
+The '-F(xlfd)' (font) flag allows to manually specify which X11 font to use (X11 variants only). Make sure that the specified XLFD ends
 in "iso10646-1", because only UNICODE fonts supported. For example (quotes needed so that the shell won't try to resolve the asterix):
 ```
-./usbimager "-f-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1" -v
+./usbimager "-F-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1" -v
 ```
 
 Compilation
@@ -256,12 +257,12 @@ Authors
 Contributors
 ------------
 
-I'd like to say thanks to @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, and especially to @tvjon, @CaptainMidnight and @gitlabhack for testing
+I'd like to say thanks to @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, @9001, and especially to @tvjon, @CaptainMidnight and @gitlabhack for testing
 USBImager on various platforms with various devices.
 
 My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970 and @JumpZero (French), @hansotten and @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani, @hrko99 (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish), @tomasz86 (Korean), @flaribbit (Chinese).
 
-Further thanks to @munntjlx and @lfomartins for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs.
+Further thanks to @munntjlx and @lfomartins for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs when my VirtualBox was broken.
 
 Bests,
 

@@ -8,13 +8,13 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 
 | Platform     | Felület      | Leírás                       |
 |--------------|--------------|------------------------------|
-| Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-i686-win-gdi.zip) | natív interfész<br>egyszerűsített, csak író felület |
+| Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-i686-win-gdi.zip) | natív interfész<br>egyszerűsített, csak író felület |
 | MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-intel-macosx-cocoa.zip)<br>[Cocoa wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-intel-macosx-cocoa.zip) | natív interfész<br>egyszerűsített, csak író felület |
-| Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
-| RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
+| Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
+| RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban<br>binárisból generálva<br>minimális X11 verzió |
-| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-x86_64-linux-gtk.zip)  | javalott<br>egyszerűsített, csak író felület<br>kompatíbilitás (udisks2 is kell hozzá) |
-| Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-aarch64-linux-x11.zip) | natív interfész, AArch32 (armv7l)<br>natív interfész, AArch64 (arm64) |
+| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-gtk.zip)  | javalott<br>egyszerűsített, csak író felület<br>kompatíbilitás (udisks2 is kell hozzá) |
+| Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-aarch64-linux-x11.zip) | natív interfész, AArch32 (armv7l)<br>natív interfész, AArch64 (arm64) |
 
 FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást felvetődik: miért ne `dd` inkább? A válaszom:
 
@@ -87,7 +87,7 @@ Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogat
 |---------------------------------|---------------|-------------------|-----------|
 | Többplatformos                  | ✔             | ✗                 | ✔         |
 | Minimum Windows                 | Win 7         | Win XP            | Win XP    |
-| Minimum MacOSX (1)              | 10.10         | ✗                 | 10.10     |
+| Minimum MacOSX (1)              | 10.15         | ✗                 | 10.10     |
 | Elérhető Raspbian-on            | ✗             | ✗                 | ✔         |
 | Program mérete (2)              | 130 Mb        | ✗                 | 300 Kb    |
 | Függőségek                      | sok, ~300 Mb  | Qt, ~8 Mb         | ✗ nincs   |
@@ -170,16 +170,16 @@ home mappába lesz lementve. A többi platformon mindig van Asztal, ha mégse ta
 
 ### Haladó funkciók
 
-| Kapcsoló            | Leírás                     |
-|---------------------|----------------------------|
-| -v/-vv              | Részletes kimenet          |
-| -Lxx                | Nyelvkód kikényszerítés    |
-| -1..9               | Buffer méret beállítása    |
-| -a                  | Minden meghajtó listázása  |
-| -c                  | Összehasonlítás írás előtt |
-| -s\[baud]/-S\[baud] | Soros portok használata    |
-| -f(xlfd)            | X11 font megadása kézzel   |
-| --version           | Kiírja a verziót           |
+| Kapcsoló            | Leírás                      |
+|---------------------|-----------------------------|
+| -v/-vv              | Részletes kimenet           |
+| -Lxx                | Nyelvkód kikényszerítés     |
+| -1..9               | Buffer méret beállítása     |
+| -a                  | Minden meghajtó listázása   |
+| -f                  | Mindenképp kiírja a blokkot |
+| -s\[baud]/-S\[baud] | Soros portok használata     |
+| -F(xlfd)            | X11 font megadása kézzel    |
+| --version           | Kiírja a verziót            |
 | (könyvtár)          | Az első nem-kapcsoló a mentési könyvtár |
 
 Windows felhasználóknak: jobb-klikk az usbimager.exe-n, majd választd a "Parancsikon létrehozása" menüt. Aztán jobb-klikk az újonnan
@@ -202,8 +202,9 @@ szótárat használja. Ha nincs ilyen szótár, akkor angol nyelvre vált.
 A szám kapcsolók a buffer méretét állítják a kettő hatványa Megabájtra (0 = 1M, 1 = 2M, 2 = 4M, 3 = 8M, 4 = 16M, ... 9 = 512M). Ha nincs
 megadva, a buffer méret alapértelmezetten 1 Megabájt.
 
-A '-c' kapcsoló hatására előbb beolvassa a lemezről az adatot, összehasonlítja a bufferben lévővel, és csak akkor írja ki, ha eltérnek.
-Ez hasznos lehet olyan eszközök esetén, amiknél az írás nagyon lassú, az olvasás viszont gyors.
+Alapesetben előbb beolvas a lemezről egy blokknyi adatot, összehasonlítja a bufferben lévővel, és csak akkor írja ki, ha eltérnek.
+Ez hasznos olyan eszközök esetén, amiknél az írás nagyon lassú, az írási ciklus véges, az olvasás viszont gyors. A '-f' kapcsoló
+hatására nincs összehosnlítás, mindenképp kiírja a blokkot.
 
 Ha az USBImager-t '-s' (kisbetű) kapcsolóval indítod, akkor a soros portra is engedi küldeni a lemezképeket. Ehhez szükséges, hogy a
 felhasználó az "uucp" illetve a "dialout" csoport tagja legyen (disztribúciónként eltérő, használd a "ls -la /dev|grep tty" parancsot).
@@ -232,11 +233,11 @@ Ha más baud-ot szeretnél, csak add meg a kapcsoló után, pl. "-s57600" vagy "
 
 FIGYELEM: nem minden soros port kezeli az összes baud rátát. Ellenőrizd a kézikönyvében.
 
-A '-f(xlfd)' (font) kapcsoló lehetővé teszi, hogy kézzel megadhassuk, melyik X11 fontot használja (az X11 variánsok esetén működik csak).
+A '-F(xlfd)' (font) kapcsoló lehetővé teszi, hogy kézzel megadhassuk, melyik X11 fontot használja (az X11 variánsok esetén működik csak).
 A megadott XLFD-nek mindenképp "iso10646-1"-ra kell végződnie, mert csak az UNICODE fontokat kezeli. Például (a macskaköröm azért
 kell, hogy a shell ne oldja fel a csillagot):
 ```
-./usbimager "-f-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1" -v
+./usbimager "-F-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1" -v
 ```
 
 Fordítás
@@ -263,12 +264,12 @@ Szerzők
 Hozzájárulások
 --------------
 
-Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, és különösen
+Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, @9001, és különösen
 @tvjon-nak, @CaptainMidnight-nak és @gitlabhack-nek amiért több különböző platformon és számos különböző eszközzel is letesztelték az USBImager-t.
 
 Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani, @hrko99 (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel), @tomasz86 (kóreai), @flaribbit (kínai).
 
-További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért.
+További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért, amikor a VirtualBoxom beszart.
 
 Legjobbakat,
 

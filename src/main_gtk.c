@@ -27,7 +27,9 @@
  *
  */
 
-#include <pthread.h>
+/* wether to start a separate thread for reader / writer */
+/*#define USE_THREADS*/
+
 #include <errno.h>
 #include <sys/stat.h>
 #include <gtk/gtk.h>
@@ -44,8 +46,9 @@ static GtkWidget *mainwin, *vbox, *hbox1, *source, *sourceButton, *writeButton, 
 GtkWidget *hbox2, *hbox3, *readButton, *verify, *compr, *blksize;
 #endif
 static int blksizesel = 0;
-pthread_t thrd;
-pthread_attr_t tha;
+#ifdef USE_THREADS
+GThread *thrd = NULL;
+#endif
 char *main_errorMessage;
 
 void main_addToCombobox(char *option)
@@ -58,7 +61,7 @@ void main_getErrorMessage()
     main_errorMessage = errno ? strerror(errno) : NULL;
 }
 
-static void onDone(void *data)
+static int onDone(void *data)
 {
 #if !defined(USE_WRONLY) || !USE_WRONLY
     int targetId = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
@@ -77,9 +80,19 @@ static void onDone(void *data)
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), 0);
     gtk_label_set_label(GTK_LABEL(status), (char*)data);
     main_errorMessage = NULL;
+    return 0;
 }
 
-void main_onProgress(void *data)
+void main_onDone(void *data)
+{
+#ifdef USE_THREADS
+    g_idle_add(onDone, data);
+#else
+    onDone(data);
+#endif
+}
+
+static int onProgress(void *data)
 {
     char textstat[128];
     int pos = 0;
@@ -87,18 +100,42 @@ void main_onProgress(void *data)
     if(data)
         pos = stream_status((stream_t*)data, textstat, 0);
 
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), (gdouble)pos);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), (gdouble)pos/100.0);
     gtk_label_set_label(GTK_LABEL(status), !data ? lang[L_WAITING] : textstat);
+#ifndef USE_THREADS
+    while(gtk_events_pending()) gtk_main_iteration();
+#endif
+    return 0;
 }
 
-static void onThreadError(void *data)
+void main_onProgress(void *data)
+{
+#ifdef USE_THREADS
+    g_idle_add(onProgress, data);
+#else
+    onProgress(data);
+#endif
+}
+
+static int onThreadError(void *data)
 {
     GtkWidget *mbox = gtk_message_dialog_new(GTK_WINDOW(mainwin), 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", (char*)data);
     gtk_window_set_title(GTK_WINDOW(mbox), main_errorMessage && *main_errorMessage ? main_errorMessage : lang[L_ERROR]);
     gtk_window_set_default_size(GTK_WINDOW(mbox), 200, 64);
     gtk_dialog_run(GTK_DIALOG(mbox));
     gtk_widget_destroy(mbox);
+    return 0;
 }
+
+void main_onThreadError(void *data)
+{
+#ifdef USE_THREADS
+    g_idle_add(onThreadError, data);
+#else
+    onThreadError(data);
+#endif
+}
+
 
 /**
  * Function that reads from input and writes to disk
@@ -156,27 +193,27 @@ static void *writerRoutine(void *data)
                                 main_onProgress(&ctx);
                             } else {
                                 if(errno) main_errorMessage = strerror(errno);
-                                onThreadError(lang[L_WRTRGERR]);
+                                main_onThreadError(lang[L_WRTRGERR]);
                                 break;
                             }
                         }
                     }
                 } else {
-                    onThreadError(lang[L_RDSRCERR]);
+                    main_onThreadError(lang[L_RDSRCERR]);
                     break;
                 }
             }
             disks_close((void*)((long int)dst));
         } else {
-            onThreadError(lang[dst == -1 ? L_TRGERR : (dst == -2 ? L_UMOUNTERR : (dst == -4 ? L_COMMERR : L_OPENTRGERR))]);
+            main_onThreadError(lang[dst == -1 ? L_TRGERR : (dst == -2 ? L_UMOUNTERR : (dst == -4 ? L_COMMERR : L_OPENTRGERR))]);
         }
         stream_close(&ctx);
     } else {
         if(errno) main_errorMessage = strerror(errno);
-        onThreadError(lang[dst == 2 ? L_ENCZIPERR : (dst == 3 ? L_CMPZIPERR : (dst == 4 ? L_CMPERR : L_SRCERR))]);
+        main_onThreadError(lang[dst == 2 ? L_ENCZIPERR : (dst == 3 ? L_CMPZIPERR : (dst == 4 ? L_CMPERR : L_SRCERR))]);
     }
     stream_status(&ctx, lpStatus, 1);
-    onDone(&lpStatus);
+    main_onDone(&lpStatus);
     if(verbose) printf("Worker thread finished.\r\n");
     return NULL;
 }
@@ -200,7 +237,11 @@ static void onWriteButtonClicked(GtkButton *btn, gpointer data)
     main_errorMessage = NULL;
 
     if(verbose) printf("Starting worker thread for writing.\r\n");
-    pthread_create(&thrd, &tha, writerRoutine, NULL);
+#ifdef USE_THREADS
+    thrd = g_thread_new("writer", writerRoutine, NULL);
+#else
+    writerRoutine(NULL);
+#endif
 }
 
 #if !defined(USE_WRONLY) || !USE_WRONLY
@@ -259,12 +300,12 @@ static void *readerRoutine(void *data)
                         main_onProgress(&ctx);
                     } else {
                         if(errno) main_errorMessage = strerror(errno);
-                        onThreadError(lang[L_WRIMGERR]);
+                        main_onThreadError(lang[L_WRIMGERR]);
                         break;
                     }
                 } else {
                     if(errno) main_errorMessage = strerror(errno);
-                    onThreadError(lang[L_RDSRCERR]);
+                    main_onThreadError(lang[L_RDSRCERR]);
                     break;
                 }
             }
@@ -272,14 +313,14 @@ static void *readerRoutine(void *data)
             if(errno == ENOSPC) remove(fn);
         } else {
             if(errno) main_errorMessage = strerror(errno);
-            onThreadError(lang[L_OPENIMGERR]);
+            main_onThreadError(lang[L_OPENIMGERR]);
         }
         disks_close((void*)((long int)src));
     } else {
-        onThreadError(lang[src == -1 ? L_TRGERR : (src == -2 ? L_UMOUNTERR : (src == -4 ? L_COMMERR : L_OPENTRGERR))]);
+        main_onThreadError(lang[src == -1 ? L_TRGERR : (src == -2 ? L_UMOUNTERR : (src == -4 ? L_COMMERR : L_OPENTRGERR))]);
     }
     stream_status(&ctx, lpStatus, 1);
-    onDone(&lpStatus);
+    main_onDone(&lpStatus);
     if(verbose) printf("Worker thread finished.\r\n");
     return NULL;
 }
@@ -301,7 +342,11 @@ static void onReadButtonClicked(GtkButton *btn, gpointer data)
     gtk_label_set_label(GTK_LABEL(status), "");
     main_errorMessage = NULL;
     if(verbose) printf("Starting worker thread for reading.\r\n");
-    pthread_create(&thrd, &tha, readerRoutine, NULL);
+#ifdef USE_THREADS
+    thrd = g_thread_new("reader", readerRoutine, NULL);
+#else
+    readerRoutine(NULL);
+#endif
 }
 
 static void refreshBlkSize(GtkWidget *w, gpointer data)
@@ -336,7 +381,8 @@ printf("refreshTarget evt '%x' focus %d vis %d grab %d default %d state %d flags
     gtk_widget_queue_resize(target);
     gtk_widget_queue_allocate(target);
     gtk_widget_queue_draw(target);
-    gtk_widget_set_sensitive(target, TRUE);
+    gtk_widget_show_all(GTK_WIDGET(mainwin));
+    while(gtk_events_pending()) gtk_main_iteration();
     if(current < 0 || current >= gtk_tree_model_iter_n_children(GTK_TREE_MODEL(gtk_combo_box_get_model(GTK_COMBO_BOX(target))), NULL))
         current = 0;
     gtk_combo_box_set_active(GTK_COMBO_BOX(target), current);
@@ -379,7 +425,9 @@ static void onClosing(GtkWidget *w, gpointer data)
 {
     (void)w;
     (void)data;
-    if(thrd) { pthread_cancel(thrd); thrd = 0; }
+#ifdef USE_THREADS
+    if(thrd) { g_thread_unref(thrd); thrd = NULL; }
+#endif
     gtk_widget_destroy(mainwin);
     gtk_main_quit();
 }
@@ -469,9 +517,6 @@ int main(int argc, char **argv)
         if(bkpdir) printf("bkpdir '%s'\r\n", bkpdir);
 #endif
     }
-
-    pthread_attr_init(&tha);
-    memset(&thrd, 0, sizeof(pthread_t));
 
     gtk_init(&argc, &argv);
 
@@ -580,7 +625,8 @@ Segmentation fault (core dumped)
 
     gtk_widget_show_all(GTK_WIDGET(mainwin));
     gtk_main();
-    if(thrd) { pthread_cancel(thrd); thrd = 0; }
-    pthread_attr_destroy(&tha);
+#ifdef USE_THREADS
+    if(thrd) { g_thread_unref(thrd); thrd = NULL; }
+#endif
     return 0;
 }

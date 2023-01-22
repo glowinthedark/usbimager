@@ -108,9 +108,9 @@ else
 LIBS += libui/raspbian.a
 endif
 endif
-endif
 CFLAGS += -pthread
 LDFLAGS += -pthread
+endif
 ifneq ("$(wildcard /usr/bin/pkg-config)","")
 LIBS += $(shell pkg-config --libs gtk+-3.0)
 else

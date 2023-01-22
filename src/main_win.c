@@ -53,7 +53,7 @@ wchar_t **lang;
 extern char *dict[NUMLANGS][NUMTEXTS + 1];
 int blksizesel = 0;
 
-static HWND mainHwndDlg;
+static HWND mainHwndDlg = NULL;
 static wchar_t *bkpdir = NULL;
 
 wchar_t *main_errorMessage;
@@ -78,10 +78,12 @@ void main_getErrorMessage()
 void main_onProgress(void *data)
 {
     (void)data;
-    SendDlgItemMessage(mainHwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, 0, 0);
-    SetWindowTextW(GetDlgItem(mainHwndDlg, IDC_MAINDLG_STATUS), lang[L_WAITING]);
-    ShowWindow(GetDlgItem(mainHwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
-    ShowWindow(GetDlgItem(mainHwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+    if(mainHwndDlg) {
+        SendDlgItemMessage(mainHwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, 0, 0);
+        SetWindowTextW(GetDlgItem(mainHwndDlg, IDC_MAINDLG_STATUS), lang[L_WAITING]);
+        ShowWindow(GetDlgItem(mainHwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
+        ShowWindow(GetDlgItem(mainHwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+    }
 }
 
 static void MainDlgMsgBox(HWND hwndDlg, wchar_t *message)
@@ -104,22 +106,24 @@ static void onDone(HWND hwndDlg)
     LRESULT index;
     /* give time to the NT kernel to re-mount volumes */
     SleepEx(500, 0);
-    index = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), TRUE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SELECT), TRUE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_TARGET_LIST),TRUE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_WRITE), TRUE);
+    if(mainHwndDlg) {
+        index = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SELECT), TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_TARGET_LIST),TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_WRITE), TRUE);
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_READ), index >= 0 && index < DISKS_MAX && disks_targets[index] >= 1024 ? FALSE : TRUE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_VERIFY), TRUE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_COMPRESS), TRUE);
-    EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_BLKSIZE), TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_READ), index >= 0 && index < DISKS_MAX && disks_targets[index] >= 1024 ? FALSE : TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_VERIFY), TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_COMPRESS), TRUE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_BLKSIZE), TRUE);
 #else
-    (void)index;
+        (void)index;
 #endif
-    SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, 0, 0);
-    ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
-    ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+        SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, 0, 0);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
+        ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+    }
 }
 
 /**
@@ -161,7 +165,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
         if (hTargetDevice != NULL && hTargetDevice != (HANDLE)-1 && hTargetDevice != (HANDLE)-2 && hTargetDevice != (HANDLE)-3 && hTargetDevice != (HANDLE)-4) {
             totalNumberOfBytesWritten.QuadPart = 0;
 
-            while(1) {
+            while(mainHwndDlg) {
                 int numberOfBytesRead;
 
                 if((numberOfBytesRead = stream_read(&ctx)) >= 0) {
@@ -311,7 +315,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
         ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), SW_HIDE);
         ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), SW_SHOW);
         if(fn && !stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {
-            while(ctx.readSize < ctx.fileSize) {
+            while(mainHwndDlg && ctx.readSize < ctx.fileSize) {
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
                 if(ReadFile(src, ctx.buffer, size, &numberOfBytesRead, NULL)) {
@@ -454,6 +458,7 @@ static INT_PTR CALLBACK MainDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
         case WM_CLOSE:
             EndDialog(hwndDlg, 0);
+            mainHwndDlg = NULL;
             return TRUE;
 
         case WM_COMMAND:

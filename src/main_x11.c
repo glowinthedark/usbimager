@@ -76,7 +76,7 @@ extern char *dict[NUMLANGS][NUMTEXTS + 1];
 
 static Display* dpy;
 static int scr, frame_left, frame_top;
-static Window mainwin;
+static Window mainwin = 0;
 static XColor colors[NUM_COLOR];
 static XFontStruct *font = NULL;
 static GC txtgc, shdgc, statgc, gc;
@@ -331,7 +331,7 @@ static void mainProgress(Window win, int x, int y, int w, int percentage)
         { x+1, y, x+w-1, y }, { x, y+1, x, y+4 },
         { x+w, y+1, x+w, y+4 }, { x+1, y+5, x+w-1, y+5 }
     };
-    if(w < 2) return;
+    if(w < 2 || !mainwin) return;
     s = (w - 2) * percentage / 100;
     XSetForeground(dpy, gc, colors[color_btnbrd2].pixel);
     XDrawSegments(dpy, win, gc, border, 4);
@@ -585,6 +585,7 @@ static void onQuit()
     XFreeCursor(dpy, pointer);
     XDestroyWindow(dpy, mainwin);
     XCloseDisplay(dpy);
+    mainwin = 0;
 }
 
 void main_onProgress(void *data)
@@ -593,34 +594,36 @@ void main_onProgress(void *data)
     XWindowAttributes  wa;
     XEvent e;
 
-    if(!ctx) {
-        progress = 0;
-        strcpy(status, lang[L_WAITING]);
-    } else
-        progress = stream_status(ctx, status, 0);
+    if(mainwin) {
+        if(!ctx) {
+            progress = 0;
+            strcpy(status, lang[L_WAITING]);
+        } else
+            progress = stream_status(ctx, status, 0);
 
-    if(XPending(dpy)) {
-        XNextEvent(dpy, &e);
-        if(e.type == ClientMessage && (Atom)(e.xclient.data.l[0]) == delAtom) {
-            if(ctx && ctx->g) stream_close(ctx);
-            onQuit();
-            exit(1);
+        if(XPending(dpy)) {
+            XNextEvent(dpy, &e);
+            if(e.type == ClientMessage && (Atom)(e.xclient.data.l[0]) == delAtom) {
+                if(ctx && ctx->g) stream_close(ctx);
+                onQuit();
+                exit(1);
+            }
+            if(e.type == Expose && !e.xexpose.count) {
+                mainRedraw();
+                XFlush(dpy);
+                return;
+            }
         }
-        if(e.type == Expose && !e.xexpose.count) {
-            mainRedraw();
-            XFlush(dpy);
-            return;
+        XGetWindowAttributes(dpy, mainwin, &wa);
+        half = wa.width/2;
+        if(wa.height > 14 + fonth) mainProgress(mainwin, 10, wa.height-14-fonth, wa.width - 20, progress);
+        if(wa.height > 4 + fonth) {
+            XSetForeground(dpy, gc, colors[color_winbg].pixel);
+            XFillRectangle(dpy, mainwin, gc, 10, wa.height-4-fonth, wa.width - 20, fonth);
+            mainPrint(mainwin, statgc, 10, wa.height-4-fonth, wa.width - 20, 0, status);
         }
+        XFlush(dpy);
     }
-    XGetWindowAttributes(dpy, mainwin, &wa);
-    half = wa.width/2;
-    if(wa.height > 14 + fonth) mainProgress(mainwin, 10, wa.height-14-fonth, wa.width - 20, progress);
-    if(wa.height > 4 + fonth) {
-        XSetForeground(dpy, gc, colors[color_winbg].pixel);
-        XFillRectangle(dpy, mainwin, gc, 10, wa.height-4-fonth, wa.width - 20, fonth);
-        mainPrint(mainwin, statgc, 10, wa.height-4-fonth, wa.width - 20, 0, status);
-    }
-    XFlush(dpy);
 }
 
 static void onThreadError(void *data)
@@ -708,7 +711,7 @@ static void *writerRoutine()
     if(!dst) {
         dst = (int)((long int)disks_open(targetId, ctx.fileSize));
         if(dst > 0) {
-            while(1) {
+            while(mainwin) {
                 if((numberOfBytesRead = stream_read(&ctx)) >= 0) {
                     if(numberOfBytesRead == 0) {
                         if(!ctx.fileSize) ctx.fileSize = ctx.readSize;
@@ -827,7 +830,7 @@ static void *readerRoutine()
         strcpy(source, fn);
         mainRedraw();
         if(!stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {
-            while(ctx.readSize < ctx.fileSize) {
+            while(mainwin && ctx.readSize < ctx.fileSize) {
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
                 numberOfBytesRead = (int)read(src, ctx.buffer, size);

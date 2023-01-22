@@ -41,7 +41,7 @@ char **lang = NULL;
 extern char *dict[NUMLANGS][NUMTEXTS + 1];
 
 static char *bkpdir = NULL;
-static GtkWidget *mainwin, *vbox, *hbox1, *source, *sourceButton, *writeButton, *target, *pbar, *status, *hboxhack;
+static GtkWidget *mainwin = NULL, *vbox, *hbox1, *source, *sourceButton, *writeButton, *target, *pbar, *status, *hboxhack;
 #if !defined(USE_WRONLY) || !USE_WRONLY
 GtkWidget *hbox2, *hbox3, *readButton, *verify, *compr, *blksize;
 #endif
@@ -64,57 +64,62 @@ void main_getErrorMessage()
 static int onDone(void *data)
 {
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    int targetId = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
+    int targetId;
 #endif
-    gtk_widget_set_sensitive(source, TRUE);
-    gtk_widget_set_sensitive(sourceButton, TRUE);
-    gtk_widget_set_sensitive(target, TRUE);
-    gtk_widget_set_sensitive(writeButton, TRUE);
+    if(mainwin) {
+        gtk_widget_set_sensitive(source, TRUE);
+        gtk_widget_set_sensitive(sourceButton, TRUE);
+        gtk_widget_set_sensitive(target, TRUE);
+        gtk_widget_set_sensitive(writeButton, TRUE);
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] < 1024)
-        gtk_widget_set_sensitive(readButton, TRUE);
-    gtk_widget_set_sensitive(verify, TRUE);
-    gtk_widget_set_sensitive(compr, TRUE);
-    gtk_widget_set_sensitive(blksize, TRUE);
+        targetId = gtk_combo_box_get_active(GTK_COMBO_BOX(target));
+        if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] < 1024)
+            gtk_widget_set_sensitive(readButton, TRUE);
+        gtk_widget_set_sensitive(verify, TRUE);
+        gtk_widget_set_sensitive(compr, TRUE);
+        gtk_widget_set_sensitive(blksize, TRUE);
 #endif
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), 0);
-    gtk_label_set_label(GTK_LABEL(status), (char*)data);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), 0);
+        gtk_label_set_label(GTK_LABEL(status), (char*)data);
+    }
     main_errorMessage = NULL;
     return 0;
 }
 
 void main_onDone(void *data)
 {
+    if(mainwin) {
 #ifdef USE_THREADS
-    g_idle_add(onDone, data);
+        g_idle_add(onDone, data);
 #else
-    onDone(data);
+        onDone(data);
 #endif
+    }
 }
 
 static int onProgress(void *data)
 {
     char textstat[128];
     int pos = 0;
-
-    if(data)
-        pos = stream_status((stream_t*)data, textstat, 0);
-
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), (gdouble)pos/100.0);
-    gtk_label_set_label(GTK_LABEL(status), !data ? lang[L_WAITING] : textstat);
-#ifndef USE_THREADS
-    while(gtk_events_pending()) gtk_main_iteration();
-#endif
+    if(mainwin) {
+        if(data)
+            pos = stream_status((stream_t*)data, textstat, 0);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), (gdouble)pos/100.0);
+        gtk_label_set_label(GTK_LABEL(status), !data ? lang[L_WAITING] : textstat);
+    }
     return 0;
 }
 
 void main_onProgress(void *data)
 {
+    if(mainwin) {
 #ifdef USE_THREADS
-    g_idle_add(onProgress, data);
+        g_idle_add(onProgress, data);
 #else
-    onProgress(data);
+        onProgress(data);
+        while(gtk_events_pending()) gtk_main_iteration();
 #endif
+    }
 }
 
 static int onThreadError(void *data)
@@ -158,7 +163,7 @@ static void *writerRoutine(void *data)
     if(!dst) {
         dst = (int)((long int)disks_open(targetId, ctx.fileSize));
         if(dst > 0) {
-            while(1) {
+            while(mainwin) {
                 if((numberOfBytesRead = stream_read(&ctx)) >= 0) {
                     if(numberOfBytesRead == 0) {
                         if(!ctx.fileSize) ctx.fileSize = ctx.readSize;
@@ -290,7 +295,7 @@ static void *readerRoutine(void *data)
         gtk_entry_set_text(GTK_ENTRY(source), fn);
 
         if(!stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {
-            while(ctx.readSize < ctx.fileSize) {
+            while(mainwin && ctx.readSize < ctx.fileSize) {
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
                 numberOfBytesRead = (int)read(src, ctx.buffer, size);
@@ -430,6 +435,7 @@ static void onClosing(GtkWidget *w, gpointer data)
 #endif
     gtk_widget_destroy(mainwin);
     gtk_main_quit();
+    mainwin = NULL;
 }
 
 int main(int argc, char **argv)

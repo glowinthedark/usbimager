@@ -39,7 +39,7 @@ char **lang = NULL;
 extern char *dict[NUMLANGS][NUMTEXTS + 1];
 
 static char *bkpdir = NULL;
-static uiWindow *mainwin;
+static uiWindow *mainwin = NULL;
 static uiButton *sourceButton;
 static uiEntry *source;
 static uiBox *targetCont;
@@ -71,39 +71,49 @@ void main_getErrorMessage()
 static void onDone(void *data)
 {
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    int targetId = uiComboboxSelected(target);
+    int targetId;
 #endif
-    uiControlEnable(uiControl(source));
-    uiControlEnable(uiControl(sourceButton));
-    uiControlEnable(uiControl(target));
-    uiControlEnable(uiControl(writeButton));
+    if(mainwin) {
+        uiControlEnable(uiControl(source));
+        uiControlEnable(uiControl(sourceButton));
+        uiControlEnable(uiControl(target));
+        uiControlEnable(uiControl(writeButton));
 #if !defined(USE_WRONLY) || !USE_WRONLY
-    if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] < 1024)
-        uiControlEnable(uiControl(readButton));
-    uiControlEnable(uiControl(verify));
-    uiControlEnable(uiControl(compr));
-    uiControlEnable(uiControl(blksize));
+        targetId = uiComboboxSelected(target);
+        if(targetId < 0 || targetId >= DISKS_MAX || disks_targets[targetId] < 1024)
+            uiControlEnable(uiControl(readButton));
+        uiControlEnable(uiControl(verify));
+        uiControlEnable(uiControl(compr));
+        uiControlEnable(uiControl(blksize));
 #endif
-    uiProgressBarSetValue(pbar, 0);
-    uiLabelSetText(status, (char*)data);
+        uiProgressBarSetValue(pbar, 0);
+        uiLabelSetText(status, (char*)data);
+    }
     main_errorMessage = NULL;
+}
+
+void main_onDone(void *data)
+{
+    if(mainwin)
+        uiQueueMain(onDone, data);
 }
 
 static void onProgress(void *data)
 {
     char textstat[128];
     int pos = 0;
-
-    if(data)
-        pos = stream_status((stream_t*)data, textstat, 0);
-
-    uiProgressBarSetValue(pbar, pos);
-    uiLabelSetText(status, !data ? lang[L_WAITING] : textstat);
+    if(mainwin) {
+        if(data)
+            pos = stream_status((stream_t*)data, textstat, 0);
+        uiProgressBarSetValue(pbar, pos);
+        uiLabelSetText(status, !data ? lang[L_WAITING] : textstat);
+    }
 }
 
 void main_onProgress(void *data)
 {
-    uiQueueMain(onProgress, data);
+    if(mainwin)
+        uiQueueMain(onProgress, data);
 }
 
 static void onThreadError(void *data)
@@ -132,7 +142,7 @@ static void *writerRoutine(void *data)
     if(!dst) {
         dst = (int)((long int)disks_open(targetId, ctx.fileSize));
         if(dst > 0) {
-            while(1) {
+            while(mainwin) {
                 if((numberOfBytesRead = stream_read(&ctx)) >= 0) {
                     if(numberOfBytesRead == 0) {
                         if(!ctx.fileSize) ctx.fileSize = ctx.readSize;
@@ -164,7 +174,7 @@ static void *writerRoutine(void *data)
                                         break;
                                     }
                                 }
-                                uiQueueMain(onProgress, &ctx);
+                                main_onProgress(&ctx);
                             } else {
                                 if(errno) main_errorMessage = strerror(errno);
                                 uiQueueMain(onThreadError, lang[L_WRTRGERR]);
@@ -187,7 +197,7 @@ static void *writerRoutine(void *data)
         uiQueueMain(onThreadError, lang[dst == 2 ? L_ENCZIPERR : (dst == 3 ? L_CMPZIPERR : (dst == 4 ? L_CMPERR : L_SRCERR))]);
     }
     stream_status(&ctx, lpStatus, 1);
-    uiQueueMain(onDone, &lpStatus);
+    main_onDone(&lpStatus);
     if(verbose) printf("Worker thread finished.\r\n");
     return NULL;
 }
@@ -266,14 +276,14 @@ static void *readerRoutine(void *data)
         uiQueueMain(onSourceSet, fn);
 
         if(!stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {
-            while(ctx.readSize < ctx.fileSize) {
+            while(mainwin && ctx.readSize < ctx.fileSize) {
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
                 numberOfBytesRead = (int)read(src, ctx.buffer, size);
                 if(verbose > 1) printf("read(%d) numberOfBytesRead %d errno=%d\n", size, numberOfBytesRead, errno);
                 if(numberOfBytesRead == size) {
                     if(stream_write(&ctx, ctx.buffer, size)) {
-                        uiQueueMain(onProgress, &ctx);
+                        main_onProgress(&ctx);
                     } else {
                         if(errno) main_errorMessage = strerror(errno);
                         uiQueueMain(onThreadError, lang[L_WRIMGERR]);
@@ -296,7 +306,7 @@ static void *readerRoutine(void *data)
         uiQueueMain(onThreadError, lang[src == -1 ? L_TRGERR : (src == -2 ? L_UMOUNTERR : (src == -4 ? L_COMMERR : L_OPENTRGERR))]);
     }
     stream_status(&ctx, lpStatus, 1);
-    uiQueueMain(onDone, &lpStatus);
+    main_onDone(&lpStatus);
     if(verbose) printf("Worker thread finished.\r\n");
     return NULL;
 }
@@ -380,6 +390,7 @@ static int onClosing(uiWindow *w, void *data)
     (void)data;
     if(thrd) { pthread_cancel(thrd); thrd = 0; }
     uiQuit();
+    mainwin = NULL;
     return 1;
 }
 
@@ -387,6 +398,7 @@ static int onShouldQuit(void *data)
 {
     if(thrd) { pthread_cancel(thrd); thrd = 0; }
     uiControlDestroy(uiControl(uiWindow(data)));
+    mainwin = NULL;
     return 1;
 }
 

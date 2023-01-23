@@ -94,7 +94,7 @@ void disks_refreshlist()
     CFMutableDictionaryRef  matching_dictionary = NULL;
     long int size = 0;
     int i = 0, j = 1024, writ = 0;
-    const char *deviceName = 0, *vendorName = NULL, *productName = NULL;
+    const char *deviceName = 0, *vendorName = NULL, *productName = NULL, *sizechar = NULL;
     CFTypeRef writable = NULL, bsdName = NULL, vendor = NULL, product = NULL, disksize = NULL;
     struct stat st;
 
@@ -104,7 +104,11 @@ void disks_refreshlist()
     disks_targets[i++] = 999;
     main_addToCombobox("disk999 ./test.bin");
 #endif
+#if (MAC_OS_X_VERSION_MIN_REQUIRED < 120000)
     k_result = IOMasterPort(MACH_PORT_NULL, &master_port);
+#else
+    k_result = IOMainPort(MACH_PORT_NULL, &master_port);
+#endif
     if (KERN_SUCCESS != k_result) {
         if(verbose > 1) printf("IOMasterPort failed %d\n", k_result);
         return;
@@ -127,8 +131,8 @@ void disks_refreshlist()
                                                                kIORegistryIterateRecursively );
         if (!bsdName) continue;
 
-        if(verbose > 1) printf("%s: ", bsdname);
         deviceName = [[NSString stringWithFormat: @"%@", bsdName] UTF8String];
+        if(verbose > 1) printf("%s: ", deviceName);
         /* kIOUSBDeviceClassName lists some non-disks as writable disks (like USB-dongles with device driver storages) */
         if (!disks_all && (deviceName[0] == 'e' && deviceName[1] == 'n' && deviceName[2] >= '0' && deviceName[2] <= '9')) {
             CFRelease(bsdName); bsdName = NULL;
@@ -197,7 +201,10 @@ void disks_refreshlist()
             continue;
         }
 #endif
-        if(verbose > 1) printf("OK size %s", disksize);
+        if(verbose > 1) {
+            sizechar = [[NSString stringWithFormat: @"%@", disksize] UTF8String];
+            printf("OK size %s", sizechar);
+        }
         if(size) {
             int sizeInGbTimes10 = (int)((long int)(10 * size) >> 30L);
             char *unit = lang[L_GIB];

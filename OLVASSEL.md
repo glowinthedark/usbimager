@@ -9,7 +9,7 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | Platform     | Felület      | Leírás                       |
 |--------------|--------------|------------------------------|
 | Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-i686-win-gdi.zip) | natív interfész<br>egyszerűsített, csak író felület |
-| MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8-intel-macosx-cocoa.zip)<br>[Cocoa wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.8_wo-intel-macosx-cocoa.zip) | natív interfész<br>egyszerűsített, csak író felület |
+| MacOSX       | [Cocoa](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-intel-macosx-cocoa.zip)<br>[Cocoa wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-intel-macosx-cocoa.zip) | natív interfész<br>egyszerűsített, csak író felület |
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban<br>binárisból generálva<br>minimális X11 verzió |
@@ -269,7 +269,7 @@ Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @M
 
 Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani, @hrko99 (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel), @tomasz86 (kóreai), @flaribbit (kínai).
 
-További köszönet @munntjlx-nek és @lfomartins-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért, amikor a VirtualBoxom beszart.
+További köszönet @munntjlx-nek, @lfomartins-nak és @luckman212-nek, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért, amikor a VirtualBoxom beszart.
 
 Legjobbakat,
 

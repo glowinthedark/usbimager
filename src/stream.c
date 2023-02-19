@@ -292,10 +292,14 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
     if(ctx->compBuf[0] == 0x1f && ctx->compBuf[1] == 0x8b) {
         /* gzip */
         if(verbose) printf(" gzip\r\n");
+        /* see issue #109, this might cause errors if uncompressed size is actually bigger than 4G,
+         * therefore don't mind the trailer, assume we don't know the uncompressed size */
+/*
         myseek(ctx->f, fs - 4L);
         if(!fread(&ctx->fileSize, 4, 1, ctx->f))
             ctx->fileSize = 0;
         myseek(ctx->f, hs);
+*/
         ctx->compSize = fs - 8;
         ctx->cmrdSize = hs;
         buff = ctx->compBuf + 3;

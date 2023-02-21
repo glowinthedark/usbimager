@@ -1555,15 +1555,21 @@ int main(int argc, char **argv)
         /* do some magic trying to get the default font with UNICODE glyphs */
         font = XLoadQueryFont(dpy, "-*-unifont-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
         if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-16-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-15-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-17-*-*-*-*-*-iso10646-1");
         if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-18-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-medium-r-*-*-19-*-*-*-*-*-iso10646-1");
         if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-16-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-15-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-17-*-*-*-*-*-iso10646-1");
         if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-18-*-*-*-*-*-iso10646-1");
+        if(!font) font = XLoadQueryFont(dpy, "-*-*-*-r-*-*-19-*-*-*-*-*-iso10646-1");
     }
     if(font) {
         XSetFont(dpy, txtgc, font->fid);
         fontfree = 1;
     } else {
-        /* fallback to default bitmap font. This probably only wotks with the English language */
+        /* fallback to default bitmap font. This probably only works with the English language */
         font = XQueryFont(dpy, XGContextFromGC(txtgc));
     }
     if(!font) { fprintf(stderr, "Unable to get font\n"); return 1; }

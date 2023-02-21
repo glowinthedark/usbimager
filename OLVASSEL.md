@@ -27,6 +27,13 @@ FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást
 7. nem, az USBImager nem egy `dd` frontend, hanem egy teljes értékű, ám mégis függőségmentes natív alkalmazás minden platformon.
 8. nem, az USBImagernek nem kell semmilyen DLL, az összes fájlformátum értelmező és kitömörítő már eleve benne van.
 
+FONTOS: folyton visszatérő probléma: a GTK verzió működik, de az X11 verzióban négyzetek vannak (vagy semmi) szöveg helyett. Ez
+nem USBImager probléma, hanem X11 fontconfig probléma. Telepítsd a disztród [unifont](https://packages.ubuntu.com/search?keywords=unifont)
+csomagját a javításhoz. Ha nem lenne ilyen csomag a disztródon, akkor töltsd le az `unifont-*-pcf.gz` fájlt [innen](https://unifoundry.com/unifont),
+másold be a `/usr/share/fonts/misc` mappába (vagy bármelyik másik könyvtárba, amit az `fc-list` kiír), és futtasd le az `fc-cache -vf`
+parancsot a fontgyorsítótár frissítéséhez. Ezt követően az USBImager már magától meg fogja találni és ezt fogja használni (csak a
+teljesség kedvéért, bármelyik másik UNICODE glifeket tartalmazó X11 font is megteszi).
+
 Képernyőképek
 -------------
 

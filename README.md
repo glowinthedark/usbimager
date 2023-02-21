@@ -24,7 +24,14 @@ NOTE: I have to say a few words on this, because this question is keep popping u
 5. `dd` doesn't quarantee that the data is actually physically written to the storage (not unless you use some additional options).
 6. `dd` doesn't stop you from making a terrible mistake (which is perfect for an expert, but not so much for a needs-to-image-once-in-a-century folks).
 7. no, USBImager isn't a frontend to `dd`, it is a fully-featured native application on all platforms.
-8. no, USBImager doesn`t need any DLLs, all the file format parsers and uncompressors are already included.
+8. no, USBImager doesn't need any DLLs, all the file format parsers and uncompressors are already included.
+
+NOTE: forever returning problem: the GTK version works, but the X11 version only shows boxes (or nothing) instead of text. This
+isn't an USBImager issue, rather X11 fontconfig problem. Install your distro's [unifont](https://packages.ubuntu.com/search?keywords=unifont)
+package to fix. If there were no such package in your distro, then download `unifont-*-pcf.gz` from [here](https://unifoundry.com/unifont),
+copy it under `/usr/share/fonts/misc` (or into any other directory listed by `fc-list`) and execute the `fc-cache -vf` command to
+update the font cache. After this USBImager should be able to find and use this font on its own (FYI, any other X11 font containing
+UNICODE glyphs would do).
 
 Screenshots
 -----------

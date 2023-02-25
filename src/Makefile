@@ -244,7 +244,7 @@ deb: $(TARGET)
 	@cp ../LICENSE DEBIAN/copyright
 	@echo "2.0" >debian-binary
 	@tar -czvf data.tar.gz usr
-ifeq ($(USE_LIBUI),)
+ifeq ($(USE_LIBUI)$(USE_GTK),)
 	@cp misc/deb_postinst DEBIAN/postinst
 	@chmod +x DEBIAN/postinst
 	@tar -C DEBIAN -czvf control.tar.gz control copyright md5sums postinst

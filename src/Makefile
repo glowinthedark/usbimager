@@ -117,6 +117,7 @@ else
 LIBS += -lgtk-3 -lgdk-3 -lgobject-2.0 -lglib-2.0
 endif
 FRM = linux-gtk
+GRP =
 endif
 ifneq ($(USE_UDISKS2)$(USE_GTK),)
 CFLAGS += -DUSE_UDISKS2=1 $(shell pkg-config --cflags udisks2) -I/usr/include/gio-unix-2.0
@@ -189,7 +190,7 @@ install: $(TARGET)
 ifneq ($(GRP),)
 	install -m 2755 -g $(GRP) $(TARGET) $(INSTDIR)/bin
 else
-	install -m 2755 -g disk $(TARGET) $(INSTDIR)/bin
+	install -m 755 $(TARGET) $(INSTDIR)/bin
 endif
 	cp misc/usbimager.desktop $(INSTDIR)/share/applications
 	cp misc/usbimager.8.gz $(INSTDIR)/share/man/man8

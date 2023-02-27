@@ -12,7 +12,7 @@ and creates backups. Available platforms: Windows, MacOSX and Linux. Its interfa
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-amd64.deb) | same as the Linux PC GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-armhf.deb) | same as the Raspberry Pi GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | same as the Linux PC GTK version with udisks2 support, but in an AUR package<br>generated from the binaries<br>minimal X11 version |
-| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-gtk.zip) | recommended<br>simplified, write-only interface<br>compatibility (requires udisks2) |
+| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-x86_64-linux-x11.zip)<br>[X11 uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_uf-x86_64-linux-x11.zip)<br>[X11 wo uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo_uf-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-gtk.zip) | recommended<br>simplified, write-only interface<br>with embedded Unifont, +512K<br>simplified interface with embedded Unifont, +512K<br>compatibility (requires udisks2) |
 | Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-aarch64-linux-x11.zip) | native interface, AArch32 (armv7l)<br>native interface, AArch64 (arm64) |
 
 NOTE: I have to say a few words on this, because this question is keep popping up constantly: Why not just use `dd`? My answers:
@@ -27,11 +27,14 @@ NOTE: I have to say a few words on this, because this question is keep popping u
 8. no, USBImager doesn't need any DLLs, all the file format parsers and uncompressors are already included.
 
 NOTE: forever returning problem: the GTK version works, but the X11 version only shows boxes (or nothing) instead of text. This
-isn't an USBImager issue, rather X11 fontconfig problem. Install your distro's [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont)
-package to fix. If there were no such package in your distro, then download `unifont-*-pcf.gz` from [here](https://unifoundry.com/unifont),
+isn't an USBImager issue, rather X11 fontconfig problem. Solutions:
+- Install your distro's [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont) package to fix.
+- If there were no such package in your distro, then download `unifont-*.pcf.gz` from [here](https://unifoundry.com/unifont),
 copy it under `/usr/share/fonts/misc` (or into any other directory listed by `fc-list`) and execute the `fc-cache -vf` command to
 update the font cache. After this USBImager should be able to find and use this font on its own (FYI, any other X11 font containing
 UNICODE glyphs would do).
+- Download one of the **uf** versions of USBImager. These are bigger binaries because they include Unifont, but in return they don't
+need X11 fontconfig (nor any X11 font) at all.
 
 Screenshots
 -----------
@@ -106,7 +109,7 @@ Comparison
 
 (1) - the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10.
 
-(2) - the portable executable's size on Windows platform. I couldn't download an official pre-compiled version of WIN32 Disk Imager, just the source.
+(2) - the portable executable's size on Windows platform. I couldn't download an official pre-compiled version of WIN32 Disk Imager, just the source. The **uf** versions of USBImager are bigger, ~800K, because they include Unifont.
 
 (3) - USBImager uses only non-buffered IO operations to make sure data is physically written to disk
 

@@ -13,7 +13,7 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban<br>binárisból generálva<br>minimális X11 verzió |
-| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-gtk.zip)  | javalott<br>egyszerűsített, csak író felület<br>kompatíbilitás (udisks2 is kell hozzá) |
+| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo-x86_64-linux-x11.zip)<br>[X11 uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_uf-x86_64-linux-x11.zip)<br>[X11 wo uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9_wo_uf-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-x86_64-linux-gtk.zip)  | javalott<br>egyszerűsített, csak író felület<br>beépített Unifont, +512K<br>egyszerűsített felület, beépített Unifont, +512K<br>kompatíbilitás (udisks2 is kell hozzá) |
 | Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.9-aarch64-linux-x11.zip) | natív interfész, AArch32 (armv7l)<br>natív interfész, AArch64 (arm64) |
 
 FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást felvetődik: miért ne `dd` inkább? A válaszom:
@@ -28,11 +28,14 @@ FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást
 8. nem, az USBImagernek nem kell semmilyen DLL, az összes fájlformátum értelmező és kitömörítő már eleve benne van.
 
 FONTOS: folyton visszatérő probléma: a GTK verzió működik, de az X11 verzióban négyzetek vannak (vagy semmi) szöveg helyett. Ez
-nem USBImager probléma, hanem X11 fontconfig probléma. Telepítsd a disztród [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont)
-csomagját a javításhoz. Ha nem lenne ilyen csomag a disztródon, akkor töltsd le az `unifont-*-pcf.gz` fájlt [innen](https://unifoundry.com/unifont),
+nem USBImager probléma, hanem X11 fontconfig probléma. Megoldások:
+- Telepítsd a disztród [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont) csomagját a javításhoz.
+- Ha nem lenne ilyen csomag a disztródon, akkor töltsd le az `unifont-*.pcf.gz` fájlt [innen](https://unifoundry.com/unifont),
 másold be a `/usr/share/fonts/misc` mappába (vagy bármelyik másik könyvtárba, amit az `fc-list` kiír), és futtasd le az `fc-cache -vf`
 parancsot a fontgyorsítótár frissítéséhez. Ezt követően az USBImager már magától meg fogja találni és ezt fogja használni (csak a
 teljesség kedvéért, bármelyik másik UNICODE glifeket tartalmazó X11 font is megteszi).
+- Valamelyik **uf** USBImager változatot töltsd le. Ezek nagyobb binárisok, mivel magukban foglalják az Unifont-ot, cserébe nem kell
+nekik az X11 fontconfig (sem semmilyen X11 font) egyáltalán.
 
 Képernyőképek
 -------------
@@ -108,7 +111,7 @@ Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogat
 
 (1) - a mellékelt bináris 10.14-en lett fordítva (mert nekem az van), de visszaigazolták, hogy a forrás 10.13 alatt is gond nélkül lefordul. Ezen felül [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) sikeresen tesztelte 10.10 alatt is.
 
-(2) - a szállítható futtatható mérete Windowson. A WIN32 Disk Imagerhez nem tudtam letölteni előre lefordított hivatalos csomagokat, csak forrást.
+(2) - a szállítható futtatható mérete Windowson. A WIN32 Disk Imagerhez nem tudtam letölteni előre lefordított hivatalos csomagokat, csak forrást. Az **uf** USBImager változatok nagyobbak, ~800K, mivel azok tartalmazzák az Unifont-ot.
 
 (3) - USBImager csak nem-bufferelt IO utasításokat használ, hogy a fizikális lemezreírás biztos legyen
 

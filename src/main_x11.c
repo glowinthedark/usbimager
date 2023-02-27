@@ -78,7 +78,6 @@ static Display* dpy;
 static int scr, frame_left, frame_top;
 static Window mainwin = 0;
 static XColor colors[NUM_COLOR];
-static XFontStruct *font = NULL;
 static GC txtgc, shdgc, statgc, gc;
 static Atom delAtom;
 static Pixmap icons_act, icons_ina;
@@ -87,9 +86,56 @@ static Cursor loading, pointer;
 static char *bkpdir = NULL;
 static char source[PATH_MAX], targetList[DISKS_MAX][128], status[128];
 static char blksizeList[10][128];
-static int fonth = 0, fonta = 0, fontfree = 0, inactive = 0, pressedBtn = 0, half;
+static int fonth = 0, fonta = 0, inactive = 0, pressedBtn = 0, half;
 static int needVerify = 1, needCompress = 0, progress = 0, numTargetList = 0, targetId = -1;
 static int mainsel = -1, sorting = 0, shift = 0, blksizesel = 0;
+#ifndef USE_UNIFONT
+static XFontStruct *font = NULL;
+static int fontfree = 0;
+#else
+/* embed GNU Unifont in SSFN2 format, because missing X11 fonts is a constant problem */
+#include "misc/unifont.h"
+uint8_t *fnt = NULL;
+char *ws = NULL;
+
+void printString(Window win, GC gc, int x, int y, char *s)
+{
+    unsigned char *ptr, *chr, *frg;
+    unsigned int c;
+    int i, j, k, l, m, n, o, p, X = x;
+    while(*s) {
+        if((*s & 128) != 0) {
+            if(!(*s & 32)) { c = ((*s & 0x1F)<<6)|(*(s+1) & 0x3F); s++; } else
+            if(!(*s & 16)) { c = ((*s & 0xF)<<12)|((*(s+1) & 0x3F)<<6)|(*(s+2) & 0x3F); s += 2; } else
+            if(!(*s & 8)) { c = ((*s & 0x7)<<18)|((*(s+1) & 0x3F)<<12)|((*(s+2) & 0x3F)<<6)|(*(s+3) & 0x3F); *s += 3; }
+            else c = 0;
+        } else c = *s;
+        s++;
+        if(c == '\r') { X = x; continue; } else
+        if(c == '\n') { X = x; y += fnt[11]; continue; }
+        for(ptr = chr = fnt + ((fnt[18] << 16) | (fnt[17] << 8) | fnt[16]), i = 0; i < 65536 && ptr < fnt + UNIFONT_SIZE; i++) {
+            if(ptr[0] == 0xFF) { i += 65535; ptr++; }
+            else if((ptr[0] & 0xC0) == 0xC0) { j = (((ptr[0] & 0x3F) << 8) | ptr[1]); i += j; ptr += 2; }
+            else if((ptr[0] & 0xC0) == 0x80) { j = (ptr[0] & 0x3F); i += j; ptr++; }
+            else { if((unsigned int)i == c) { chr = ptr; break; } ptr += 6 + ptr[1] * (ptr[0] & 0x40 ? 6 : 5); }
+        }
+        ptr = chr + 6; o = y;
+        for(i = n = 0; i < chr[1]; i++, ptr += chr[0] & 0x40 ? 6 : 5) {
+            if(ptr[0] == 255 && ptr[1] == 255) continue;
+            frg = fnt + (chr[0] & 0x40 ? ((ptr[5] << 24) | (ptr[4] << 16) | (ptr[3] << 8) | ptr[2]) : ((ptr[4] << 16) | (ptr[3] << 8) | ptr[2]));
+            if((frg[0] & 0xE0) != 0x80) continue;
+            o += (int)(ptr[1] - n); n = ptr[1];
+            k = ((frg[0] & 0x1F) + 1) << 3; j = frg[1] + 1; frg += 2;
+            for(m = 1; j; j--, n++, o++)
+                for(p = X, l = 0; l < k; l++, p++, m <<= 1) {
+                    if(m > 0x80) { frg++; m = 1; }
+                    if(*frg & m) XDrawPoint(dpy, win, gc, p, o);
+                }
+        }
+        X += chr[4]+1; y += chr[5];
+    }
+}
+#endif
 
 char *main_errorMessage = NULL;
 
@@ -116,10 +162,14 @@ static int fncmp(const void *a, const void *b)
 static int mainPrint(Window win, GC gc, int x, int y, int w, int style, char *s)
 {
     XRectangle clip = { x, y, w - (style & 3 ? 0 : 8), fonth };
-    int l, tw;
+    int l, tw = 0;
 #if USEUTF8 == 1
     unsigned int c;
+#ifndef USE_UNIFONT
     XChar2b str[PATH_MAX];
+#else
+    char *str = s;
+#endif
     int i;
 #endif
 
@@ -135,10 +185,16 @@ static int mainPrint(Window win, GC gc, int x, int y, int w, int style, char *s)
             else c = 0;
         } else c = *s;
         s++;
+#ifdef USE_UNIFONT
+        if(c < 65536) tw += ws[c] + 1;
+#else
         str[i].byte2 = c & 0xFF;
         str[i].byte1 = c >> 8;
+#endif
     }
+#ifndef USE_UNIFONT
     tw = XTextWidth16(font, str, i);
+#endif
 #else
     tw = XTextWidth(font, s, l);
 #endif
@@ -160,7 +216,11 @@ static int mainPrint(Window win, GC gc, int x, int y, int w, int style, char *s)
     if((style & 4) && !inactive) {
         XSetClipRectangles(dpy, shdgc, 0, 0, &clip, 1, Unsorted);
 #if USEUTF8 == 1
+#ifdef USE_UNIFONT
+        printString(win, shdgc, x+1, y+1, str);
+#else
         XDrawString16(dpy, win, shdgc, x+1, y+fonta+1, str, i);
+#endif
 #else
         XDrawString(dpy, win, shdgc, x+1, y+fonta+1, s, l);
 #endif
@@ -168,7 +228,11 @@ static int mainPrint(Window win, GC gc, int x, int y, int w, int style, char *s)
     }
     XSetClipRectangles(dpy, gc, 0, 0, &clip, 1, Unsorted);
 #if USEUTF8 == 1
+#ifdef USE_UNIFONT
+    printString(win, gc, x, y, str);
+#else
     XDrawString16(dpy, win, gc, x, y+fonta, str, i);
+#endif
 #else
     XDrawString(dpy, win, gc, x, y+fonta, s, l);
 #endif
@@ -575,7 +639,12 @@ void main_getErrorMessage()
 
 static void onQuit()
 {
+#ifdef USE_UNIFONT
+    if(fnt) free(fnt);
+    if(ws) free(ws);
+#else
     if(font && fontfree) XFreeFont(dpy, font);
+#endif
     XFreeGC(dpy, gc);
     XFreeGC(dpy, shdgc);
     XFreeGC(dpy, statgc);
@@ -948,7 +1017,7 @@ static void onSelectClicked(int byKey)
     char *s, *t, fn[PATH_MAX], path[PATH_MAX/FILENAME_MAX+64][FILENAME_MAX], **mounts = NULL, *recent;
     char tmp[PATH_MAX+FILENAME_MAX+1];
     int i, j, x, y, mw = 800, mh = 600, pathlen = 0, pathX[PATH_MAX/FILENAME_MAX+64], numMounts = 0;
-    int refresh = 1, pressedPath = -1, pressedBtn = -1, allfiles = 0, fns = 220, ds = 120, sel = -1;
+    int refresh = 1, pressedPath = -1, pressedBtn = -1, allfiles = 0, fns = 228, ds = 128, sel = -1;
     int scrollMounts = 0, overMount = -1, numFiles = 0, scrollFiles = 0, selFile = -1, lastFile = -2;
     filelist_t *files = NULL;
     uint64_t size;
@@ -1447,11 +1516,17 @@ ok:             if(selFile >=0 && selFile < numFiles) {
 
 int main(int argc, char **argv)
 {
+#if USE_UNIFONT
+    z_stream zstrm;
+    uint8_t *ptr;
+#else
+    char *fontName = NULL;
+#endif
     XEvent e;
     KeySym k;
     XTextProperty title_property;
     Atom a, t, *sa = NULL;
-    char colorName[16], *fontName = NULL, *title = "USBImager " USBIMAGER_VERSION;
+    char colorName[16], *title = "USBImager " USBIMAGER_VERSION;
     int i, j, ser;
     long *extents = NULL;
     unsigned long n, b;
@@ -1460,6 +1535,9 @@ int main(int argc, char **argv)
 #if USE_WRONLY
         "_wo"
 #endif
+#if USE_UNIFONT
+        "_uf"
+#endif
 #if USE_UDISKS2
         "_udisks2"
 #endif
@@ -1467,7 +1545,11 @@ int main(int argc, char **argv)
         " (build " USBIMAGER_BUILD ")"
 #endif
         " - MIT license, Copyright (C) 2020 bzt\r\n\r\n"
-        "./usbimager [-v|-vv|-a|-f|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-F(x)] <backup path>\r\n\r\n"
+        "./usbimager [-v|-vv|-a|-f|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)"
+#ifndef USE_UNIFONT
+        "|-F(x)"
+#endif
+        "] <backup path>\r\n\r\n"
         "https://gitlab.com/bztsrc/usbimager\r\n\r\n";
 
     for(j = 1; j < argc && argv[j]; j++) {
@@ -1512,7 +1594,9 @@ int main(int argc, char **argv)
                     case '8': blksizesel = 8; buffer_size = 256*1024*1024; break;
                     case '9': blksizesel = 9; buffer_size = 512*1024*1024; break;
                     case 'L': lc = &argv[j][++i]; ++i; break;
+#ifndef USE_UNIFONT
                     case 'F': fontName = &argv[j][++i]; ++j; i = 0; break;
+#endif
                 }
         } else
             bkpdir = argv[j];
@@ -1548,6 +1632,33 @@ int main(int argc, char **argv)
 
     txtgc = DefaultGC(dpy, scr);
     XSetForeground(dpy, txtgc, BlackPixel(dpy, scr));
+#ifdef USE_UNIFONT
+    memset(&zstrm, 0, sizeof(zstrm));
+    if((fnt = (uint8_t*)malloc(UNIFONT_SIZE)) && (ws = (char*)malloc(65536)) && (inflateInit2(&zstrm, -MAX_WBITS) == Z_OK)) {
+        zstrm.next_out = fnt;
+        zstrm.avail_out = UNIFONT_SIZE;
+        zstrm.next_in = unifont;
+        zstrm.avail_in = sizeof(unifont);
+        while((i = inflate(&zstrm, Z_NO_FLUSH)) == Z_OK) {}
+        inflateEnd(&zstrm);
+        if(i != Z_STREAM_END) { free(fnt); fnt = NULL; free(ws); ws = NULL; }
+        else {
+            /* get width for each character */
+            memset(ws, 0, 65536);
+            for(ptr = fnt + ((fnt[18] << 16) | (fnt[17] << 8) | fnt[16]), i = 0; i < 65536 && ptr < fnt + UNIFONT_SIZE; i++) {
+                if(ptr[0] == 0xFF) { i += 65535; ptr++; }
+                else if((ptr[0] & 0xC0) == 0xC0) { j = (((ptr[0] & 0x3F) << 8) | ptr[1]); i += j; ptr += 2; }
+                else if((ptr[0] & 0xC0) == 0x80) { j = (ptr[0] & 0x3F); i += j; ptr++; }
+                else { ws[i] = ptr[4]; ptr += 6 + ptr[1] * (ptr[0] & 0x40 ? 6 : 5); }
+            }
+        }
+    }
+    if(!fnt) { fprintf(stderr, "Unable to get font\n"); return 1; }
+    fonth = fnt[11]; fonta = fnt[12];
+    if(verbose) {
+        printf(" SSFN2 font: '%s' height: %d ascent: %d\n", (char*)fnt + 32, fonth, fonta);
+    }
+#else
     if(fontName) {
         /* try to use user specified font */
         font = XLoadQueryFont(dpy, fontName);
@@ -1578,6 +1689,7 @@ int main(int argc, char **argv)
     if(verbose && XGetFontProperty(font, XA_FONT, &n)) {
         printf(" X11 font: '%s' height: %d ascent: %d\n", XGetAtomName(dpy, (Atom)n), fonth, fonta);
     }
+#endif
     loading = XCreateFontCursor(dpy, XC_watch);
     pointer = XCreateFontCursor(dpy, XC_left_ptr);
 

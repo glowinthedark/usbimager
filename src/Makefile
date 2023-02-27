@@ -90,6 +90,10 @@ ARCH = $(shell uname -m)
 ifeq ($(USE_LIBUI)$(USE_GTK),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11
+ifneq ($(USE_UNIFONT),)
+CFLAGS += -DUSE_UNIFONT
+UF = _uf
+endif
 LIBS += -lX11
 FRM = linux-x11
 GRP = disk
@@ -224,8 +228,8 @@ else
 	@cp misc/icon64.png share/icons/hicolor/64x64/apps/usbimager.png
 	@cp misc/icon32.png share/icons/hicolor/32x32/apps/usbimager.png
 	@cp misc/icon16.png share/icons/hicolor/16x16/apps/usbimager.png
-	@rm ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip 2>/dev/null || true
-	zip -r -9 ../usbimager_$(VERSION)$(WO)-$(ARCH)-$(FRM).zip bin share
+	@rm ../usbimager_$(VERSION)$(WO)$(UF)-$(ARCH)-$(FRM).zip 2>/dev/null || true
+	zip -r -9 ../usbimager_$(VERSION)$(WO)$(UF)-$(ARCH)-$(FRM).zip bin share
 	@rm -rf bin share
 endif
 endif

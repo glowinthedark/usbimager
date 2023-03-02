@@ -57,7 +57,7 @@ int usleep(unsigned long int);
  * 'a' - 'z': sdX devices
  * 1024+: serial devices
  */
-int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX];
+int disks_all = 0, disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX];
 uint64_t disks_capacity[DISKS_MAX];
 char *serials[DISKS_MAX], *skip[DISKS_MAX];
 int serialdrivers = 0;
@@ -182,12 +182,10 @@ void disks_refreshlist()
             sprintf(path, "/sys/block/%s/size", de->d_name);
             filegetcontent(path, vendorName, sizeof(vendorName));
             size = (uint64_t)atoll(vendorName) * 512UL;
-#if USE_WRONLY
-            if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) {
+            if(!disks_all && disks_maxsize > 0 && size/1024L > (uint64_t)disks_maxsize*1024L*1024L) {
                 if(verbose > 1) printf("SKIP too big\n");
                 continue;
             }
-#endif
             if(verbose > 1) printf("OK size %s", vendorName);
             memset(vendorName, 0, sizeof(vendorName));
             sprintf(path, "/sys/block/%s/device/vendor", de->d_name);

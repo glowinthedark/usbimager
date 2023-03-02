@@ -35,7 +35,7 @@
 #include "main.h"
 #include "disks.h"
 
-int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
+int disks_all = 0, disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
 uint64_t disks_capacity[DISKS_MAX];
 
 HANDLE hLocks[32];
@@ -110,12 +110,10 @@ void disks_refreshlist() {
                 if(verbose > 1) printf("%c: Geo Cyl %llu Track %lu Sec %lu Bps %lu\r\n", letter, diskGeometry.Cylinders.QuadPart, diskGeometry.TracksPerCylinder, diskGeometry.SectorsPerTrack, diskGeometry.BytesPerSector);
             }
             if(!disks_all) {
-#if USE_WRONLY
-                if(totalNumberOfBytes/1024LL > DISKS_MAXSIZE*1024LL*1024LL) {
+                if(disks_maxsize > 0 && totalNumberOfBytes/1024LL > (long long int)disks_maxsize*1024LL*1024LL) {
                     if(verbose > 1) printf("%c: SKIP too big\r\n", letter);
                     continue;
                 }
-#endif
                 /* don't use GetVolumeInformationByHandleW, that requires Vista / Server 2008 */
                 memset(volName, 0, sizeof(volName));
                 szLbText[0] = (wchar_t)letter; szLbText[1] = (wchar_t)':'; szLbText[2] = (wchar_t)'\\'; szLbText[3] = 0;

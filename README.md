@@ -129,6 +129,10 @@ __Linux__:  this should not be an issue as USBImager comes with setgid bit set. 
 to set it. Alternatively add your user to the "disk" group (see "ls -la /dev|grep -e ^b" to find out which group your OS is using).
 __Should be no need__ for *sudo /usr/bin/usbimager*, just make sure your user has write access to the devices, that's the Principle of Least Privilege.
 
+If your drive does not show up in the list, then it might be too big or might be the system disk. The '-m' flag can be used to set
+what is considered too big. For example '-m1024' allows you to select all disks that are smaller than 1 Terrabyte. The '-a' flag
+(all) turns off filtering, and allows you to select any device; warning, even the system disks!
+
 ### Interface
 
 1. row: image file
@@ -180,10 +184,11 @@ directory is specified on the command line, that is used to save backups.
 | -v/-vv              | Be verbose           |
 | -Lxx                | Force language       |
 | -1..9               | Set buffer size      |
+| -m(gb)              | Maximum disk size    |
 | -a                  | List all devices     |
 | -f                  | Force write          |
 | -s\[baud]/-S\[baud] | Use serial devices   |
-| -F(xlfd)            | specify X11 font     |
+| -F(xlfd)            | Specify X11 font     |
 | --version           | Prints version       |
 | (dir)               | First non-flag is the backup directory |
 
@@ -191,12 +196,15 @@ For Windows users: right-click on usbimager.exe, and select "Create Shortcut". T
 select "Properties". On the "Shortcut" tab, in the "Target" field, you can add the flags. On the "Security" tab, you can also set
 to run USBImager as Administrator if you have problems accessing the raw disk devices.
 
-The first argument which is not a flag (does not start with '-') is used as the backup image directory.
-
-With '-a', all devices will be listed, even system disks and large disks. With this you can seriously damage your computer, be careful.
-
 Flags can be given separately (like "usbimager -v -s -2") or at once ("usbimager -2vs"), the order doesn't matter. For flags that set
 the same thing, only the last taken into account (for example "-124" is the same as "-4").
+
+The first argument which is not a flag (does not start with '-') is used as the backup image directory.
+
+The '-m' allows you to specify the maximum disk size in Gigabytes. Any disk bigger than this will be considered a large disk (by
+default 256 Gigabytes).
+
+With '-a', all devices will be listed, even system disks and large disks. With this you can seriously damage your computer, be careful!
 
 The '-v' and '-vv' flags will make USBImager to be verbose, and it will print out details to the console. That is stdout on Linux and MacOSX
 (so run this in a Terminal), and on Windows a spearate window will be opened for messages.

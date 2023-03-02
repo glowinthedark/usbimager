@@ -31,10 +31,10 @@
 #include <stdint.h>
 #include <limits.h>
 
-#define DISKS_MAX 128
-#define DISKS_MAXSIZE 256 /* Gb */
+#define DISKS_MAX 128     /* total number of disks we display */
+#define DISKS_MAXSIZE 256 /* GiB, largest disk we display */
 
-extern int disks_all, disks_serial, disks_targets[DISKS_MAX];
+extern int disks_all, disks_serial, disks_maxsize, disks_targets[DISKS_MAX];
 extern uint64_t disks_capacity[DISKS_MAX];
 
 /* some defines if not defined in limit.h */

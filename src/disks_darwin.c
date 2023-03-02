@@ -55,7 +55,7 @@
 #import "main.h"
 #import "disks.h"
 
-int disks_all = 0, disks_serial = 0, disks_targets[DISKS_MAX], currTarget = 0;
+int disks_all = 0, disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX], currTarget = 0;
 uint64_t disks_capacity[DISKS_MAX];
 char disks_serials[DISKS_MAX][64];
 
@@ -195,12 +195,10 @@ void disks_refreshlist()
             if(!stat(str, &st))
                 size = st.st_blocks ? st.st_blocks * 512 : st.st_size;
         }
-#if USE_WRONLY
-        if(!disks_all && size/1024L > DISKS_MAXSIZE*1024L*1024L) {
+        if(!disks_all && disks_maxsize > 0 && size/1024L > (long int)disks_maxsize*1024L*1024L) {
             if(verbose > 1) printf("SKIP too big\n");
             continue;
         }
-#endif
         if(verbose > 1) {
             sizechar = [[NSString stringWithFormat: @"%@", disksize] UTF8String];
             printf("OK size %s", sizechar);

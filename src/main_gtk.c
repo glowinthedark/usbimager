@@ -453,7 +453,7 @@ int main(int argc, char **argv)
         " (build " USBIMAGER_BUILD ")"
 #endif
         " - MIT license, Copyright (C) 2020 bzt\r\n\r\n"
-        "./usbimager [-v|-vv|-a|-f|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)] <backup path>\r\n\r\n"
+        "./usbimager [-v|-vv|-a|-f|-s[baud]|-S[baud]|-1|-2|-3|-4|-5|-6|-7|-8|-9|-L(xx)|-m(x)] <backup path>\r\n\r\n"
         "https://gitlab.com/bztsrc/usbimager\r\n\r\n";
 
     for(j = 1; j < argc && argv[j]; j++) {
@@ -498,6 +498,7 @@ int main(int argc, char **argv)
                     case '8': blksizesel = 8; buffer_size = 256*1024*1024; break;
                     case '9': blksizesel = 9; buffer_size = 512*1024*1024; break;
                     case 'L': lc = &argv[j][++i]; ++i; break;
+                    case 'm': disks_maxsize = atoi(&argv[j][++i]); continue;
                 }
         } else
             bkpdir = argv[j];
@@ -518,6 +519,7 @@ int main(int argc, char **argv)
     if(verbose) {
         printf("LANG '%s', dict '%s', serial %d, buffer_size %d MiB, force %d\r\n",
             lc, lang[-1], disks_serial, buffer_size/1024/1024, force);
+        printf("disks_maxsize %d GiB\r\n", disks_maxsize);
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
 #if !defined(USE_WRONLY) || !USE_WRONLY
         if(bkpdir) printf("bkpdir '%s'\r\n", bkpdir);

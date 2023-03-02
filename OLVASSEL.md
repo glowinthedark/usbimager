@@ -133,6 +133,10 @@ parancs beállítja. Alternatívaként add hozzá a felhasználódat a "disk" cs
 alatt a lemezeszközök). __Elvileg nincs szükség__ a *sudo /usr/bin/usbimager*-re, csak győzödj meg róla, hogy a felhasználódnak van írási
 hozzáférése az eszközökhöz, ez a Legalacsonyabb Privilégium Elve (Principle of Least Privilege).
 
+Ha nem jelenik meg a listában a meghajtód, akkor lehet, hogy túl nagy, vagy pedig rendszerlemez. A '-m' kapcsolóval lehet beállítani,
+mennyinél nagyobb lemezeket ne mutasson. Például a '-m1024' minden 1 Terrásnál kissebb lemezt enged kiválasztani. Az '-a' kapcsoló
+(all) pedig válogatás nélkül, minden lemezt választhatóvá tesz; vigyázat, még a rendszerlemezeket is!
+
 ### Interfész
 
 1. sor: lemezkép fájl
@@ -185,6 +189,7 @@ home mappába lesz lementve. A többi platformon mindig van Asztal, ha mégse ta
 | -v/-vv              | Részletes kimenet           |
 | -Lxx                | Nyelvkód kikényszerítés     |
 | -1..9               | Buffer méret beállítása     |
+| -m(gb)              | Maximális lemezméret        |
 | -a                  | Minden meghajtó listázása   |
 | -f                  | Mindenképp kiírja a blokkot |
 | -s\[baud]/-S\[baud] | Soros portok használata     |
@@ -196,12 +201,14 @@ Windows felhasználóknak: jobb-klikk az usbimager.exe-n, majd választd a "Para
 létrejött ".lnk" fájlra, és válaszd a "Tulajdonságok" menüt. A "Parancsikon" fülön, a "Cél" mezőben tudod hozzáadni a kapcsolókat.
 Ugyancsak itt, a "Biztonság" fülön be lehet állítani, hogy rendszergazdaként futtassa, ha problémáid lennének a direkt lemezhozzáférésekkel.
 
-A legelső paraméter, ami nem kapcsoló (nem '-'-el kezdődik) a lemezképek lementési könyvtáraként értelmeződik.
-
-A '-a' kapcsoló minden eszközt listáz, még a rendszerlemezeket és a különösen nagyokat is. Ezzel használhatatlanná lehet tenni a gépet, óvatosan.
-
 A kapcsolókat külön-külön (pl. "usbimager -v -s -2") vagy egyben ("usbimager -2vs") is megadhatod, a sorrend nem számít. Azon kapcsolók
 közül, amik ugyanazt állítják, csak a legutolsót veszi figyelembe (pl "-124" ugyanaz, mint a "-4").
+
+A legelső paraméter, ami nem kapcsoló (nem '-'-el kezdődik) a lemezképek lementési könyvtáraként értelmeződik.
+
+A '-m' kapcsolóvan megadható a maximális lemezméret Gigabájtban. Minden ennél nagyobb lemez nagynak számít (alapból 256 Gigabájt).
+
+A '-a' kapcsoló minden eszközt listáz, még a rendszerlemezeket és a túl nagyokat is. Ezzel használhatatlanná lehet tenni a gépet, óvatosan!
 
 A '-v' és '-vv' kapcsolók szószátyárrá teszik az USBImager-t, és mindenféle részletes infókat fog kiírni a konzolra. Ez utóbbi a szabvány
 kimenet (stdout) Linux és MacOSX alatt (szóval terminálból használd), míg Windowson egy külön ablakot nyit az üzeneteknek.

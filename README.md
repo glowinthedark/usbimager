@@ -1,6 +1,14 @@
 USBImager
 =========
 
+**ANNOUNCEMENT** I'm looking for a *MacOS maintainer*. Tasks: a) occasionally compile USBImager on MacOS (considered feature complete,
+so doesn't change often); b) keep an eye on Framework API changes (most notably IOKit used in [disks_darwin.c](src/disks_darwin.c)), and
+suggest updates to keep USBImager working on latest MacOS; c) optionally, not a must but a nice to have, it would be great if he/she
+were a verified MacOS developer able to upload USBImager to the Mac App Store (this latter isn't a requirement). If you're interested,
+please open an issue with "MacOS maintainer" as subject.
+
+----------------------------------------------------------------------------------------------------------------------------------
+
 <img src="https://gitlab.com/bztsrc/usbimager/raw/master/src/misc/icon32.png">
 [USBImager](https://bztsrc.gitlab.io/usbimager) is a really really simple GUI application that writes compressed disk images to USB drives
 and creates backups. Available platforms: Windows, MacOSX and Linux. Its interface is as simple as it gets, totally bloat-free.

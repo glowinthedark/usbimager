@@ -29,7 +29,7 @@ NOTE: I have to say a few words on this, because this question is keep popping u
 2. `dd` isn't cross-platform (for example not on Windows, so disk-writing requires an application anyway).
 3. `dd` can't use compressed image files on-the-fly (yes, yes, I can use pipes, but average Joe can't).
 4. `dd` can't verify if the write was successful.
-5. `dd` doesn't quarantee that the data is actually physically written to the storage (not unless you use some additional options).
+5. `dd` doesn't guarantee that the data is actually physically written to the storage (not unless you use some additional options).
 6. `dd` doesn't stop you from making a terrible mistake (which is perfect for an expert, but not so much for a needs-to-image-once-in-a-century folks).
 7. no, USBImager isn't a frontend to `dd`, it is a fully-featured native application on all platforms.
 8. no, USBImager doesn't need any DLLs, all the file format parsers and uncompressors are already included.

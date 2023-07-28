@@ -1,0 +1,10 @@
+*.o
+*.a
+
+src/zlib/configure.log
+src/zlib/Makefile
+src/zlib/zlib.pc
+
+src/usbimager
+
+!src/libui/*.a

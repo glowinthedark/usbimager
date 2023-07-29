@@ -107,7 +107,7 @@ Comparison
 | Raw write time (4)             | 23:16         | 23:28             | 24:05     |
 | Compressed write time (4)      | 01:12:51      | ✗                 | 30:47     |
 
-(1) - for Intel: the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10. For ARM: the minimum version is 11.0. As of 1.0.9, the Intel version isn't supported any more, and the ARM version is maintained by @democat.
+(1) - for Intel: the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10. For ARM: the minimum version is 11.0. As of 1.0.9, the Intel version isn't supported any more, and the ARM version is maintained by @cwongmath.
 
 (2) - the portable executable's size on Windows platform. I couldn't download an official pre-compiled version of WIN32 Disk Imager, just the source. The **uf** versions of USBImager are bigger, ~800K, because they include Unifont.
 
@@ -282,7 +282,7 @@ My thanks for checking and fixing the translations goes to: @mline, @vordenken (
 
 Further thanks to @munntjlx, @lfomartins and @luckman212 for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs when my VirtualBox was broken.
 
-And thanks to @democat, who volunteered for keeping the macOS version up-to-date. Thanks!
+And thanks to @cwongmath, who volunteered for keeping the macOS version up-to-date. Thanks!
 
 Bests,
 

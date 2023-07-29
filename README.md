@@ -1,14 +1,6 @@
 USBImager
 =========
 
-**ANNOUNCEMENT** I'm looking for a *MacOS maintainer*. Tasks: a) occasionally compile USBImager on MacOS (considered feature complete,
-so doesn't change often); b) keep an eye on Framework API changes (most notably IOKit used in [disks_darwin.c](src/disks_darwin.c)), and
-suggest updates to keep USBImager working on latest MacOS; c) optionally, not a must but a nice to have, it would be great if he/she
-were a verified MacOS developer able to upload USBImager to the Mac App Store (this latter isn't a requirement). If you're interested,
-please open an issue with "MacOS maintainer" as subject.
-
-----------------------------------------------------------------------------------------------------------------------------------
-
 <img src="https://gitlab.com/bztsrc/usbimager/raw/master/src/misc/icon32.png">
 [USBImager](https://bztsrc.gitlab.io/usbimager) is a really really simple GUI application that writes compressed disk images to USB drives
 and creates backups. Available platforms: Windows, MacOSX and Linux. Its interface is as simple as it gets, totally bloat-free.
@@ -115,7 +107,7 @@ Comparison
 | Raw write time (4)             | 23:16         | 23:28             | 24:05     |
 | Compressed write time (4)      | 01:12:51      | ✗                 | 30:47     |
 
-(1) - the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10.
+(1) - for Intel: the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10. For ARM: the minimum version is 11.0. As of 1.0.9, the Intel version isn't supported any more, and the ARM version is maintained by @democat.
 
 (2) - the portable executable's size on Windows platform. I couldn't download an official pre-compiled version of WIN32 Disk Imager, just the source. The **uf** versions of USBImager are bigger, ~800K, because they include Unifont.
 
@@ -289,6 +281,8 @@ USBImager on various platforms with various devices.
 My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970 and @JumpZero (French), @hansotten and @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani, @hrko99 (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish), @tomasz86 (Korean), @flaribbit (Chinese).
 
 Further thanks to @munntjlx, @lfomartins and @luckman212 for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs when my VirtualBox was broken.
+
+And thanks to @democat, who volunteered for keeping the macOS version up-to-date. Thanks!
 
 Bests,
 

@@ -65,8 +65,18 @@ else
 ifneq ("$(wildcard /Library/Frameworks)","")
 # MacOSX
 MACOSX = 1
-CFLAGS += -DMACOSX=1 -x objective-c -fobjc-exceptions
-LDFLAGS += -macosx_version_min 10.13 -framework CoreFoundation -framework IOKit -framework DiskArbitration
+MYARCH = $(shell uname -m | sed s,amd,x86_,)
+ifeq ($(MYARCH),x86_64)
+MINVER=10.13
+LIBUI=darwin.a
+ARCH=intel
+else
+MINVER=11.0
+LIBUI=darwin_arm.a
+ARCH=arm
+endif
+CFLAGS += -DMACOSX=1 -x objective-c -fobjc-exceptions -mmacos-version-min=$(MINVER)
+LDFLAGS += -macos_version_min $(MINVER) -framework CoreFoundation -framework IOKit -framework DiskArbitration
 ifneq ($(USE_X11),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11 -I/opt/X11/include
@@ -76,13 +86,12 @@ else
 SRC += main_libui.c
 CFLAGS += -pthread
 LDFLAGS += -framework Foundation -framework Cocoa
-LIBS += libui/darwin.a -lc -lobjc -lpthread
+LIBS += libui/$(LIBUI) LIBS += -lc -lobjc -lpthread
 FRM = macosx-cocoa
 endif
 SRC += disks_darwin.c
 LD = ld
 GRP = operator
-ARCH = intel
 else
 # Linux
 LINUX = 1
@@ -152,7 +161,12 @@ endif
 all: $(TARGET)
 
 zlib/Makefile:
-	@cd zlib && chmod +x ./configure && ./configure && cd ..
+	@cd zlib && chmod +x ./configure
+ifneq ($(MINVER),)
+	@cd zlib && CFLAGS="-mmacos-version-min=$(MINVER)" ./configure
+else
+	@cd zlib && ./configure
+endif
 
 zlib/libz.a: zlib/Makefile
 	@make -C zlib libz.a

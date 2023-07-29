@@ -6,5 +6,6 @@ src/zlib/Makefile
 src/zlib/zlib.pc
 
 src/usbimager
+*.zip
 
 !src/libui/*.a

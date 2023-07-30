@@ -178,6 +178,12 @@ void disks_refreshlist()
                 if(verbose > 1) printf("SKIP read-only\n");
                 continue;
             }
+            sprintf(path, "/sys/block/%s/queue/rotational", de->d_name);
+            filegetcontent(path, vendorName, 2);
+            if(vendorName[0] != '0') {
+                if(verbose > 1) printf("SKIP member of RAID\n");
+                continue;
+            }
             size = 0;
             sprintf(path, "/sys/block/%s/size", de->d_name);
             filegetcontent(path, vendorName, sizeof(vendorName));

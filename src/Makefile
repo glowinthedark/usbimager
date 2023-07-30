@@ -74,6 +74,12 @@ else
 MINVER=11.0
 LIBUI=darwin_arm.a
 ARCH=arm
+ifneq ("$(wildcard /usr/bin/xcrun)","")
+LDFLAGS+=-F$(shell xcrun --show-sdk-path)/System/Library/Frameworks/ -L$(shell xcrun --show-sdk-path)/usr/lib
+else
+LDFLAGS+=-F/Library/Developer/CommandLineTools/SDKs/MacOSX$(MINVER).sdk/System/Library/Frameworks/ -L/Library/Developer/CommandLineTools/SDKs/MacOSX$(MINVER).sdk/usr/lib
+endif
+LDFLAGS+= -framework CommandLineTools
 endif
 CFLAGS += -DMACOSX=1 -x objective-c -fobjc-exceptions -mmacos-version-min=$(MINVER)
 LDFLAGS += -macos_version_min $(MINVER) -framework CoreFoundation -framework IOKit -framework DiskArbitration
@@ -86,7 +92,7 @@ else
 SRC += main_libui.c
 CFLAGS += -pthread
 LDFLAGS += -framework Foundation -framework Cocoa
-LIBS += libui/$(LIBUI) LIBS += -lc -lobjc -lpthread
+LIBS += libui/$(LIBUI) -lc -lobjc -lpthread
 FRM = macosx-cocoa
 endif
 SRC += disks_darwin.c

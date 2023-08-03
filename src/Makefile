@@ -74,15 +74,10 @@ else
 MINVER=11.0
 LIBUI=darwin_arm.a
 ARCH=arm
-ifneq ("$(wildcard /usr/bin/xcrun)","")
-LDFLAGS+=-F$(shell xcrun --show-sdk-path)/System/Library/Frameworks/ -L$(shell xcrun --show-sdk-path)/usr/lib
-else
-LDFLAGS+=-F/Library/Developer/CommandLineTools/SDKs/MacOSX$(MINVER).sdk/System/Library/Frameworks/ -L/Library/Developer/CommandLineTools/SDKs/MacOSX$(MINVER).sdk/usr/lib
 endif
-LDFLAGS+= -framework CommandLineTools
-endif
-CFLAGS += -DMACOSX=1 -x objective-c -fobjc-exceptions -mmacos-version-min=$(MINVER)
-LDFLAGS += -macos_version_min $(MINVER) -framework CoreFoundation -framework IOKit -framework DiskArbitration
+CFLAGS_MINVER=-mmacos-version-min=$(MINVER)
+CFLAGS+=-DMACOSX=1 -x objective-c -fobjc-exceptions $(CFLAGS_MINVER)
+LDFLAGS+=-macos_version_min $(MINVER) -framework CoreFoundation -framework IOKit -framework DiskArbitration
 ifneq ($(USE_X11),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11 -I/opt/X11/include
@@ -168,23 +163,19 @@ all: $(TARGET)
 
 zlib/Makefile:
 	@cd zlib && chmod +x ./configure
-ifneq ($(MINVER),)
-	@cd zlib && CFLAGS="-mmacos-version-min=$(MINVER)" ./configure
-else
-	@cd zlib && ./configure
-endif
+	@cd zlib && CFLAGS="$(CFLAGS_MINVER)" ./configure
 
 zlib/libz.a: zlib/Makefile
-	@make -C zlib libz.a
+	@make CFLAGS="$(CFLAGS_MINVER)" -C zlib libz.a
 
 bzip2/libbz2.a:
-	@make -C bzip2 libbz2.a
+	@make CFLAGS="$(CFLAGS_MINVER)" -C bzip2 libbz2.a
 
 xz/libxz.a:
-	@make -C xz libxz.a
+	@make CFLAGS="$(CFLAGS_MINVER)" -C xz libxz.a
 
 zstd/libzstd.a:
-	@make -C zstd libzstd.a ZSTD_LEGACY_SUPPORT=0 ZSTD_LIB_DICTBUILDER=0 ZSTD_LIB_DEPRECATED=0 \
+	@make CFLAGS="$(CFLAGS_MINVER)" -C zstd libzstd.a ZSTD_LEGACY_SUPPORT=0 ZSTD_LIB_DICTBUILDER=0 ZSTD_LIB_DEPRECATED=0 \
 		ZSTD_LIB_MINIFY=1 ZSTD_STATIC_LINKING_ONLY=1 ZSTD_STRIP_ERROR_STRINGS=1 DEBUGLEVEL=0
 
 resource.o: misc/resource.rc

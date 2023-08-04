@@ -75,6 +75,11 @@ MINVER=11.0
 LIBUI=darwin_arm.a
 ARCH=arm
 endif
+ifneq ("$(wildcard /usr/bin/xcrun)","")
+LDFLAGS+=-F$(shell xcrun --show-sdk-path)/System/Library/Frameworks/ -L$(shell xcrun --show-sdk-path)/usr/lib
+else
+LDFLAGS+=-F/Library/Developer/CommandLineTools/SDKs/MacOSX$(MINVER).sdk/System/Library/Frameworks/ -L/Library/Developer/CommandLineTools/SDKs/MacOSX$(MINVER).sdk/usr/lib
+endif
 CFLAGS_MINVER=-mmacos-version-min=$(MINVER)
 CFLAGS+=-DMACOSX=1 -x objective-c -fobjc-exceptions $(CFLAGS_MINVER)
 LDFLAGS+=-macos_version_min $(MINVER) -framework CoreFoundation -framework IOKit -framework DiskArbitration

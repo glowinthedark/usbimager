@@ -52,7 +52,7 @@ void main_addToCombobox(char *option);
 /**
  * Get the last error message
  */
-void main_getErrorMessage();
+void main_getErrorMessage(void);
 
 /**
  * Update the progress and status bars

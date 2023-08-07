@@ -524,7 +524,7 @@ static int mainCombo(int sel, int num, char *list, int dx, int dy, int w)
     return sel;
 }
 
-static void mainRedraw()
+static void mainRedraw(void)
 {
 #if !defined(USE_WRONLY) || !USE_WRONLY
     XRectangle clip = { 17, 25+fonth, 0, fonth+8 };
@@ -632,12 +632,12 @@ void main_addToCombobox(char *option)
     strncpy(targetList[numTargetList++], option, 128);
 }
 
-void main_getErrorMessage()
+void main_getErrorMessage(void)
 {
     main_errorMessage = errno ? strerror(errno) : NULL;
 }
 
-static void onQuit()
+static void onQuit(void)
 {
 #ifdef USE_UNIFONT
     if(fnt) free(fnt);
@@ -769,7 +769,7 @@ static void onThreadError(void *data)
 /**
  * Function that reads from input and writes to disk
  */
-static void *writerRoutine()
+static void *writerRoutine(void)
 {
     int dst, numberOfBytesRead;
     int numberOfBytesWritten, numberOfBytesVerify, needWrite;
@@ -839,7 +839,7 @@ static void *writerRoutine()
     return NULL;
 }
 
-static void onWriteButtonClicked()
+static void onWriteButtonClicked(void)
 {
     inactive = 1;
     progress = 0;
@@ -860,7 +860,7 @@ static void onWriteButtonClicked()
 /**
  * Function that reads from disk and writes to output file
  */
-static void *readerRoutine()
+static void *readerRoutine(void)
 {
     int src, size, numberOfBytesRead;
     static stream_t ctx;
@@ -933,7 +933,7 @@ static void *readerRoutine()
     return NULL;
 }
 
-static void onReadButtonClicked()
+static void onReadButtonClicked(void)
 {
     inactive = 1;
     progress = 0;
@@ -951,14 +951,14 @@ static void onReadButtonClicked()
     XSync(dpy, True);
 }
 
-static void refreshTarget()
+static void refreshTarget(void)
 {
     memset(targetList, 0, sizeof(targetList));
     numTargetList = 0;
     disks_refreshlist();
 }
 
-static void onTargetClicked()
+static void onTargetClicked(void)
 {
     int sel;
 
@@ -976,7 +976,7 @@ static void onTargetClicked()
     XRaiseWindow(dpy, mainwin);
 }
 
-static void onBlkSizeClicked()
+static void onBlkSizeClicked(void)
 {
     int sel;
 

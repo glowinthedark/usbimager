@@ -43,7 +43,7 @@ HANDLE hLocks[32];
 /**
  * Refresh target device list in the combobox
  */
-void disks_refreshlist() {
+void disks_refreshlist(void) {
     int i = 0, j, k;
     VOLUME_DISK_EXTENTS volumeDiskExtents;
     wchar_t szLbText[1024], volName[MAX_PATH+1], siz[64], *wc;

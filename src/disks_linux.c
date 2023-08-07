@@ -90,7 +90,7 @@ void filegetcontent(char *fn, char *buf, int maxlen)
 /**
  * Refresh target device list in the combobox
  */
-void disks_refreshlist()
+void disks_refreshlist(void)
 {
     DIR *dir;
     struct dirent *de;

@@ -81,7 +81,7 @@ int dstfd = 0;
 /**
  * helper for xz to dynamically get the largest dictionary size possible
  */
-struct xz_dec *xzinit()
+struct xz_dec *xzinit(void)
 {
     struct xz_dec *ret = NULL;
     uint32_t siz = (1UL << 30); /* start at 1G */

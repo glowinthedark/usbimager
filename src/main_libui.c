@@ -63,7 +63,7 @@ void main_addToCombobox(char *option)
     uiComboboxAppend(target, option);
 }
 
-void main_getErrorMessage()
+void main_getErrorMessage(void)
 {
     main_errorMessage = errno ? strerror(errno) : NULL;
 }

@@ -64,7 +64,7 @@ void main_addToCombobox(char *option)
     SendDlgItemMessageW(mainHwndDlg, IDC_MAINDLG_TARGET_LIST, CB_ADDSTRING, 0, (LPARAM)msg);
 }
 
-void main_getErrorMessage()
+void main_getErrorMessage(void)
 {
     if(main_errorMessage) {
         LocalFree(main_errorMessage);

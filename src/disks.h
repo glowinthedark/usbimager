@@ -52,13 +52,13 @@ extern uint64_t disks_capacity[DISKS_MAX];
 /**
  * Get UI language
  */
-char *disks_getlang();
+char *disks_getlang(void);
 
 /**
  * Refresh target device list in the combobox
  * Should set disks_targets[] and call main_addToCombobox()
  */
-void disks_refreshlist();
+void disks_refreshlist(void);
 
 /**
  * Return mount points and bookmarks file

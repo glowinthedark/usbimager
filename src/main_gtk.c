@@ -56,7 +56,7 @@ void main_addToCombobox(char *option)
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(target), NULL, option);
 }
 
-void main_getErrorMessage()
+void main_getErrorMessage(void)
 {
     main_errorMessage = errno ? strerror(errno) : NULL;
 }

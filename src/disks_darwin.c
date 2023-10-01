@@ -50,6 +50,7 @@
 #import <IOKit/serial/IOSerialKeys.h>
 #import <IOKit/serial/ioss.h>
 #import <IOKit/IOBSD.h>
+#import <IOKit/storage/IOBlockStorageDevice.h>
 
 #import "lang.h"
 #import "main.h"
@@ -94,7 +95,7 @@ void disks_refreshlist(void)
     CFMutableDictionaryRef  matching_dictionary = NULL;
     long int size = 0;
     int i = 0, j = 1024, writ = 0;
-    const char *deviceName = 0, *vendorName = NULL, *productName = NULL, *sizechar = NULL;
+    const char *deviceName = 0, *vendorName = NULL, *productName = NULL, *sizechar = NULL, *s;
     CFTypeRef writable = NULL, bsdName = NULL, vendor = NULL, product = NULL, disksize = NULL;
     struct stat st;
 
@@ -113,7 +114,7 @@ void disks_refreshlist(void)
         if(verbose > 1) printf("IOMasterPort failed %d\n", k_result);
         return;
     }
-    if ((matching_dictionary = IOServiceMatching(kIOUSBDeviceClassName)) == NULL) {
+    if ((matching_dictionary = IOServiceMatching(kIOBlockStorageDeviceClass)) == NULL) {
         if(verbose > 1) printf("IOServiceMatching failed %d\n", k_result);
         return;
     }
@@ -133,8 +134,9 @@ void disks_refreshlist(void)
 
         deviceName = [[NSString stringWithFormat: @"%@", bsdName] UTF8String];
         if(verbose > 1) printf("%s: ", deviceName);
-        /* kIOUSBDeviceClassName lists some non-disks as writable disks (like USB-dongles with device driver storages) */
-        if (!disks_all && (deviceName[0] == 'e' && deviceName[1] == 'n' && deviceName[2] >= '0' && deviceName[2] <= '9')) {
+        for(s = deviceName + 4; *s >= '0' && *s <= '9'; s++);
+        /* ioservicematching lists some non-disks as writable disks (like USB-dongles with device driver storages and partitions) */
+        if (memcmp(deviceName, "disk", 4) || (!disks_all && *s)) {
             CFRelease(bsdName); bsdName = NULL;
             if(verbose > 1) printf("SKIP not a storage\n");
             continue;
@@ -159,6 +161,13 @@ void disks_refreshlist(void)
                                                                CFSTR("USB Vendor Name"),
                                                                kCFAllocatorDefault,
                                                                kIORegistryIterateRecursively  | kIORegistryIterateParents);
+        if(!vendor)
+            vendor = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
+                                                               kIOServicePlane,
+                                                               CFSTR("Vendor Name"),
+                                                               kCFAllocatorDefault,
+                                                               kIORegistryIterateRecursively  | kIORegistryIterateParents);
+
         if (vendor)
             vendorName = [[NSString stringWithFormat: @"%@", vendor] UTF8String];
         else

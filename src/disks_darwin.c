@@ -97,6 +97,10 @@ void disks_refreshlist(void)
     int i = 0, j = 1024, writ = 0;
     const char *deviceName = 0, *vendorName = NULL, *productName = NULL, *sizechar = NULL, *s;
     CFTypeRef writable = NULL, bsdName = NULL, vendor = NULL, product = NULL, disksize = NULL;
+    DASessionRef session;
+    DADiskRef daDisk;
+    CFDictionaryRef diskDescription;
+    NSString *description;
     struct stat st;
 
     memset(disks_targets, 0xff, sizeof(disks_targets));
@@ -123,6 +127,8 @@ void disks_refreshlist(void)
         if(verbose > 1) printf("IOServiceGetMatchingServices failed %d\n", k_result);
         return;
     }
+
+    session = DASessionCreate(kCFAllocatorDefault);
 
     while ((usb_device_ref = IOIteratorNext(iterator))) {
         bsdName = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
@@ -173,21 +179,38 @@ void disks_refreshlist(void)
         else
             vendorName = "";
 
-        product = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
+        /* try DA to get user readable product name */
+        productName = "";
+        if(session) {
+            daDisk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, deviceName);
+            if(daDisk) {
+                diskDescription = DADiskCopyDescription(daDisk);
+                if(diskDescription) {
+                    if((description = (NSString*)CFDictionaryGetValue(diskDescription, kDADiskDescriptionMediaNameKey)))
+                        productName = [[NSString stringWithFormat: @"%@", description] UTF8String];
+                    CFRelease(diskDescription);
+                }
+                CFRelease(daDisk);
+            }
+        }
+        /* otherwise fallback to IOKit for the user readable name */
+        if(!productName || !*productName) {
+            product = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
                                                                kIOServicePlane,
                                                                CFSTR("USB Product Name"),
                                                                kCFAllocatorDefault,
                                                                kIORegistryIterateRecursively  | kIORegistryIterateParents);
-        if(!product)
-            product = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
+            if(!product)
+                product = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
                                                                kIOServicePlane,
                                                                CFSTR("Product Name"),
                                                                kCFAllocatorDefault,
                                                                kIORegistryIterateRecursively  | kIORegistryIterateParents);
-        if (product)
-            productName = [[NSString stringWithFormat: @"%@", product] UTF8String];
-        else
-            productName = "";
+            if(product)
+                productName = [[NSString stringWithFormat: @"%@", product] UTF8String];
+            else
+                productName = "";
+        }
 
         size = 0;
         disksize = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,

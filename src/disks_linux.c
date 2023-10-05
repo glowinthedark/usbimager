@@ -150,12 +150,12 @@ void disks_refreshlist(void)
     if(dir) {
         while((de = readdir(dir))) {
             if(verbose > 1) printf("%s: ", de->d_name);
-            if((de->d_name[0] != 's' || de->d_name[1] != 'd') &&
-                (de->d_name[0] != 'm' || de->d_name[1] != 'm')) {
-                    if(verbose > 1) printf("SKIP\n");
-                    continue;
-            }
             if(!disks_all) {
+                if((de->d_name[0] != 's' || de->d_name[1] != 'd') &&
+                    (de->d_name[0] != 'm' || de->d_name[1] != 'm')) {
+                        if(verbose > 1) printf("SKIP\n");
+                        continue;
+                }
                 for(k = 0; k < j && strcmp(de->d_name, skip[k]); k++);
                 if(k != j) {
                     if(verbose > 1) printf("SKIP sysdisk\n");
@@ -176,12 +176,6 @@ void disks_refreshlist(void)
             filegetcontent(path, vendorName, 2);
             if(vendorName[0] != '0') {
                 if(verbose > 1) printf("SKIP read-only\n");
-                continue;
-            }
-            sprintf(path, "/sys/block/%s/queue/rotational", de->d_name);
-            filegetcontent(path, vendorName, 2);
-            if(vendorName[0] != '0') {
-                if(verbose > 1) printf("SKIP member of RAID\n");
                 continue;
             }
             size = 0;

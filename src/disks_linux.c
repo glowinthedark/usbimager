@@ -53,13 +53,13 @@ int usleep(unsigned long int);
 
 /* disks_targets:
  * -1: invalid
- * 0 - 31: mmcblk devices
- * 'a' - 'z': sdX devices
+ * 'a': device name in disks_devs[] (used to be "sd(target)")
+ * 'T': special sdT "device", saves to test.bin
  * 1024+: serial devices
  */
 int disks_all = 0, disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX];
 uint64_t disks_capacity[DISKS_MAX];
-char *serials[DISKS_MAX], *skip[DISKS_MAX];
+char *serials[DISKS_MAX], *skip[DISKS_MAX], disks_devs[DISKS_MAX][32];
 int serialdrivers = 0;
 
 /* helper to read a string from a file */
@@ -106,6 +106,7 @@ void disks_refreshlist(void)
     disks_targets[i++] = 'T';
     main_addToCombobox("sdT ./test.bin");
 #endif
+    memset(disks_devs, 0, sizeof(disks_devs));
     /* get list of system disks */
     f = fopen("/proc/self/mountinfo", "r");
     if(f) {
@@ -151,12 +152,13 @@ void disks_refreshlist(void)
         while((de = readdir(dir))) {
             if(de->d_name[0] == '.') continue;
             if(verbose > 1) printf("%s: ", de->d_name);
-            if((de->d_name[0] != 's' || de->d_name[1] != 'd') &&
-                (de->d_name[0] != 'm' || de->d_name[1] != 'm')) {
-                    if(verbose > 1) printf("SKIP\n");
-                    continue;
-            }
             if(!disks_all) {
+                /* by default without the `-a` flag, only list USB sticks and SD cards */
+                if((de->d_name[0] != 's' || de->d_name[1] != 'd') &&
+                    (de->d_name[0] != 'm' || de->d_name[1] != 'm')) {
+                        if(verbose > 1) printf("SKIP\n");
+                        continue;
+                }
                 for(k = 0; k < j && strcmp(de->d_name, skip[k]); k++);
                 if(k != j) {
                     if(verbose > 1) printf("SKIP sysdisk\n");
@@ -204,7 +206,8 @@ void disks_refreshlist(void)
                 snprintf(str, sizeof(str)-1, "%s %s %s", de->d_name, vendorName, productName);
             str[128] = 0;
             disks_capacity[i] = size;
-            disks_targets[i++] = de->d_name[0] == 's' ? de->d_name[2] : atoi(de->d_name + 6);
+            memcpy(disks_devs[i], de->d_name, 31);
+            disks_targets[i++] = 'a';
             main_addToCombobox(str);
             if(i >= DISKS_MAX) break;
         }
@@ -457,10 +460,9 @@ sererr:         main_getErrorMessage();
                 fcntl(ret, F_SETFL, 0);
         }
         return (void*)((long int)ret);
-    }
-
+    } else
 #if DISKS_TEST
-    if((char)disks_targets[targetId] == 'T') {
+    if(disks_targets[targetId] == 'T') {
         sprintf(deviceName, "./test.bin");
         unlink(deviceName);
         errno = 0;
@@ -473,12 +475,9 @@ sererr:         main_getErrorMessage();
             return NULL;
         }
         return (void*)((long int)ret);
-    }
+    } else
 #endif
-    if((char)disks_targets[targetId] >= 'a')
-        sprintf(deviceName, "/dev/sd%c", (char)disks_targets[targetId]);
-    else
-        sprintf(deviceName, "/dev/mmcblk%d", disks_targets[targetId]);
+        sprintf(deviceName, "/dev/%s", disks_devs[targetId]);
     if(verbose) printf("disks_open(%s)\r\n", deviceName);
 
     m = fopen("/proc/self/mountinfo", "r");

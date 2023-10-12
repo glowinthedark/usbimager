@@ -179,7 +179,8 @@ void disks_refreshlist(void)
         else
             vendorName = "";
 
-        /* try DA to get user readable product name */
+        size = 0;
+        /* try DA to get user readable product name and disk size */
         productName = "";
         if(session) {
             daDisk = DADiskCreateFromBSDName(kCFAllocatorDefault, session, deviceName);
@@ -188,12 +189,13 @@ void disks_refreshlist(void)
                 if(diskDescription) {
                     if((description = (NSString*)CFDictionaryGetValue(diskDescription, kDADiskDescriptionMediaNameKey)))
                         productName = [[NSString stringWithFormat: @"%@", description] UTF8String];
+                    size = (long int)[CFDictionaryGetValue(diskDescription, kDADiskDescriptionMediaSizeKey) unsignedLongValue];
                     CFRelease(diskDescription);
                 }
                 CFRelease(daDisk);
             }
         }
-        /* otherwise fallback to IOKit for the user readable name */
+        /* otherwise fallback to IOKit for the user readable name and disk size */
         if(!productName || !*productName) {
             product = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
                                                                kIOServicePlane,
@@ -211,17 +213,18 @@ void disks_refreshlist(void)
             else
                 productName = "";
         }
-
-        size = 0;
-        disksize = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
+        if (!size) {
+            disksize = (CFTypeRef) IORegistryEntrySearchCFProperty (usb_device_ref,
                                                                kIOServicePlane,
                                                                CFSTR("Size"),
                                                                kCFAllocatorDefault,
                                                                kIORegistryIterateRecursively  | kIORegistryIterateParents);
-        if (disksize) {
-            CFNumberGetValue((CFNumberRef)disksize, kCFNumberSInt64Type, &size);
-            CFRelease(disksize);
+            if (disksize) {
+                CFNumberGetValue((CFNumberRef)disksize, kCFNumberSInt64Type, &size);
+                CFRelease(disksize);
+            }
         }
+        /* if we still don't know the disk size, try the traditional UNIX method */
         if (!size) {
             sprintf(str, "/dev/r%s", deviceName);
             if(!stat(str, &st))
@@ -232,8 +235,7 @@ void disks_refreshlist(void)
             continue;
         }
         if(verbose > 1) {
-            sizechar = [[NSString stringWithFormat: @"%@", disksize] UTF8String];
-            printf("OK size %s", sizechar);
+            printf("OK size %ld\n", size);
         }
         if(size) {
             int sizeInGbTimes10 = (int)((long int)(10 * size) >> 30L);

@@ -30,6 +30,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "lang.h"
 #include "stream.h"
 #include "disks.h"
@@ -402,7 +404,7 @@ static int onShouldQuit(void *data)
     return 1;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **envp)
 {
     uiInitOptions options;
     const char *err;
@@ -411,6 +413,9 @@ int main(int argc, char **argv)
     uiBox *bbox;
 #if !defined(USE_WRONLY) || !USE_WRONLY
     uiLabel *sep;
+#endif
+#if MACOSX
+    char **newargv, norespawn = 0;
 #endif
     int i, j;
     char *lc = getenv("LANG"), btntext[256];
@@ -440,6 +445,9 @@ int main(int argc, char **argv)
             }
             for(i = 1; argv[j][i]; i++)
                 switch(argv[j][i]) {
+#if MACOSX
+                    case 'N': norespawn++; break;
+#endif
                     case 'f': force++; break;
                     case 'v':
                         verbose++;
@@ -477,7 +485,25 @@ int main(int argc, char **argv)
     }
 
 #if MACOSX
+    /* workaround the "Full Disk Access not working" Apple bug */
+    if(!norespawn && geteuid()) {
+        /* effective user id isn't root */
+        newargv = (char**)malloc((argc + 5) * sizeof(char*));
+        if(!newargv) { fprintf(stderr, "unable to allocate memory\r\n"); exit(1); }
+        /* respawn the same command, but with sudo askpass */
+        newargv[0] = "/usr/bin/sudo";
+        newargv[1] = "-A";          /* ask for password using a GUI window */
+        newargv[2] = argv[0];
+        newargv[3] = "-N";          /* do not call sudo again */
+        for(i = 1; i <= argc; i++) newargv[i + 3] = argv[i];
+        execve(newargv[0], newargv, envp);
+        /* should never reached */
+        fprintf(stderr, "execve sudo failed\r\n");
+        exit(1);
+    }
     if(!lc) lc = disks_getlang();
+#else
+    (void)envp;
 #endif
     if(!lc) lc = "en";
     for(i = 0; i < NUMLANGS; i++) {
@@ -495,6 +521,10 @@ int main(int argc, char **argv)
         if(disks_serial) printf("Serial %d,8,n,1\r\n", baud);
 #if !defined(USE_WRONLY) || !USE_WRONLY
         if(bkpdir) printf("bkpdir '%s'\r\n", bkpdir);
+#endif
+#if MACOSX
+        printf("running as uid %d euid %d (%s) norespawn %d\r\n", getuid(), geteuid(),
+            geteuid() ? "normal user" : "root priviledges", norespawn);
 #endif
     }
 

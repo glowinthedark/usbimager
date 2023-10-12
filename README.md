@@ -28,11 +28,11 @@ NOTE: I have to say a few words on this, because this question is keep popping u
 
 NOTE: forever returning problem: the GTK version works, but the X11 version only shows boxes (or nothing) instead of text. This
 isn't an USBImager issue, rather X11 fontconfig problem. Solutions:
-- Install your distro's [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont) package to fix.
+- Install your distro's [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont) package to fix (FYI, any other X11 font containing
+UNICODE glyphs would do).
 - If there were no such package in your distro, then download `unifont-*.pcf.gz` from [here](https://unifoundry.com/unifont),
 copy it under `/usr/share/fonts/misc` (or into any other directory listed by `fc-list`) and execute the `fc-cache -vf` command to
-update the font cache. After this USBImager should be able to find and use this font on its own (FYI, any other X11 font containing
-UNICODE glyphs would do).
+update the font cache. After this USBImager should be able to find and use this font on its own.
 - Download one of the **uf** versions of USBImager. These are bigger binaries because they include Unifont, but in return they don't
 need X11 fontconfig (nor any X11 font) at all.
 
@@ -86,7 +86,7 @@ Features
 Limitations
 -----------
 
-With xz compression dictionaries bigger than 1 Gigabytes not supported (default size is 64 Mb).
+With xz compression dictionaries bigger than 1 Gigabytes not supported (the default xz dictionary size is 64 Mb).
 
 Comparison
 ----------
@@ -122,8 +122,9 @@ If you can't write to the target device (you get "permission denied" errors), th
 
 __Windows__: right-click on usbimager.exe and use the "Run as Administrator" option.
 
-__MacOSX__: 10.14 an up: go to "System Preferences", "Security & Privacy" and "Privacy". Add USBImager to the list of "Full Disk Access". Alternatively
-run from a Terminal as *sudo /Applications/USBImager.app/Contents/MacOS/usbimager* (this latter is the only way under 10.13).
+__MacOSX__: because the "Full Disk Access" doesn't work and Apple refuses to fix it for years now, the app runs *sudo
+/Applications/USBImager.app/Contents/MacOS/usbimager* by itself. This always works from Terminal. If it does not start by any chance, then you have to set the
+`SUDO_ASKPASS` environment variable (newer MacOS sets this by default, but under Catalina and before you might need to set it manually).
 
 __Linux__:  this should not be an issue as USBImager comes with setgid bit set. If not, then you can use *sudo chgrp disk usbimager && sudo chmod g+s usbimager*
 to set it. Alternatively add your user to the "disk" group (see "ls -la /dev|grep -e ^b" to find out which group your OS is using).
@@ -282,7 +283,7 @@ My thanks for checking and fixing the translations goes to: @mline, @vordenken (
 
 Further thanks to @munntjlx, @lfomartins, @luckman212 and @tshup for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs when my VirtualBox was broken.
 
-And thanks to @cwongmath, who volunteered for keeping the macOS version up-to-date. Thanks!
+And thanks to @cwongmath and @tshup, for the help they've provided with the macOS version. Thanks!
 
 Bests,
 

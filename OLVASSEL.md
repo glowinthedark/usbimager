@@ -37,11 +37,11 @@ FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást
 
 FONTOS: folyton visszatérő probléma: a GTK verzió működik, de az X11 verzióban négyzetek vannak (vagy semmi) szöveg helyett. Ez
 nem USBImager probléma, hanem X11 fontconfig probléma. Megoldások:
-- Telepítsd a disztród [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont) csomagját a javításhoz.
+- Telepítsd a disztród [xfonts-unifont](https://packages.ubuntu.com/search?keywords=xfonts-unifont) csomagját a javításhoz (csak a
+teljesség kedvéért, bármelyik másik UNICODE glifeket tartalmazó X11 font is megteszi).
 - Ha nem lenne ilyen csomag a disztródon, akkor töltsd le az `unifont-*.pcf.gz` fájlt [innen](https://unifoundry.com/unifont),
 másold be a `/usr/share/fonts/misc` mappába (vagy bármelyik másik könyvtárba, amit az `fc-list` kiír), és futtasd le az `fc-cache -vf`
-parancsot a fontgyorsítótár frissítéséhez. Ezt követően az USBImager már magától meg fogja találni és ezt fogja használni (csak a
-teljesség kedvéért, bármelyik másik UNICODE glifeket tartalmazó X11 font is megteszi).
+parancsot a fontgyorsítótár frissítéséhez. Ezt követően az USBImager már magától meg fogja találni és ezt fogja használni.
 - Valamelyik **uf** USBImager változatot töltsd le. Ezek nagyobb binárisok, mivel magukban foglalják az Unifont-ot, cserébe nem kell
 nekik az X11 fontconfig (sem semmilyen X11 font) egyáltalán.
 
@@ -96,7 +96,7 @@ Fícsörök
 Korlátok
 --------
 
-Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogatja (az alapértelmezett 64 Mb).
+Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogatja (az alapértelmezett xz szótárméret 64 Mb).
 
 Összehasonlítás
 ---------------
@@ -133,8 +133,9 @@ Ha nem tudod írni a céleszközt (folyton "hozzáférés megtagadva" hibaüzene
 
 __Windows__: jobbklikk az usbimager.exe-n és használd a "Futtatás rendszergazdaként" opciót.
 
-__MacOSX__: 10.14 és afölött: menj a rendszerbeállításokhoz "System Preferences", aztán "Security & Privacy" és "Privacy". Add hozzá az USBImager-t a
-"Full Disk Access" listához. Alternatívaként indíthatod Terminálból a *sudo /Applications/USBImager.app/Contents/MacOS/usbimager* paranccsal (10.13 alatt csak ez utóbbi működik).
+__MacOSX__: mivel a "Full Disk Access" nem működik, és az Apple évek óta képtelen kijavítani, ezért az app magától futtatja a *sudo
+/Applications/USBImager.app/Contents/MacOS/usbimager* parancsot. Ez Terminálból mindig működik. Ha mégsem indulna el, akkor be kell állítani a `SUDO_ASKPASS` környezeti
+változót (legújabb MacOS alatt alapból be van állítva, Catalina és régebbi verzió esetén lehet erre szükség).
 
 __Linux__: ez valószínűleg nem fordulhat elő, mivel az USBImager setgid bittel érkezik. Ha mégsem, akkor a *sudo chgrp disk usbimager && sudo chmod g+s usbimager*
 parancs beállítja. Alternatívaként add hozzá a felhasználódat a "disk" csoportokhoz (az "ls -la /dev|grep -e ^b" parancs kiírja, melyik csoportban vannak az oprendszered
@@ -295,6 +296,8 @@ Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @M
 Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani, @hrko99 (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel), @tomasz86 (kóreai), @flaribbit (kínai).
 
 További köszönet @munntjlx-nek, @lfomartins-nak, @luckman212-nek és @tshup-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért, amikor a VirtualBoxom beszart.
+
+És köszönet @cwongmath és @tshup felhasználóknak a macOS verzióhoz nyújtott segítségükért. Ezer hála!
 
 Legjobbakat,
 

@@ -133,7 +133,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
     HWND hwndDlg = (HWND) lpParam;
     wchar_t szFilePathName[MAX_PATH];
     LARGE_INTEGER totalNumberOfBytesWritten;
-    DWORD pos = 0;
+    DWORD pos = 0, lpos = 0;
     HANDLE hTargetDevice;
     LRESULT index = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
     static wchar_t lpStatus[128];
@@ -176,16 +176,19 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                         DWORD numberOfBytesWritten, numberOfBytesVerify;
                         errno = 0; needWrite = 1;
                         if(!force) {
-                            if(ReadFile(hTargetDevice, ctx.verifyBuf, numberOfBytesWritten, &numberOfBytesVerify, NULL) &&
+                            if(ReadFile(hTargetDevice, ctx.verifyBuf, numberOfBytesRead, &numberOfBytesVerify, NULL) &&
                                 numberOfBytesRead == (int)numberOfBytesVerify && !memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesRead)) {
                                 if(verbose > 1) printf("  numberOfBytesVerify %d matches disk, skipping write\n", numberOfBytesRead);
                                 needWrite = 0;
                                 totalNumberOfBytesWritten.QuadPart += numberOfBytesVerify;
                                 pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
-                                SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
-                                SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
-                                ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
-                                ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+                                if(pos != lpos) {
+                                    lpos = pos;
+                                    SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
+                                    SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
+                                    ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
+                                    ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+                                }
                             } else
                                 SetFilePointerEx(hTargetDevice, totalNumberOfBytesWritten, NULL, FILE_BEGIN);
                         }
@@ -204,10 +207,13 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                 totalNumberOfBytesWritten.QuadPart += numberOfBytesWritten;
 
                                 pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
-                                SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
-                                SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
-                                ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
-                                ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+                                if(pos != lpos) {
+                                    lpos = pos;
+                                    SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
+                                    SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
+                                    ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
+                                    ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+                                }
                             } else {
                                 if(verbose > 1) printf("WriteFile(%d) numberOfBytesWritten %lu ERROR\r\n", numberOfBytesRead, numberOfBytesWritten);
                                 main_getErrorMessage();
@@ -609,7 +615,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
             case 0x0A: loc = "es"; break;   case 0x0B: loc = "fi"; break;
             case 0x0C: loc = "fr"; break;   case 0x0D: loc = "he"; break;
             case 0x0E: loc = "hu"; break;   case 0x0F: loc = "is"; break;
-            case 0x10: loc = "it"; break;   case 0x11: loc = "jp"; break;
+            case 0x10: loc = "it"; break;   case 0x11: loc = "ja"; break;
             case 0x12: loc = "ko"; break;   case 0x13: loc = "nl"; break;
             case 0x14: loc = "no"; break;   case 0x15: loc = "pl"; break;
             case 0x16: loc = "pt"; break;   case 0x17: loc = "rm"; break;

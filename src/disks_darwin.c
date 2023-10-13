@@ -95,7 +95,7 @@ void disks_refreshlist(void)
     CFMutableDictionaryRef  matching_dictionary = NULL;
     long int size = 0;
     int i = 0, j = 1024, writ = 0;
-    const char *deviceName = 0, *vendorName = NULL, *productName = NULL, *sizechar = NULL, *s;
+    const char *deviceName = 0, *vendorName = NULL, *productName = NULL, *s;
     CFTypeRef writable = NULL, bsdName = NULL, vendor = NULL, product = NULL, disksize = NULL;
     DASessionRef session;
     DADiskRef daDisk;
@@ -189,7 +189,7 @@ void disks_refreshlist(void)
                 if(diskDescription) {
                     if((description = (NSString*)CFDictionaryGetValue(diskDescription, kDADiskDescriptionMediaNameKey)))
                         productName = [[NSString stringWithFormat: @"%@", description] UTF8String];
-                    size = (long int)[CFDictionaryGetValue(diskDescription, kDADiskDescriptionMediaSizeKey) unsignedLongValue];
+                    size = (long int)[(NSNumber*)CFDictionaryGetValue(diskDescription, kDADiskDescriptionMediaSizeKey) unsignedLongValue];
                     CFRelease(diskDescription);
                 }
                 CFRelease(daDisk);

@@ -135,7 +135,9 @@ __Windows__: jobbklikk az usbimager.exe-n és használd a "Futtatás rendszergaz
 
 __MacOSX__: mivel a "Full Disk Access" nem működik, és az Apple évek óta képtelen kijavítani, ezért az app magától futtatja a *sudo
 /Applications/USBImager.app/Contents/MacOS/usbimager* parancsot. Ez Terminálból mindig működik. Ha mégsem indulna el, akkor be kell állítani a `SUDO_ASKPASS` környezeti
-változót (legújabb MacOS alatt alapból be van állítva, Catalina és régebbi verzió esetén lehet erre szükség).
+változót (legújabb MacOS alatt alapból be van állítva, Catalina és régebbi verzió esetén lehet erre szükség). Ha **"USBImager.app" is damaged and can't be opened.**
+hibaüzenetet kapsz, akkor az azért van, mert a Finder alapból quarantine cimkét rak mindenre. Az eltávolításához Terminálban a következő parancsot kell kiadni:
+`/usr/bin/xattr -crv /Applications/USBImager.app` és utánna minden jó lesz.
 
 __Linux__: ez valószínűleg nem fordulhat elő, mivel az USBImager setgid bittel érkezik. Ha mégsem, akkor a *sudo chgrp disk usbimager && sudo chmod g+s usbimager*
 parancs beállítja. Alternatívaként add hozzá a felhasználódat a "disk" csoportokhoz (az "ls -la /dev|grep -e ^b" parancs kiírja, melyik csoportban vannak az oprendszered

@@ -132,8 +132,8 @@ static void onDone(HWND hwndDlg)
 static DWORD WINAPI writerRoutine(LPVOID lpParam) {
     HWND hwndDlg = (HWND) lpParam;
     wchar_t szFilePathName[MAX_PATH];
-    LARGE_INTEGER totalNumberOfBytesWritten;
-    DWORD pos = 0, lpos = 0;
+    LARGE_INTEGER totalNumberOfBytesWritten, t1, t2;
+    DWORD pos = 0;
     HANDLE hTargetDevice;
     LRESULT index = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
     static wchar_t lpStatus[128];
@@ -165,6 +165,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
         if (hTargetDevice != NULL && hTargetDevice != (HANDLE)-1 && hTargetDevice != (HANDLE)-2 && hTargetDevice != (HANDLE)-3 && hTargetDevice != (HANDLE)-4) {
             totalNumberOfBytesWritten.QuadPart = 0;
 
+            t1.QuadPart = GetTickCount64();
             while(mainHwndDlg) {
                 int numberOfBytesRead;
 
@@ -182,8 +183,9 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                 needWrite = 0;
                                 totalNumberOfBytesWritten.QuadPart += numberOfBytesVerify;
                                 pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
-                                if(pos != lpos) {
-                                    lpos = pos;
+                                t2.QuadPart = GetTickCount64();
+                                if(t2.QuadPart > t1.QuadPart + 100) {
+                                    t1.QuadPart = t2.QuadPart;
                                     SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
                                     SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
                                     ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
@@ -207,8 +209,9 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                 totalNumberOfBytesWritten.QuadPart += numberOfBytesWritten;
 
                                 pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
-                                if(pos != lpos) {
-                                    lpos = pos;
+                                t2.QuadPart = GetTickCount64();
+                                if(t2.QuadPart > t1.QuadPart + 100) {
+                                    t1.QuadPart = t2.QuadPart;
                                     SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
                                     SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
                                     ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
@@ -289,6 +292,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
     HWND hwndDlg = (HWND) lpParam;
     HANDLE src;
     LRESULT targetId = SendDlgItemMessage(hwndDlg, IDC_MAINDLG_TARGET_LIST, CB_GETCURSEL, 0, 0);
+    LARGE_INTEGER t1, t2;
     int size, wlen, len, needCompress = IsDlgButtonChecked(hwndDlg, IDC_MAINDLG_COMPRESS);
     DWORD numberOfBytesRead;
     char *fn = NULL;
@@ -321,6 +325,7 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
         ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), SW_HIDE);
         ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_SOURCE), SW_SHOW);
         if(fn && !stream_create(&ctx, fn, needCompress, disks_capacity[targetId])) {
+            t1.QuadPart = GetTickCount64();
             while(mainHwndDlg && ctx.readSize < ctx.fileSize) {
                 errno = 0;
                 size = ctx.fileSize - ctx.readSize < (uint64_t)buffer_size ? (int)(ctx.fileSize - ctx.readSize) : buffer_size;
@@ -328,10 +333,14 @@ static DWORD WINAPI readerRoutine(LPVOID lpParam) {
                     if(verbose > 1) printf("ReadFile(%d) numberOfBytesRead %lu\r\n", size, numberOfBytesRead);
                     if(stream_write(&ctx, ctx.buffer, size)) {
                         DWORD pos = (DWORD) stream_status(&ctx, (char*)&lpStatus, 0);
-                        SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
-                        SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
-                        ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
-                        ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+                        t2.QuadPart = GetTickCount64();
+                        if(t2.QuadPart > t1.QuadPart + 100) {
+                            t1.QuadPart = t2.QuadPart;
+                            SendDlgItemMessage(hwndDlg, IDC_MAINDLG_PROGRESSBAR, PBM_SETPOS, pos, 0);
+                            SetWindowTextW(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), lpStatus);
+                            ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_HIDE);
+                            ShowWindow(GetDlgItem(hwndDlg, IDC_MAINDLG_STATUS), SW_SHOW);
+                        }
                     } else {
                         MainDlgMsgBox(hwndDlg, lang[L_WRIMGERR]);
                         break;

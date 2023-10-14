@@ -124,7 +124,9 @@ __Windows__: right-click on usbimager.exe and use the "Run as Administrator" opt
 
 __MacOSX__: because the "Full Disk Access" doesn't work and Apple refuses to fix it for years now, the app runs *sudo
 /Applications/USBImager.app/Contents/MacOS/usbimager* by itself. This always works from Terminal. If it does not start by any chance, then you have to set the
-`SUDO_ASKPASS` environment variable (newer MacOS sets this by default, but under Catalina and before you might need to set it manually).
+`SUDO_ASKPASS` environment variable (newer MacOS sets this by default, but under Catalina and before you might need to set it manually). If you get
+**"USBImager.app" is damaged and can't be opened.** error message, then that's because Finder adds a quarantine tag by default. To remove, in a Terminal run
+`/usr/bin/xattr -crv /Applications/USBImager.app` and everything will be fine.
 
 __Linux__:  this should not be an issue as USBImager comes with setgid bit set. If not, then you can use *sudo chgrp disk usbimager && sudo chmod g+s usbimager*
 to set it. Alternatively add your user to the "disk" group (see "ls -la /dev|grep -e ^b" to find out which group your OS is using).

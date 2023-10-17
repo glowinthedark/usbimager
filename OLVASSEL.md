@@ -1,14 +1,6 @@
 USBImager
 =========
 
-**BEJELENTÉS** *MacOS karbantartó* kerestetik! Feladatai: a) alkalmasint lefordítani az USBImager-t MacOS alatt (végleges verzió,
-szóval nem változik valami gyakran); b) figyelni a Framework API változásokat (különös tekintettel a [disks_darwin.c](src/disks_darwin.c)-ben
-használt IOKit-re) és javaslatokat tenni arra, hogy az USBImager továbbra is jól fusson MacOS alatt; c) opcionálisan, nem szükséges,
-de jó lenne, ha verifikált Mac fejlesztő lenne, aki képes feltölteni az USBImager-t a Mac App Store-ba (ez utóbbi nem feltétel). Ha
-érdekel a dolog, akkor nyiss egy jegyet "MacOS maintainer" címmel.
-
-----------------------------------------------------------------------------------------------------------------------------------
-
 <img src="https://gitlab.com/bztsrc/usbimager/raw/master/src/misc/icon32.png">
 Az [USBImager](https://bztsrc.gitlab.io/usbimager) egy igen igen faék egyszerűségű ablakos alkalmazás, amivel
 tömörített lemezképeket lehet USB meghajtókra írni és lementeni. Elérhető Windows, MaxOSX és Linux rendszereken. A felülete

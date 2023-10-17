@@ -102,7 +102,7 @@ else
 # Linux
 LINUX = 1
 ARCH = $(shell uname -m)
-ifeq ($(USE_LIBUI)$(USE_GTK),)
+ifeq ($(USE_LIBUI)$(USE_GTK)$(USE_TUI),)
 SRC += main_x11.c
 CFLAGS += -I/usr/include/X11
 ifneq ($(USE_UNIFONT),)
@@ -111,6 +111,11 @@ UF = _uf
 endif
 LIBS += -lX11
 FRM = linux-x11
+GRP = disk
+else
+ifneq ($(USE_TUI),)
+SRC += main_tui.c
+FRM = linux-tui
 GRP = disk
 else
 ifneq ($(USE_GTK),)
@@ -141,6 +146,7 @@ endif
 ifneq ($(USE_UDISKS2)$(USE_GTK),)
 CFLAGS += -DUSE_UDISKS2=1 $(shell pkg-config --cflags udisks2) -I/usr/include/gio-unix-2.0
 LIBS += $(shell pkg-config --libs udisks2)
+endif
 endif
 SRC += disks_linux.c
 TMP = $(ARCH:x86_64=amd64)

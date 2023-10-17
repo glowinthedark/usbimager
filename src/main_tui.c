@@ -60,7 +60,7 @@ extern char *dict[NUMLANGS][NUMTEXTS + 1];
 
 static char *bkpdir = NULL;
 static int blksizesel = 0;
-char *main_errorMessage = NULL, *main_errorTitle = NULL;
+char *main_errorMessage = NULL;
 static char source[PATH_MAX], targetList[DISKS_MAX][128], *targetPtr[DISKS_MAX], status[128];
 static char path[PATH_MAX];
 
@@ -812,19 +812,6 @@ int main(int argc, char **argv)
             case 1: c = ctrlfilesel(c); break;
             case 2: c = ctrlselect(c, &targetId, numTargetList); break;
             case 3: c = ctrlselect(c, &blksizesel, 10); break;
-/*
-            case 1: c = ctrlselect(c, &selplat, numplatform); break;
-            case 2: c = ctrlselect(c, &cmplr, sizeof(compilers)/sizeof(compilers[0])); break;
-            case 3: c = ctrlchklist(c, compopts); break;
-            case 4: c = ctrldiskimg(c); break;
-            default:
-                switch(opts[menu - 5].handler) {
-                    case CHKLIST: c = ctrlchklist(c, opts[menu - 5].list); break;
-                    case SELLYT: c = ctrlselect(c, &opts[menu - 5].value, ((kbd_t*)opts[2].list)[opts[2].value].num); break;
-                    default: c = ctrlselect(c, &opts[menu - 5].value, opts[menu - 5].len); break;
-                }
-            break;
-*/
         }
     } while(c!=0x1b);
     restorestdin();

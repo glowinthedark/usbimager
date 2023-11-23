@@ -291,3 +291,27 @@ distclean: clean
 	@make -C xz clean || true
 	@make -C zstd clean || true
 	@rm zlib/Makefile zlib/*.log zlib/zlib.pc $(DECOMPRESSORS) 2>/dev/null || true
+
+####### help #######
+
+help:
+	@printf "Configuration:\n"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "DEBUG=1" "compile with debug symbols"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_WRONLY=1" "compile the write-only interface"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_UNIFONT=1" "compile with embedded unifont (X11 only)"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_UDISKS2=1" "compile with libudisks2 (GTK only)"
+	@printf "Interfaces:\n"
+	@printf "    \033[1;37m%-20s\033[0m%s\n" "(default)" "compile native interface (GDI, Cocoa, etc.)"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_TUI=1" "compile text interface"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_X11=1" "compile X11 interface"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_LIBUI=1" "compile libui interface"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "USE_GTK=1" "compile GTK interface"
+	@printf "Targets:\n"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "all" "compile the source"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "install" "compile and install"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "package" "create package zip"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "deb" "build Debian deb"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "clean" "clean repo but leave libs as-is"
+	@printf "    \033[1;32m%-20s\033[0m%s\n" "distclean" "clean everything, including libs"
+	@printf "Example:\n"
+	@printf "    USE_WRONLY=1 USE_GTK=1 USE_UDISKS2=1 make clean all deb\n\n"

@@ -10,6 +10,7 @@ f4434f0a081dd067ead8359d81d45d8db70e4c3a9f7362ee2da0e449d3cf3795  usbimager_1.0.
 44c68fcd6a75f52b25e99f4b97e4a88d5f7fbb0b5e91e303b370e1aa5bca4246  usbimager_1.0.10-armhf.deb
 54fb7b909009acca97f8ae42939d53e5a70c1030c001a024a0531173001e908d  usbimager_1.0.10-arm-macosx-cocoa.zip
 23e95a790578c39924c5b9f5c1cf5ece1bd7e87638e89b54ee1b60ca1417573f  usbimager_1.0.10-armv7l-linux-x11.zip
+3371cca0ae2257d16cef54068c2ef7f0d32ba8c7e5d9bf3d6656d51f37e849e5  usbimager_1.0.10-i686-win-gdi-phy.zip
 ad83b75c186994f732d913b27394e86214296f708a26021b70e561004e4499f7  usbimager_1.0.10-i686-win-gdi.zip
 85081cde8626b3714b77244de85d38830e89f0d1af7341514ad93077c7ba826a  usbimager_1.0.10-intel-macosx-cocoa.zip
 fe2f1ee8ce4eb4432c9820b82828b1d7f94c41c3e6297212e3d28b5af123a0db  usbimager_1.0.10_uf-aarch64-linux-x11.zip
@@ -19,6 +20,7 @@ e19bbcb3bea1350c64493323553e6d91c2f5ec9c26191ae59e44a1db7516bf30  usbimager_1.0.
 9d7c636172b118cd2df894189c48aade58b13a39b09cc83b6d1504d031b1e63b  usbimager_1.0.10_wo-amd64.deb
 8337d95e717862ff058d278fcc95fc5338b07ec21b13e116d0a4682eeeccb4dd  usbimager_1.0.10_wo-armhf.deb
 c0128dc2240b7938b00f0cbc8cf010fbe41de305cf1ff9b88fa3f56b52968b89  usbimager_1.0.10_wo-armv7l-linux-x11.zip
+07c19c8b3f6e8be8d4b2fc35046db3f3dd58dcf429d6c30dd54b6ade32bb9922  usbimager_1.0.10_wo-i686-win-gdi-phy.zip
 4f1142737878da7f223083f7a3f434cc24e74052dccb9d6ba5df7769eee7915d  usbimager_1.0.10_wo-i686-win-gdi.zip
 c971718ae68fca361ee348b9cb6b131a7ba08179dbde7b43530584bc8ebabd2e  usbimager_1.0.10_wo_uf-aarch64-linux-x11.zip
 871438d7e8cbbc51e7590581dbe08cfe2dc8f4d4945bec585f94e2893cbe87b4  usbimager_1.0.10_wo_uf-armv7l-linux-x11.zip

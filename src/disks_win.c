@@ -35,7 +35,12 @@
 #include "main.h"
 #include "disks.h"
 
-int disks_all = 0, disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
+#ifdef USE_PHY
+int disks_all = 1;
+#else
+int disks_all = 0;
+#endif
+int disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
 uint64_t disks_capacity[DISKS_MAX];
 
 HANDLE hLocks[32];

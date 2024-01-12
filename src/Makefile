@@ -55,11 +55,16 @@ LDFLAGS += -mwindows -static -static-libgcc
 TARGET = usbimager.exe
 WINDRES = windres
 ARCH = i686
-FRM = win-gdi
 ifeq ($(USE_WRONLY),)
 OBJ += resource.o
 else
 OBJ += resourcewo.o
+endif
+ifneq ($(USE_PHY),)
+CFLAGS+=-DUSE_PHY=1
+FRM=win-gdi-phy
+else
+FRM=win-gdi
 endif
 else
 ifneq ("$(wildcard /Library/Frameworks)","")

@@ -36,11 +36,11 @@
 #include "disks.h"
 
 #ifdef USE_PHY
-int disks_all = 1;
+int disks_phy = 1;
 #else
-int disks_all = 0;
+int disks_phy = 0;
 #endif
-int disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
+int disks_all = 0, disks_serial = 0, disks_maxsize = DISKS_MAXSIZE, disks_targets[DISKS_MAX], cdrive = 0, nLocks = 0;
 uint64_t disks_capacity[DISKS_MAX];
 
 HANDLE hLocks[32];
@@ -71,16 +71,19 @@ void disks_refreshlist(void) {
     wsprintfW(szLbText, L"T: .\\test.bin");
     main_addToCombobox((char*)szLbText);
 #endif
+    cdrive = 10;
     hTargetDevice = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
     if (hTargetDevice != INVALID_HANDLE_VALUE) {
         if(DeviceIoControl(hTargetDevice, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents, sizeof volumeDiskExtents, &bytesReturned, NULL))
             cdrive = (int)volumeDiskExtents.Extents[0].DiskNumber;
         CloseHandle(hTargetDevice);
     }
-    if(!disks_all) { sl = 'A'; el = 'Z'; } else { sl = '0'; el = '9'; }
+    disks_phy |= disks_all;
+    if(!disks_phy) { sl = 'A'; el = 'Z'; } else { sl = '0'; el = '9'; }
+    if(verbose > 1) printf("phy %u, all %u, C: is on \\\\.\\PhysicalDrive%c\r\n", disks_phy, disks_all, cdrive + '0');
     for(letter = sl; letter <= el; letter++) {
         hTargetDevice = INVALID_HANDLE_VALUE;
-        if(!disks_all) {
+        if(!disks_phy) {
             fn[4] = letter;
             /* fn[6] = '\\'; if(GetDriveType(fn) != DRIVE_REMOVABLE) continue; else fn[6] = 0; */
             if(letter == 'C') continue;
@@ -89,7 +92,7 @@ void disks_refreshlist(void) {
                 /* skip drive letters that are on the same physical disk as the C: drive */
                 if(DeviceIoControl(hTargetDevice, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, &volumeDiskExtents,
                         sizeof volumeDiskExtents, &bytesReturned, NULL) &&
-                        cdrive != (int)volumeDiskExtents.Extents[0].DiskNumber) {
+                        (disks_all || cdrive != (int)volumeDiskExtents.Extents[0].DiskNumber)) {
                     disks_targets[i] = (int)volumeDiskExtents.Extents[0].DiskNumber;
                 } else {
                     if(verbose > 1) printf("%c: SKIP sysdisk\r\n", letter);
@@ -101,7 +104,12 @@ void disks_refreshlist(void) {
             sprintf(fn, "\\\\.\\PhysicalDrive%c", letter);
             hTargetDevice = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
             if (hTargetDevice != INVALID_HANDLE_VALUE) {
-                disks_targets[i] = (int)(letter - '0');
+                if(disks_all || cdrive != (int)(letter - '0')) {
+                    disks_targets[i] = (int)(letter - '0');
+                } else {
+                    if(verbose > 1) printf("%c: SKIP sysdisk\r\n", letter);
+                    continue;
+                }
             }
         }
         if(hTargetDevice != INVALID_HANDLE_VALUE) {
@@ -114,11 +122,11 @@ void disks_refreshlist(void) {
                 totalNumberOfBytes = (long long int)diskGeometry.Cylinders.QuadPart * (long long int)diskGeometry.TracksPerCylinder * (long long int)diskGeometry.SectorsPerTrack * (long long int)diskGeometry.BytesPerSector;
                 if(verbose > 1) printf("%c: Geo Cyl %llu Track %lu Sec %lu Bps %lu\r\n", letter, diskGeometry.Cylinders.QuadPart, diskGeometry.TracksPerCylinder, diskGeometry.SectorsPerTrack, diskGeometry.BytesPerSector);
             }
-            if(!disks_all) {
-                if(disks_maxsize > 0 && totalNumberOfBytes/1024LL > (long long int)disks_maxsize*1024LL*1024LL) {
-                    if(verbose > 1) printf("%c: SKIP too big\r\n", letter);
-                    continue;
-                }
+            if(!disks_all && disks_maxsize > 0 && totalNumberOfBytes/1024LL > (long long int)disks_maxsize*1024LL*1024LL) {
+                if(verbose > 1) printf("%c: SKIP too big\r\n", letter);
+                continue;
+            }
+            if(!disks_phy) {
                 /* don't use GetVolumeInformationByHandleW, that requires Vista / Server 2008 */
                 memset(volName, 0, sizeof(volName));
                 szLbText[0] = (wchar_t)letter; szLbText[1] = (wchar_t)':'; szLbText[2] = (wchar_t)'\\'; szLbText[3] = 0;
@@ -151,7 +159,7 @@ void disks_refreshlist(void) {
                     while(j > 0 && szLbText[j-1] == (wchar_t)' ') j--;
                 }
             }
-            if(!disks_all && volName[0] && j < 1020) {
+            if(!disks_phy && volName[0] && j < 1020) {
                 szLbText[j++] = (wchar_t)' ';
                 szLbText[j++] = (wchar_t)'(';
                 for(k = 0; volName[k] == (wchar_t)' '; k++);

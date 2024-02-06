@@ -79,7 +79,7 @@ Features
 - Can read archives on-the-fly: .zip (PKZIP and ZIP64), .zzz (ZZZip), .tar, .cpio, .pax (*)
 - Can create backups in raw and ZStandard compressed format
 - Can send images to microcontrollers over serial line
-- Available in 17 languages
+- Available in 18 languages
 
 (* - for archives with multiple files, the first file in the archive is used as input)
 
@@ -281,7 +281,7 @@ Contributors
 I'd like to say thanks to @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, @9001, and especially to @tvjon, @CaptainMidnight and @gitlabhack for testing
 USBImager on various platforms with various devices.
 
-My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970 and @JumpZero (French), @hansotten and @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani, @hrko99 (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish), @tomasz86 (Korean), @flaribbit (Chinese).
+My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970 and @JumpZero (French), @hansotten and @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani, @hrko99 (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish), @tomasz86 (Korean), @flaribbit (Chinese), @Kaneda (Catalan).
 
 Further thanks to @munntjlx, @lfomartins, @luckman212 and @tshup for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs when my VirtualBox was broken.
 

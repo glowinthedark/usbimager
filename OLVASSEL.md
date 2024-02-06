@@ -81,7 +81,7 @@ Fícsörök
 - Képes csomagolt fájlokat kitömöríteni: .zip (PKZIP és ZIP64), .zzz (ZZZip), .tar, .cpio, .pax (*)
 - Képes lemezképeket készíteni, nyers és ZStandard tömörített formátumban
 - Képes mikrokontrollerek számára soros vonalon leküldeni a lemezképeket
-- 17 nyelvre lefordítva
+- 18 nyelvre lefordítva
 
 (* - a több fájlt is tartalmazó csomagolt fájlok esetén a csomagolt fájl legelső fájlját használja bemenetnek)
 
@@ -287,7 +287,7 @@ Hozzájárulások
 Szeretnék köszönetet mondani a következő felhasználóknak: @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, @9001, és különösen
 @tvjon-nak, @CaptainMidnight-nak és @gitlabhack-nek amiért több különböző platformon és számos különböző eszközzel is letesztelték az USBImager-t.
 
-Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani, @hrko99 (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel), @tomasz86 (kóreai), @flaribbit (kínai).
+Köszönet a fordítások ellenőrzéséért és javításáért: @mline-nak és @vordenken-nek (német), @epoch1970-nek és @JumpZero-nak (francia), @hansotten-nek és @zonstraal-nak (holland), @ller (orosz), @zaval (ukrán), @lmarmisa (spanyol), @otani, @hrko99 (japán), @ngedizaydindogmus (török), @coltrane (portugál), @Matthaiks (lengyel), @tomasz86 (kóreai), @flaribbit (kínai), @Kaneda (katalán).
 
 További köszönet @munntjlx-nek, @lfomartins-nak, @luckman212-nek és @tshup-nak, hogy lefordították az USBImager-t MacOS-en, és @tido- -nak az Ubuntu debért, amikor a VirtualBoxom beszart.
 

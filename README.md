@@ -281,7 +281,7 @@ Contributors
 I'd like to say thanks to @mattmiller, @MisterEd, @the_scruss, @rpdom, @DarkElvenAngel, @9001, and especially to @tvjon, @CaptainMidnight and @gitlabhack for testing
 USBImager on various platforms with various devices.
 
-My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970 and @JumpZero (French), @hansotten and @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani, @hrko99 (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish), @tomasz86 (Korean), @flaribbit (Chinese), @Kaneda (Catalan).
+My thanks for checking and fixing the translations goes to: @mline, @vordenken (German), @epoch1970 and @JumpZero (French), @hansotten and @zonstraal (Dutch), @ller (Russian), @zaval (Ukrainian), @lmarmisa (Spanish), @otani, @hrko99 (Japanese), @ngedizaydindogmus (Turkish), @coltrane (Portuguese), @Matthaiks (Polish), @tomasz86 (Korean), @flaribbit (Chinese), @kaneda44 (Catalan).
 
 Further thanks to @munntjlx, @lfomartins, @luckman212 and @tshup for compiling USBImager on MacOS for me, and to @tido- for the Ubuntu debs when my VirtualBox was broken.
 

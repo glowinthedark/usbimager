@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="USBImager, Windows, Linux, MacOS">
+    <meta name="author" content="bzt">
+    <title>USBImager</title>
+    <link href="public/logo.png" rel="shortcut icon">
+    <link href="public/bootstrap.min.css" rel="stylesheet">
+    <style>
+body { padding-top: 64px; }
+.card { height: 100%; }
+.headerbg {background: #333 url(public/images/headerbg.png) center;background-size: cover;}
+.headerbg p {text-shadow: 2px 2px 2px #000;}
+.headerbg h1 {text-shadow: 3px 3px 5px #000;}
+.headerbg div {padding-bottom:5px;}
+.headerbg img { height: 30px; margin-right: 20px;}
+#content, #results { padding-bottom: 25px; }
+#menuchk:checked ~ .navbar-collapse { display:block; }
+.nav-link { cursor:pointer; }
+.nav-link:hover {  border-color: #888; }
+.nav-tabs { border-bottom: 1px solid #888; }
+.nav-tabs li { position: relative; bottom: -1px; }
+.nav-tabs li label { margin-bottom: 0px !important; cursor: inherit; }
+.tabcol { border-bottom: 1px solid #888; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/usbimager/"><img src="public/images/usbimagerhdr.png" height="30" alt="USBImager"> USBImager</a>
+        <input type="checkbox" id="menuchk" style="display:none;"><label for="menuchk" class="navbar-toggler">
+          <span class="navbar-toggler-icon"></span>
+        </label>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/usbimager/">Főoldal</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#install">Telepítés</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#screen">Képernyőképek</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#features">Képességek</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://codeberg.org/bzt/usbimager/issues">Hibabejelentés</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div style="display:none;"><img src="public/images/headerbg.png" alt=""></div>
+    <div class="container" id="content" style="display:block;">
+      <header class="jumbotron my-4 headerbg" id="home">
+        <h1 class="display-3 text-white">Üdvözöl az USBImager!</h1>
+        <p class="lead text-white">Az USBImager egy nagyon nagyon egyszerű, ablakos alkalmazás, amivel tömörített lemezképeket lehet USB-s tárolókra írni és mentéseket csinálni. Elérhető Windows, MacOS és Linux alatt is. A felülete annyira egyszerű, amennyire csak lehetséges, teljesen bloat-mentes.</p>
+        <div class="row text-center">
+        <div class="col-lg-6"><a href="https://codeberg.org/bzt/usbimager/src/branch/binaries" class="btn btn-primary btn-lg btn-block" target="_new" id="dl"><img src="public/images/download.png" alt="Download">Letöltés (<span id="dlos">mind</span>)</a></div>
+        <div class="col-lg-6"><a href="https://codeberg.org/bzt/usbimager" class="btn btn-primary btn-lg btn-block" target="_new"><img src="public/images/codeberg.png" alt="Codeberg">Forrás böngészése</a></div>
+        </div>
+      </header>
+      <div class="row">
+        <div class="col-lg-12">
+            A letöltés az operációs rendszerednek megfelelő, egyszerűsített (csak írás) interfészű binárisra mutat. A teljes interfészért és más platformokért látogass el a <a href="https://codeberg.org/bzt/usbimager/#user-content-usbimager" target="_new">repó oldal</a>ára.
+        </div>
+      </div>
+      <div class="card text-white bg-secondary my-4">
+        <div class="card-body">
+          <p class="text-white text-center m-0">Ez az alkalmazás Szabad és Nyílt Forráskódú! A nagyon megengedő <a href="https://codeberg.org/bzt/usbimager/src/branch/master/LICENSE" class="text-white" target="_new"><b>MIT licensz</b></a> feltételei szerint kerül terjesztésre.</p>
+        </div>
+      </div>
+
+    <hr id="install">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Telepítés</h2>
+          <ol>
+            <li>Töltsd le a rendszerednek megfelelő <tt>usbimager_*.zip</tt> fájlt a <a href="https://codeberg.org/bzt/usbimager/src/branch/binaries" target="_new">repó</a>ból (kb. 192 Kilobájt mindegyik)</li>
+            <li>Csomagold ki ide: <tt>C:\Program Files</tt> (Windows), <tt>/Applications</tt> (MacOS) vagy <tt>/usr</tt> (Linux)</li>
+            <li>Ennyi!</li>
+          </ol>
+          <small>A csomagban lévő futtahatót egyből használhatod, a többi fájl csak ahhoz kell, hogy beépítsd az asztali környezetedbe (ikonok és hasonlók). Autodetektálja a nyelvet, és ha van hozzá szótára, akkor a saját nyelveden köszönt (természetesen tud magyarul).</small>
+        </div>
+      </div>
+
+    <hr>
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Használat</h2>
+          <ol>
+            <li>Az első sorba tallózd be a letöltött operációs rendszer lemezképet, amit ki szeretnél írni</li>
+            <li>A második sorban válaszd ki azt a meghajtót, ahová írni szeretnéd</li>
+            <li>Kattints a "Kiír" gombra</li>
+          </ol>
+        </div>
+      </div>
+
+    <hr id="screen">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Képernyőképek</h2>
+          <img src="public/images/usbimager.png">
+        </div>
+      </div>
+
+    <hr id="features">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Képességek</h2>
+          <ul>
+            <li>Nyílt Forráskódú és MIT licenszű</li>
+            <li>Hordozható futtatható, nincs szükség telepítésre, csak ki kell csomagolni</li>
+            <li>Kicsi. Nagyon kicsi, pár kilobájt csak, és mégsincs függősége</li>
+            <li>Nincs benne kémprogram sem reklám, mint az etch*r-ben, teljesen GDPR kompatíbilis</li>
+            <li>Minimalista, többnyelvű, natív interfész minden platformon</li>
+            <li>Igyekszik bolondbiztos lenni, nem engedi a rendszerlemezt felülírni</li>
+            <li>Csak szinkronizált írási műveletet végez, azaz minden biztosan fizikailag kikerült a lemezre, amikor a csík 100%-hoz ér</li>
+            <li>Képes az írás helyességének ellenőrzésére visszaolvasással és összehasonlítással</li>
+            <li>Képes nyers lemezképeket olvasni: .img, .bin, .raw, .iso, .dd, stb.</li>
+            <li>Képes futásidőben kitömöríteni lemezképeket: .gz, .bz2, .xz, .zst</li>
+            <li>Képes csomagokat kezelni: .zip (PKZIP és ZIP64), .zzz (ZZZip), .tar, .cpio, .pax  <sup>*</sup></li>
+            <li>Képes mentéseket csinálni nyers és ZStandard tömörített formátumban</li>
+            <li>Képes lemezképet küldeni mikrokontrollereknek soros vonalon</li>
+            <li>18 különféle nyelven is elérhető</li>
+          </ul>
+          <small><sup>*</sup> - az olyan csomagfájloknál, amik több fájlt is tárolnak, a legelső fájlt használja bemenetnek</small>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="text-center text-white">Copyright &copy; bzt 2021.</p>
+      </div>
+    </footer>
+  </body>
+  <script language="javascript">
+    document.addEventListener("DOMContentLoaded", function(e) {
+      var dllinks = [
+        [ "Linux x86","Linux",   "https://codeberg.org/bzt/usbimager/raw/branch/binaries/usbimager_1.0.10_wo_uf-x86_64-linux-x11.zip" ],
+        [ "Linux arm","RaspiOS", "https://codeberg.org/bzt/usbimager/raw/branch/binaries/usbimager_1.0.10_wo-armhf.deb" ],
+        [ "Win",      "Windows", "https://codeberg.org/bzt/usbimager/raw/branch/binaries/usbimager_1.0.10_wo-i686-win-gdi.zip" ],
+        [ "Mac",      "MacOS",   "https://codeberg.org/bzt/usbimager/raw/branch/binaries/usbimager_1.0.10-arm-macosx-cocoa.zip" ]
+      ];
+      var dl = document.getElementById("dl"), dlos = document.getElementById("dlos"), os = navigator.appVersion.concat(navigator.platform);
+      for(var i = 0; i < dllinks.length; i++)
+          if(os.indexOf(dllinks[i][0]) != -1) {
+              dlos.innerHTML = dllinks[i][1]; dl.setAttribute("href", dllinks[i][2]); break;
+          }
+    });
+  </script>
+</html>

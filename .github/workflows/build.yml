@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run cmake
-        working-directory: C:\src
+        working-directory: ${{ github.workspace }}/src
         run: |
           make ..
       - name: Add msbuild to PATH
@@ -103,7 +103,7 @@ jobs:
           msbuild-architecture: x64
           
       - name: Build
-        working-directory: C:\src
+        working-directory: ${{ github.workspace }}/src
         run: make package
           
       - name: Upload artifact

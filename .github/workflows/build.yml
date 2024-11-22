@@ -81,7 +81,7 @@ jobs:
           pwd
           echo ${{ github.workspace }}
           ls -alh ${{ github.workspace }}
-          ls -alh           
+          find . -exec ls -alh {} \;           
 
       - name: make release
         uses: ncipollo/release-action@v1

@@ -95,11 +95,12 @@ jobs:
       - name: make release
         uses: ncipollo/release-action@v1
         with:
-          name: python-lzo-${{ matrix.python-version }}-macos-${{ matrix.architecture }}
-          body: macos-${{ matrix.architecture }}
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}
+          # body: macos-${{ matrix.architecture }}
           artifacts: artifacts/*
           generateReleaseNotes: true
           makeLatest: true
+          allowUpdates: true
           tag: 1.0.10
             
       # - name: Release

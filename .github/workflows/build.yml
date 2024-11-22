@@ -85,6 +85,7 @@ jobs:
       #       **/*.dmg
 
   build-w64:
+    if: false
     runs-on: windows-2022
     defaults:
       run:

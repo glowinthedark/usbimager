@@ -1,4 +1,4 @@
-name: 'macOS DMG'
+name: 'build all'
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ env:
   HOMEBREW_NO_AUTO_UPDATE: true
 
 jobs:
-  build_macos_linux:
+  build_all:
     runs-on: ${{ matrix.os }}
 
     strategy:

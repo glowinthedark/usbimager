@@ -36,6 +36,15 @@ jobs:
           submodules: true
           fetch-depth: 0
           fetch-tags: true
+      - name: Update brew
+        run: |
+          brew update
+          
+      - name: Install brew dependencies
+        run: |
+          brew install \
+             intltool \
+             create-dmg
 
       - name: set vars
         id: envconf

@@ -64,14 +64,15 @@ jobs:
       - name: Make windows
         if: matrix.os == 'windows-2022'
         working-directory: src
-        run: |
-          & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1' `
-            -SkipAutomaticLocation -Arch amd64 -HostArch amd64
-          make package
-          
+        shell: cmd
         # run: |
-        #   call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        #   & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1' `
+        #     -SkipAutomaticLocation -Arch amd64 -HostArch amd64
         #   make package
+          
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          make package
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4

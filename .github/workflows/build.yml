@@ -57,7 +57,7 @@ jobs:
         run: make package
 
       - name: Make deb
-        if: matrix.os = 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
         working-directory: ./src
         run: make deb
 

@@ -24,7 +24,7 @@ jobs:
     strategy:
       # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow
       matrix:
-        os: ['macos-13', 'macos-14', 'ubuntu-latest', 'windows-latest']
+        os: ['macos-13', 'macos-14', 'ubuntu-latest', 'windows-2022']
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
           echo "TAG=$(git describe)" >> $GITHUB_ENV          
 
       - name: Make macos/linux
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-2022'
         working-directory: ./src
         run: make package
 
@@ -62,11 +62,16 @@ jobs:
         run: make deb
 
       - name: Make windows
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2022'
         working-directory: src
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1' `
+            -SkipAutomaticLocation -Arch amd64 -HostArch amd64
           make package
+          
+        # run: |
+        #   call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        #   make package
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4
@@ -77,6 +82,7 @@ jobs:
           path: |
             **/*.zip
             **/*.deb
+            **/*.exe
             
 
       # DMG create fails intermittently: https://github.com/actions/runner-images/issues/7522

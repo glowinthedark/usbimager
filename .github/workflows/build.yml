@@ -20,6 +20,8 @@ env:
 jobs:
   build_all:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
 
     strategy:
       # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow
@@ -64,17 +66,26 @@ jobs:
             **/*.zip
             **/*.deb
             
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: make release
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: 1.0.10
-          generate_release_notes: true
-          make_latest: true
-          files: |
-            **/*.zip
-            **/*.deb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: python-lzo-${{ matrix.python-version }}-macos-${{ matrix.architecture }}
+          body: macos-${{ matrix.architecture }}
+          artifacts: "**/*.zip,**/*.deb"
+          generateReleaseNotes: true
+          tag: 1.0.10
+            
+      # - name: Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: 1.0.10
+      #     generate_release_notes: true
+      #     make_latest: true
+      #     files: |
+      #       **/*.zip
+      #       **/*.deb
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       # disabled because DMG create fails intermittently: https://github.com/actions/runner-images/issues/7522
       # - name: Unzip app

@@ -74,9 +74,10 @@ jobs:
           echo "C:/Users/runneradmin/scoop/shims" >> $env:GITHUB_PATH
           Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
           refreshenv
-          scoop bucket add extras
-          scoop install zlib
-          regedit /s "C:\\Users\\runneradmin\\scoop\\apps\\zlib\\current\\register.reg"        
+          vcpkg install zlib 
+          # scoop bucket add extras
+          # scoop install zlib
+          # regedit /s "C:\\Users\\runneradmin\\scoop\\apps\\zlib\\current\\register.reg"        
 
       - name: windows make
         if: matrix.os == 'windows-2022'

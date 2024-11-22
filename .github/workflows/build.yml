@@ -65,14 +65,41 @@ jobs:
           path: |
             **/*.zip
             **/*.deb
-            
+
+  release:
+    needs: build_all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      # - name: Create GitHub Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   with:
+      #     tag_name: ${{ github.ref_name }}
+      #     release_name: Release ${{ github.ref_name }}
+      #     draft: false
+      #     prerelease: false
+
+      # - name: Upload Release Assets
+      #   run: |
+      #     for artifact in ./artifacts/*; do
+      #       echo "Uploading $artifact"
+      #       gh release upload "${{ steps.create_release.outputs.id }}" "$artifact"
+      #     done
+
       - name: make release
         uses: ncipollo/release-action@v1
         with:
           name: python-lzo-${{ matrix.python-version }}-macos-${{ matrix.architecture }}
           body: macos-${{ matrix.architecture }}
-          artifacts: "**/*.zip,**/*.deb"
+          artifacts: artifacts/*
           generateReleaseNotes: true
+          makeLatest: true
           tag: 1.0.10
             
       # - name: Release

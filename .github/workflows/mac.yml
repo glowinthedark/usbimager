@@ -32,7 +32,9 @@ jobs:
           submodules: true
           fetch-depth: 0
           fetch-tags: true
+          
       - name: Update brew
+        if: matrix.os == 'macos-13' || matrix.os == 'macos-14'
         run: |
           brew update
           

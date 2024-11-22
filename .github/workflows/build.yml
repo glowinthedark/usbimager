@@ -82,6 +82,7 @@ jobs:
       - name: windows make bash
         if: matrix.os == 'windows-2022'
         shell: bash
+        working-directory: src
         run: |
           make package
 

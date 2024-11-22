@@ -51,9 +51,22 @@ jobs:
           echo "VERSION=$(git describe --abbrev=0)" >> $GITHUB_ENV
           echo "TAG=$(git describe)" >> $GITHUB_ENV          
 
-      - name: Make project
+      - name: Make macos/linux
+        if: matrix.os != 'windows-latest'
         working-directory: ./src
         run: make package
+
+      - name: Make deb
+        if: matrix.os = 'ubuntu-latest'
+        working-directory: ./src
+        run: make deb
+
+      - name: Make windows
+        if: matrix.os == 'windows-latest'
+        working-directory: src
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          make package
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4
@@ -63,6 +76,8 @@ jobs:
           name: ${{ env.APPNAME }}-${{ matrix.os }}-${{ github.sha }}
           path: |
             **/*.zip
+            **/*.deb
+            
 
       # DMG create fails intermittently: https://github.com/actions/runner-images/issues/7522
       # - name: Unzip app

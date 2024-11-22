@@ -11,8 +11,6 @@ on:
 
 env:
   APPNAME: USBImager
-  UV_SYSTEM_PYTHON: 1
-  UV_NO_PROGRESS: 1
   HOMEBREW_NO_INSTALL_CLEANUP: true
   HOMEBREW_NO_ENV_HINTS: true
   HOMEBREW_CLEANUP_MAX_AGE_DAYS: 999
@@ -24,9 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # create-dmg chokes when running parallel workers 
-      max-parallel: 1 
-      # see https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow
+      # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow
       matrix:
         os: ['macos-13', 'macos-14', 'ubuntu-latest', 'windows-latest']
       fail-fast: false

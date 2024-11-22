@@ -71,7 +71,7 @@ jobs:
       - name: Create DMG
         if: true
         run: |
-          create-dmg --volname "${{ env.APPNAME }}" --volicon src/misc/usbimager.icns --eula src/LICENSE  --app-drop-link 50 50 "{{ env.APPNAME }}-${{ env.TAG }}.dmg" "${{ env.APPNAME }}.app"
+          create-dmg --volname "${{ env.APPNAME }}" --volicon src/misc/usbimager.icns --eula LICENSE  --app-drop-link 50 50 "{{ env.APPNAME }}-${{ env.TAG }}.dmg" "${{ env.APPNAME }}.app"
 
       - name: Upload Artifacts DMG
         if: true

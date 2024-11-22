@@ -20,8 +20,6 @@ env:
 jobs:
   build_all:
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
 
     strategy:
       # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow
@@ -69,6 +67,8 @@ jobs:
   release:
     needs: build_all
     runs-on: ubuntu-latest
+    permissions:
+      contents: write    
 
     steps:
       - name: Download artifacts

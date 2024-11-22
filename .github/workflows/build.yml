@@ -18,7 +18,7 @@ env:
   HOMEBREW_NO_AUTO_UPDATE: true
 
 jobs:
-  build_macos:
+  build_macos_linux:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -61,18 +61,21 @@ jobs:
         working-directory: ./src
         run: make deb
 
-      - name: Make windows
+      - name: windows prepare env
+        if: matrix.os == 'windows-2022'
+        uses: microsoft/setup-msbuild@v2
+        # with:
+        #   vs-version: '[17,)'
+
+
+      - name: windows make
         if: matrix.os == 'windows-2022'
         working-directory: src
-        shell: cmd
-        # run: |
-        #   & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1' `
-        #     -SkipAutomaticLocation -Arch amd64 -HostArch amd64
-        #   make package
-          
+        shell: pwsh
         run: |
-          call  C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat
-          make package
+          & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1' `
+            -SkipAutomaticLocation -Arch amd64 -HostArch amd64
+          make package     
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4
@@ -85,6 +88,42 @@ jobs:
             **/*.deb
             **/*.exe
             
+  # build_windows:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [windows-2022]
+  #   steps:
+  #     - uses: jurplel/install-qt-action@v4
+  #       with:
+  #         version: ${{ matrix.qt_ver }}
+  #         arch: win64_msvc2019_64
+  #         modules: qtwebengine qtwebchannel qtpositioning qt5compat qtmultimedia qtimageformats qtspeech
+  #         setup-python: 'false'
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
+  #     - name: Build
+  #       id: build
+  #       run: |
+  #         # Launch-VsDevShell also provides Ninja
+  #         & 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1' `
+  #           -SkipAutomaticLocation -Arch amd64 -HostArch amd64
+  #         New-Item -Path './build_dir' -ItemType Directory
+          
+  #         # RelWithDebInfo + msvc's = .pdb file beside program file.
+  #         cmake -S . -B "./build_dir" `
+  #           -G Ninja `
+  #           -DCMAKE_C_COMPILER="cl.exe" -DCMAKE_CXX_COMPILER="cl.exe" `
+  #           -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+  #           -DWITH_FFMPEG_PLAYER=OFF `
+  #           -DWITH_VCPKG_BREAKPAD=ON
+  #         cmake --build "./build_dir"
+  #     - name: Package
+  #       run: |
+  #         cd './build_dir'
+  #         cpack --verbose --trace
+  #         cd ..
 
       # DMG create fails intermittently: https://github.com/actions/runner-images/issues/7522
       # - name: Unzip app

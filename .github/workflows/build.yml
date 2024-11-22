@@ -85,7 +85,7 @@ jobs:
       #       **/*.dmg
 
   build-w64:
-    if: false
+    # if: false
     runs-on: windows-2022
     defaults:
       run:
@@ -100,7 +100,7 @@ jobs:
           msbuild-architecture: x64
           
       - name: Build
-        working-directory: ${{ github.workspace }}/src
+        working-directory: src
         run: make package
           
       - name: Upload artifact
@@ -112,8 +112,8 @@ jobs:
             **/*.exe
       
   release:
-    needs: [build_all]
-    # needs: [build_all, build-w64]
+    # needs: [build_all]
+    needs: [build_all, build-w64]
     runs-on: ubuntu-latest
     permissions:
       contents: write    

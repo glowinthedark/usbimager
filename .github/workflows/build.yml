@@ -93,10 +93,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run cmake
-        working-directory: ${{ github.workspace }}/src
-        run: |
-          make ..
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:

@@ -67,6 +67,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: 1.0.10
           generate_release_notes: true
           make_latest: true
           files: |

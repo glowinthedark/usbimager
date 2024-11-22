@@ -73,22 +73,24 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        # with:
-        #   path: ./artifacts
+        
+        with:
+          path: ./artifacts
+          merge-multiple: true
           
       - name: List artifacts
         run: |
           pwd
-          echo ${{ github.workspace }}
+          echo ${{ github.workspace }}/artifacts
           ls -alh ${{ github.workspace }}
-          find . -exec ls -alh {} \;           
+          find .       
 
       - name: make release
         uses: ncipollo/release-action@v1
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}
           # body: macos-${{ matrix.architecture }}
-          artifacts: "*.zip,*.deb"
+          artifacts: "artifacts/*.zip,artifacts/*.deb"
           generateReleaseNotes: true
           makeLatest: true
           allowUpdates: true

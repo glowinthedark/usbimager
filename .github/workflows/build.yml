@@ -37,7 +37,7 @@ jobs:
       #   if: startsWith(matrix.os, 'macos')
       #   run: |
       #     brew update
-      #     brew install intltool create-dmg
+      #     brew install create-dmg
 
       - name: set vars
         id: envconf
@@ -63,9 +63,59 @@ jobs:
           path: |
             **/*.zip
             **/*.deb
+          
+      # disabled because DMG create fails intermittently: https://github.com/actions/runner-images/issues/7522
+      # - name: Unzip app
+      #   run: unzip -o *.zip
 
+      # - name: Create DMG
+      #   if: true
+      #   run: |
+      #     create-dmg --volname "${{ env.APPNAME }}" --volicon src/misc/usbimager.icns --eula LICENSE  --app-drop-link 50 50 "${{ env.APPNAME }}-${{ env.TAG }}.dmg" "${{ env.APPNAME }}.app"
+
+      # - name: Upload Artifacts DMG
+      #   if: true
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     overwrite: true
+      #     # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+      #     # branch name: ${{ github.ref_name }}
+      #     name: DMG-${{ env.APPNAME }}-${{ matrix.os }}-${{ github.sha }}
+      #     path: |
+      #       **/*.dmg
+
+  build-w64:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run cmake
+        working-directory: C:\src
+        run: |
+          make ..
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+          
+      - name: Build
+        working-directory: C:\src
+        run: make package
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APPNAME }}
+          path: |
+            **/*.zip
+            **/*.exe
+      
   release:
-    needs: build_all
+    needs: [build_all, build-w64]
     runs-on: ubuntu-latest
     permissions:
       contents: write    
@@ -96,35 +146,6 @@ jobs:
           allowUpdates: true
           tag: 1.0.10
             
-      # - name: Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     tag_name: 1.0.10
-      #     generate_release_notes: true
-      #     make_latest: true
-      #     files: |
-      #       **/*.zip
-      #       **/*.deb
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      # disabled because DMG create fails intermittently: https://github.com/actions/runner-images/issues/7522
-      # - name: Unzip app
-      #   run: unzip -o *.zip
 
-      # - name: Create DMG
-      #   if: true
-      #   run: |
-      #     create-dmg --volname "${{ env.APPNAME }}" --volicon src/misc/usbimager.icns --eula LICENSE  --app-drop-link 50 50 "${{ env.APPNAME }}-${{ env.TAG }}.dmg" "${{ env.APPNAME }}.app"
 
-      # - name: Upload Artifacts DMG
-      #   if: true
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     overwrite: true
-      #     # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
-      #     # branch name: ${{ github.ref_name }}
-      #     name: DMG-${{ env.APPNAME }}-${{ matrix.os }}-${{ github.sha }}
-      #     path: |
-      #       **/*.dmg
         

@@ -25,11 +25,15 @@ jobs:
 
       - uses: msys2/setup-msys2@v2
         with:
+          update: true
           msystem: MINGW64
+          install: >-
+            make
+            gcc
+            zlib
 
-      - run: |
-          pacman -Syu
-          pacman -S mingw-w64-x86_64-make
+      - name: print env
+        run: env
 
       - name: Build
         working-directory: src

@@ -166,7 +166,7 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}
           # body: macos-${{ matrix.architecture }}
-          artifacts: "artifacts/*.zip,artifacts/*.deb,artifacts/*.exe"
+          artifacts: "artifacts/*.zip,artifacts/*.deb,artifacts/**/*.exe"
           generateReleaseNotes: true
           makeLatest: true
           allowUpdates: true

@@ -32,6 +32,9 @@ jobs:
             make
             gcc
             zlib
+            zlib-devel
+            mingw-w64-clang-x86_64-zlib
+            mingw-w64-x86_64-zlib
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-gcc-libs
             mingw-w64-x86_64-make
@@ -43,6 +46,7 @@ jobs:
 
       - name: Build
         working-directory: src
+        shell: msys2 {0}
         run: make package
           
       - name: List files

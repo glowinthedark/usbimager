@@ -27,8 +27,11 @@ jobs:
         with:
           msystem: MINGW64
 
+      - run: |
+          pacman -Syu
+          pacman -S mingw-w64-x86_64-make
+
       - name: Build
-        shell: msys2 {0}
         working-directory: src
         run: make package
           

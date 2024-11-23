@@ -40,6 +40,8 @@ jobs:
             mingw-w64-x86_64-make
             mingw-w64-x86_64-gdb
             mingw-w64-clang-x86_64-make
+            zip
+            unzip
 
       - name: print env
         run: env

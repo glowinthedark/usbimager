@@ -127,7 +127,10 @@ jobs:
           pwd
           echo ${{ github.workspace }}
           ls -alh 
-          find .            
+          find .
+
+      - name: unzip archive
+        run: unzip -o *.zip
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4

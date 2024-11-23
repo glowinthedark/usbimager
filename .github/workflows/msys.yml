@@ -32,7 +32,6 @@ jobs:
             make
             gcc
             zlib
-            mingw-w64-gcc
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-gcc-libs
             mingw-w64-x86_64-make

@@ -1,0 +1,48 @@
+name: msys build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'none'
+    paths-ignore:
+      - 'docs/**'
+      - "*.md"
+
+env:
+  APPNAME: USBImager
+
+jobs:
+  build-w64:
+    if: true
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+
+      - name: Build
+        shell: msys2 {0}
+        working-directory: src
+        run: make package
+          
+      - name: List files
+        run: |
+          pwd
+          echo ${{ github.workspace }}
+          ls -alh 
+          find .            
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APPNAME }}
+          path: |
+            **/*.zip
+            **/*.exe
+      
+  

@@ -89,19 +89,31 @@ jobs:
     runs-on: windows-2022
     defaults:
       run:
-        shell: cmd
+        shell: bash
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.1
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
         with:
-          msbuild-architecture: x64
+          platform: x64
+          
+      # - name: Add msbuild to PATH
+      #   uses: microsoft/setup-msbuild@v1.1
+      #   with:
+      #     msbuild-architecture: x64
           
       - name: Build
         working-directory: src
         run: make package
+          
+      - name: List files
+        run: |
+          pwd
+          echo ${{ github.workspace }}
+          ls -alh 
+          find .            
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -9,7 +9,7 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | Platform     | Felület      | Leírás                       |
 |--------------|--------------|------------------------------|
 | Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-i686-win-gdi.zip) | natív interfész<br>egyszerűsített, csak író felület |
-| MacOSX       | [Cocoa Intel](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-intel-macosx-cocoa.zip)<br>[Cocoa ARM](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-intel-macosx-cocoa.zip) | régebbi Mac modellekhez<br>újabb Mac modellekhez |
+| MacOS        | [Cocoa Intel](https://github.com/glowinthedark/usbimager/releases/download/1.0.10/usbimager_1.0.10-intel-macosx-cocoa.zip)<br>[Cocoa ARM](https://github.com/glowinthedark/usbimager/releases/download/1.0.10/usbimager_1.0.10-arm-macosx-cocoa.zip) | régebbi Mac modellekhez<br>újabb Mac modellekhez (@tshup hozzájárulása) |
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban<br>binárisból generálva<br>minimális X11 verzió |
@@ -109,7 +109,7 @@ Az xz tömörítés esetén az 1 Gigabájtnál nagyobb szótárakat nem támogat
 | Nyers kiírási idő (4)           | 23:16         | 23:28             | 24:05     |
 | Tömörített kiírás (4)           | 01:12:51      | ✗                 | 30:47     |
 
-(1) - a mellékelt bináris 10.14-en lett fordítva (mert nekem az van), de visszaigazolták, hogy a forrás 10.13 alatt is gond nélkül lefordul. Ezen felül [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) sikeresen tesztelte 10.10 alatt is. Az 1.0.9 verziótól az Intel nem támogatott, az ARM verziót pedig @cwongmath tartja karban.
+(1) - Intel-es: 10.14, de visszaigazolták, hogy a forrás 10.13 alatt is gond nélkül lefordul. Ezen felül [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) sikeresen tesztelte 10.10 alatt is. ARM-es: minimum verzió a 11.0. Az USBImager binárisokat egy lelkes támogató, @tshup biztosítja, ezer köszönet érte!
 
 (2) - a szállítható futtatható mérete Windowson. A WIN32 Disk Imagerhez nem tudtam letölteni előre lefordított hivatalos csomagokat, csak forrást. Az **uf** USBImager változatok nagyobbak, ~800K, mivel azok tartalmazzák az Unifont-ot.
 

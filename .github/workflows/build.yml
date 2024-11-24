@@ -180,12 +180,14 @@ jobs:
         id: envconf
         run: |
           echo "TAG=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
+          echo "custom tag: ${{ github.event.inputs.custom_tag }}"
+          echo "git tag ${{ env.TAG}}"
           
       - name: make release
         uses: ncipollo/release-action@v1
         with:
           body: "- [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
-          artifacts: "artifacts/*.*"
+          artifacts: "**/artifacts/*.*"
           replacesArtifacts: true
           generateReleaseNotes: true
           makeLatest: true

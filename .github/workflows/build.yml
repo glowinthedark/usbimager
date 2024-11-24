@@ -16,10 +16,9 @@ env:
   HOMEBREW_CLEANUP_MAX_AGE_DAYS: 999
   HOMEBREW_NO_ANALYTICS: true
   HOMEBREW_NO_AUTO_UPDATE: true
-  TAG: 1.0.10
 
 jobs:
-  build_all:
+  build_mac_linux:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -29,9 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
-          fetch-depth: 0
-          fetch-tags: true
+          ref: master
+          # fetch-depth: 0
+          # fetch-tags: true
           
       # - name: Update brew (needed for DMG creation)
       #   if: startsWith(matrix.os, 'macos')
@@ -39,11 +38,10 @@ jobs:
       #     brew update
       #     brew install create-dmg
 
-      - name: set vars
+      - name: set tag
         id: envconf
         run: |
-          echo "VERSION=$(git describe --abbrev=0)" >> $GITHUB_ENV
-          echo "TAG=$(git describe)" >> $GITHUB_ENV          
+          echo "TAG=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
 
       - name: Make macos/linux
         working-directory: ./src
@@ -69,12 +67,12 @@ jobs:
       #   run: unzip -o *.zip
 
       # - name: Create DMG
-      #   if: true
+      #   if: false
       #   run: |
       #     create-dmg --volname "${{ env.APPNAME }}" --volicon src/misc/usbimager.icns --eula LICENSE  --app-drop-link 50 50 "${{ env.APPNAME }}-${{ env.TAG }}.dmg" "${{ env.APPNAME }}.app"
 
       # - name: Upload Artifacts DMG
-      #   if: true
+      #   if: false
       #   uses: actions/upload-artifact@v4
       #   with:
       #     overwrite: true
@@ -84,36 +82,44 @@ jobs:
       #     path: |
       #       **/*.dmg
 
-  build-w64:
-    if: true
+  build-windows:
     runs-on: windows-2019
+    strategy:
+      matrix:
+        include:
+          - { sys: mingw64, env: x86_64 }
+          - { sys: mingw32, env: i686 }
+      fail-fast: false    
     defaults:
       run:
         shell: bash
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
       - uses: msys2/setup-msys2@v2
+
         with:
           update: true
-          msystem: MINGW64
+          msystem: ${{ matrix.sys}}
           install: >-
             base-devel
             make
             gcc
             zlib
             zlib-devel
-            mingw-w64-clang-x86_64-zlib
-            mingw-w64-x86_64-zlib
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-gcc-libs
-            mingw-w64-x86_64-make
-            mingw-w64-x86_64-gdb
-            mingw-w64-clang-x86_64-make
+            mingw-w64-clang-${{matrix.env}}-zlib
+            mingw-w64-${{matrix.env}}-zlib
+            mingw-w64-${{matrix.env}}-gcc
+            mingw-w64-${{matrix.env}}-gcc-libs
+            mingw-w64-${{matrix.env}}-make
+            mingw-w64-clang-${{matrix.env}}-make
             zip
             unzip
-
+            
+      - name: Checkout full repo with all tags and history
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          
       - name: print env
         run: env
 
@@ -128,20 +134,15 @@ jobs:
           echo ${{ github.workspace }}
           ls -alh 
           find .
-
-      - name: unzip archive
-        run: unzip -o *.zip
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPNAME }}
-          path: |
-            **/*.exe
+          name: ${{ env.APPNAME }}-${{ matrix.sys}}-${{matrix.env}}
+          path: '**/*.zip'
       
   release:
-    # needs: [build_all]
-    needs: [build_all, build-w64]
+    needs: [build_mac_linux, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write    
@@ -159,8 +160,19 @@ jobs:
           pwd
           echo ${{ github.workspace }}/artifacts
           ls -alh ${{ github.workspace }}
-          find .       
+          find .
+          
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          fetch-tags: true
 
+      - name: set tag
+        id: envconf
+        run: |
+          echo "TAG=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
+          
       - name: make release
         uses: ncipollo/release-action@v1
         with:

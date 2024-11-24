@@ -184,9 +184,8 @@ jobs:
       - name: make release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ github.event.repository.name }}-${{ github.ref_name }}
-          # body: macos-${{ matrix.architecture }}
-          artifacts: "**/*.*"
+          body: "- [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
+          artifacts: "artifacts/*.*"
           replacesArtifacts: true
           generateReleaseNotes: true
           makeLatest: true

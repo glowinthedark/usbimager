@@ -187,7 +187,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           body: "- [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
-          artifacts: "**/artifacts/*.*"
+          artifacts: ${{ github.workspace }}/*.zip,${{ github.workspace }}/*.deb
           replacesArtifacts: true
           generateReleaseNotes: true
           makeLatest: true

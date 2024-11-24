@@ -2,6 +2,13 @@ name: build and release
 
 on:
   workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom Tag'
+        required: false
+      do_release:
+        description: 'Release artifacts: "y" to enable'
+        required: false
   push:
     branches:
       - 'none'
@@ -28,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ github.event.inputs.custom_tag || 'master'}}
           # fetch-depth: 0
           # fetch-tags: true
           
@@ -142,6 +149,7 @@ jobs:
           path: '**/*.zip'
       
   release:
+    if: github.event.inputs.do_release != 'y'
     needs: [build_mac_linux, build-windows]
     runs-on: ubuntu-latest
     permissions:
@@ -164,7 +172,7 @@ jobs:
           
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ github.event.inputs.custom_tag || 'master'}}
           fetch-depth: 0
           fetch-tags: true
 
@@ -178,12 +186,12 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}
           # body: macos-${{ matrix.architecture }}
-          artifacts: "artifacts/*.zip,artifacts/*.deb,artifacts/**/*.exe"
+          artifacts: "**/*.*"
           replacesArtifacts: true
           generateReleaseNotes: true
           makeLatest: true
           allowUpdates: true
-          tag: ${{ env.TAG}}
+          tag: ${{ github.event.inputs.custom_tag || env.TAG}}
             
 
 

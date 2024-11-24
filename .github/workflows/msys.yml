@@ -13,20 +13,29 @@ env:
   APPNAME: USBImager
 
 jobs:
-  build-w64:
+  build-x86_64:
     if: true
-    runs-on: windows-2019
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['windows-2019']
+        msys_arch: ['MINGW64', 'MINGW32']
+      fail-fast: false    
     defaults:
       run:
         shell: bash
     steps:
-      - name: Checkout repo
+      - name: Checkout full repo with all tags and history
         uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
 
       - uses: msys2/setup-msys2@v2
+        if: ${{ matrix.msys_arch}} == 'MINGW64'
         with:
           update: true
-          msystem: MINGW64
+          msystem: ${{ matrix.msys_arch}}
           install: >-
             base-devel
             make
@@ -42,7 +51,28 @@ jobs:
             mingw-w64-clang-x86_64-make
             zip
             unzip
-
+            
+      - uses: msys2/setup-msys2@v2
+        if: ${{ matrix.msys_arch}} == 'MINGW32'
+        with:
+          update: true
+          msystem: ${{ matrix.msys_arch}}
+          install: >-
+            base-devel
+            make
+            gcc
+            gcc-libs
+            zlib
+            zlib-devel
+            mingw-w64-i686-zlib
+            mingw-w64-clang-i686-zlib
+            mingw-w64-i686-gcc
+            mingw-w64-i686-gcc-libs
+            mingw-w64-i686-make
+            mingw-w64-x86_64-gdb
+            mingw-w64-clang-i686-make
+            zip
+            unzip
       - name: print env
         run: env
 
@@ -56,14 +86,15 @@ jobs:
           pwd
           echo ${{ github.workspace }}
           ls -alh 
-          find .            
+          find .
+
+      - name: unpack zip package
+        run: |
+          find . -iname '*.zip' -exec unzip {} \;
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPNAME }}
-          path: |
-            **/*.zip
-            **/*.exe
-      
-  
+          name: ${{ env.APPNAME }}-${{env.RUNNER_ARCH}}-${{PROCESSOR_ARCHITECTURE}}-${{ matrix.msys_arch}}
+          path: '**/*.exe'
+

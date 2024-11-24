@@ -186,7 +186,7 @@ jobs:
       - name: make release
         uses: ncipollo/release-action@v1
         with:
-          body: "- [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
+          body: "- Automated builds mirrored from source repository at [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
           artifacts: ${{ steps.download-artifact.outputs.download-path }}/**/*.*
           replacesArtifacts: true
           generateReleaseNotes: true

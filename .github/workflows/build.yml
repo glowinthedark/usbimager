@@ -149,7 +149,7 @@ jobs:
           path: '**/*.zip'
       
   release:
-    if: github.event.inputs.do_release != 'y'
+    if: github.event.inputs.do_release == 'y'
     needs: [build_mac_linux, build-windows]
     runs-on: ubuntu-latest
     permissions:

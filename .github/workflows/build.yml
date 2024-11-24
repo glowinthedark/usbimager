@@ -3,11 +3,11 @@ name: build and release
 on:
   workflow_dispatch:
     inputs:
-      custom_tag:
-        description: 'Set custom tag or use latest tag if empty'
+      custom_ref:
+        description: 'Latest tag if empty, or custom ref|branch|tag'
         required: false
-      do_release:
-        description: 'Create/update release from artifacts: "y" to enable'
+      skip_release:
+        description: 'SKIP creating a release from artifacts: "y" to skip'
         required: false
   push:
     branches:
@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.custom_tag || 'master'}}
+          ref: ${{ github.event.inputs.custom_ref || 'master'}}
           # fetch-depth: 0
           # fetch-tags: true
           
@@ -149,7 +149,7 @@ jobs:
           path: '**/*.zip'
       
   release:
-    if: github.event.inputs.do_release == 'y'
+    if: github.event.inputs.skip_release != 'y'
     needs: [build_mac_linux, build-windows]
     runs-on: ubuntu-latest
     permissions:
@@ -158,7 +158,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.custom_tag || 'master'}}
+          ref: ${{ github.event.inputs.custom_ref || 'master'}}
           fetch-depth: 0
           fetch-tags: true
           
@@ -177,7 +177,7 @@ jobs:
           
       - name: List artifacts
         run: |
-          echo "custom tag: ${{ github.event.inputs.custom_tag }}"
+          echo "custom tag: ${{ github.event.inputs.custom_ref }}"
           echo "git tag: ${{ env.TAG}}"
           echo "PWD=$PWD"
           ls -alh ${{ steps.download-artifact.outputs.download-path }}
@@ -192,7 +192,7 @@ jobs:
           generateReleaseNotes: true
           makeLatest: true
           allowUpdates: true
-          tag: ${{ github.event.inputs.custom_tag || env.TAG}}
+          tag: ${{ github.event.inputs.custom_ref || env.TAG}}
             
 
 

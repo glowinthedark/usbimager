@@ -19,60 +19,40 @@ jobs:
     strategy:
       matrix:
         os: ['windows-2019']
-        msys_arch: ['MINGW64', 'MINGW32']
+        include:
+          - { sys: mingw64, env: x86_64 }
+          - { sys: mingw32, env: i686 }
       fail-fast: false    
     defaults:
       run:
         shell: bash
     steps:
+      - uses: msys2/setup-msys2@v2
+
+        with:
+          update: true
+          msystem: ${{ matrix.sys}}
+          install: >-
+            base-devel
+            make
+            gcc
+            zlib
+            zlib-devel
+            mingw-w64-clang-${{matrix.env}}-zlib
+            mingw-w64-${{matrix.env}}-zlib
+            mingw-w64-${{matrix.env}}-gcc
+            mingw-w64-${{matrix.env}}-gcc-libs
+            mingw-w64-${{matrix.env}}-make
+            mingw-w64-clang-${{matrix.env}}-make
+            zip
+            unzip
+            
       - name: Checkout full repo with all tags and history
         uses: actions/checkout@v4
         with:
           ref: master
           fetch-depth: 0
-
-      - uses: msys2/setup-msys2@v2
-        if: ${{ matrix.msys_arch}} == 'MINGW64'
-        with:
-          update: true
-          msystem: ${{ matrix.msys_arch}}
-          install: >-
-            base-devel
-            make
-            gcc
-            zlib
-            zlib-devel
-            mingw-w64-clang-x86_64-zlib
-            mingw-w64-x86_64-zlib
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-gcc-libs
-            mingw-w64-x86_64-make
-            mingw-w64-x86_64-gdb
-            mingw-w64-clang-x86_64-make
-            zip
-            unzip
-            
-      - uses: msys2/setup-msys2@v2
-        if: ${{ matrix.msys_arch}} == 'MINGW32'
-        with:
-          update: true
-          msystem: ${{ matrix.msys_arch}}
-          install: >-
-            base-devel
-            make
-            gcc
-            gcc-libs
-            zlib
-            zlib-devel
-            mingw-w64-i686-zlib
-            mingw-w64-clang-i686-zlib
-            mingw-w64-i686-gcc
-            mingw-w64-i686-gcc-libs
-            mingw-w64-i686-make
-            mingw-w64-x86_64-gdb
-            mingw-w64-clang-i686-make
-            zip
-            unzip
+          
       - name: print env
         run: env
 
@@ -90,7 +70,7 @@ jobs:
 
       - name: unpack zip package
         run: |
-          find . -iname '*.zip' -exec unzip {} \;
+          find . -iname '*.zip' -exec unzip -o {} \;
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4

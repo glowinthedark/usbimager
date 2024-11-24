@@ -13,7 +13,7 @@ env:
   APPNAME: USBImager
 
 jobs:
-  build-x86_64:
+  build-windows:
     if: true
     runs-on: ${{ matrix.os }}
     strategy:

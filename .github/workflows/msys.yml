@@ -14,11 +14,9 @@ env:
 
 jobs:
   build-windows:
-    if: true
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-2019
     strategy:
       matrix:
-        os: ['windows-2019']
         include:
           - { sys: mingw64, env: x86_64 }
           - { sys: mingw32, env: i686 }

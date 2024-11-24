@@ -7,7 +7,7 @@ on:
         description: 'Set custom tag or use latest tag if empty'
         required: false
       do_release:
-        description: 'Release artifacts: "y" to enable'
+        description: 'Create/update release from artifacts: "y" to enable'
         required: false
   push:
     branches:

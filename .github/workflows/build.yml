@@ -23,7 +23,11 @@ env:
   HOMEBREW_CLEANUP_MAX_AGE_DAYS: 999
   HOMEBREW_NO_ANALYTICS: true
   HOMEBREW_NO_AUTO_UPDATE: true
-
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+  
 jobs:
   build_mac_linux:
     runs-on: ${{ matrix.os }}

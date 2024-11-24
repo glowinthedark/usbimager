@@ -66,13 +66,13 @@ jobs:
           ls -alh 
           find .
 
-      - name: unpack zip package
-        run: |
-          find . -iname '*.zip' -exec unzip -o {} \;
+      # - name: unpack zip package
+      #   run: |
+      #     find . -iname '*.zip' -exec unzip -o {} \;
           
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APPNAME }}-${{ env.RUNNER_ARCH }}-${{ env.PROCESSOR_ARCHITECTURE }}-${{ matrix.msys_arch}}
-          path: '**/*.exe'
+          name: ${{ env.APPNAME }}-${{ matrix.sys}}-${{matrix.env}}
+          path: '**/*.zip'
 

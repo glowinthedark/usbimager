@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       custom_tag:
-        description: 'Custom Tag'
+        description: 'Set custom tag or use latest tag if empty'
         required: false
       do_release:
         description: 'Release artifacts: "y" to enable'

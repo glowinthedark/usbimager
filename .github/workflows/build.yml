@@ -157,18 +157,18 @@ jobs:
 
     steps:
       - name: Download artifacts
+        id: download-artifact
         uses: actions/download-artifact@v4
         
         with:
-          path: ./artifacts
+          path: download
           merge-multiple: true
           
       - name: List artifacts
         run: |
           pwd
-          echo ${{ github.workspace }}/artifacts
-          ls -alh ${{ github.workspace }}
-          find .
+          ls -alh ${{ steps.download-artifact.outputs.download-path }}
+          find ${{ steps.download-artifact.outputs.download-path }}
           
       - uses: actions/checkout@v4
         with:
@@ -187,7 +187,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           body: "- [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
-          artifacts: ${{ github.workspace }}/*.zip,${{ github.workspace }}/*.deb
+          artifacts: ${{ steps.download-artifact.outputs.download-path }}/**.*
           replacesArtifacts: true
           generateReleaseNotes: true
           makeLatest: true

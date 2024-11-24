@@ -153,41 +153,41 @@ jobs:
     needs: [build_mac_linux, build-windows]
     runs-on: ubuntu-latest
     permissions:
-      contents: write    
+      contents: write
 
     steps:
-      - name: Download artifacts
-        id: download-artifact
-        uses: actions/download-artifact@v4
-        
-        with:
-          path: download
-          merge-multiple: true
-          
-      - name: List artifacts
-        run: |
-          pwd
-          ls -alh ${{ steps.download-artifact.outputs.download-path }}
-          find ${{ steps.download-artifact.outputs.download-path }}
-          
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.custom_tag || 'master'}}
           fetch-depth: 0
           fetch-tags: true
-
-      - name: set tag
+          
+      - name: set vars
         id: envconf
         run: |
           echo "TAG=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
+          
+      - name: Download artifacts
+        id: download-artifact
+        uses: actions/download-artifact@v4
+        
+        with:
+          path: /tmp/download
+          merge-multiple: true
+          
+      - name: List artifacts
+        run: |
           echo "custom tag: ${{ github.event.inputs.custom_tag }}"
-          echo "git tag ${{ env.TAG}}"
+          echo "git tag: ${{ env.TAG}}"
+          echo "PWD=$PWD"
+          ls -alh ${{ steps.download-artifact.outputs.download-path }}
+          find ${{ steps.download-artifact.outputs.download-path }}
           
       - name: make release
         uses: ncipollo/release-action@v1
         with:
           body: "- [${{ github.event.repository.name }}](https://gitlab.com/bztsrc/usbimager)"
-          artifacts: ${{ steps.download-artifact.outputs.download-path }}/**.*
+          artifacts: ${{ steps.download-artifact.outputs.download-path }}/**/*.*
           replacesArtifacts: true
           generateReleaseNotes: true
           makeLatest: true

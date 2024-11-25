@@ -40,8 +40,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.custom_ref || 'master'}}
-          # fetch-depth: 0
-          # fetch-tags: true
+          fetch-depth: 0
+          fetch-tags: true
           
       # - name: Update brew (needed for DMG creation)
       #   if: startsWith(matrix.os, 'macos')
@@ -54,14 +54,18 @@ jobs:
         run: |
           echo "TAG=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
 
-      - name: Make macos/linux
+      - name: Make macos
+        if: startsWith(matrix.os, 'macos')
         working-directory: ./src
-        run: make package
+        run: |
+          make package
 
-      - name: Make deb
-        if: matrix.os == 'ubuntu-latest'
+      - name: Make linux deb
+        if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
-        run: USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make deb    
+        run: |
+          USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make package
+          USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make deb
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4

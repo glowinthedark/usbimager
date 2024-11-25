@@ -64,6 +64,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |
+          sudo apt-get install build-essential pkg-config libudisks2-dev libgtk-3-dev libgtk2.0-dev
           USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make all deb
 
       - name: Upload Artifacts zip

@@ -61,7 +61,7 @@ jobs:
       - name: Make deb
         if: matrix.os == 'ubuntu-latest'
         working-directory: ./src
-        run: make deb    
+        run: USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make deb    
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4

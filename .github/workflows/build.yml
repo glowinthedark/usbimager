@@ -14,7 +14,7 @@ on:
       - 'none'
     paths-ignore:
       - 'docs/**'
-      - "*.md"
+      - '*.md'
 
 env:
   APPNAME: USBImager

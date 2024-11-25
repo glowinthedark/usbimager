@@ -116,18 +116,29 @@ jobs:
           msystem: ${{ matrix.sys}}
           install: >-
             base-devel
-            make
             gcc
-            zlib
-            zlib-devel
-            mingw-w64-clang-${{matrix.env}}-zlib
-            mingw-w64-${{matrix.env}}-zlib
+            make
+            mingw-w64-${{matrix.env}}-binutils
+            mingw-w64-${{matrix.env}}-crt-git
             mingw-w64-${{matrix.env}}-gcc
             mingw-w64-${{matrix.env}}-gcc-libs
+            mingw-w64-${{matrix.env}}-gmp
+            mingw-w64-${{matrix.env}}-headers-git
+            mingw-w64-${{matrix.env}}-isl
+            mingw-w64-${{matrix.env}}-libiconv
+            mingw-w64-${{matrix.env}}-libwinpthread-git
             mingw-w64-${{matrix.env}}-make
-            mingw-w64-clang-${{matrix.env}}-make
-            zip
+            mingw-w64-${{matrix.env}}-mpc
+            mingw-w64-${{matrix.env}}-mpfr
+            mingw-w64-${{matrix.env}}-windows-default-manifest
+            mingw-w64-${{matrix.env}}-winpthreads-git
+            msys2-runtime-devel
+            msys2-w32api-headers
+            msys2-w32api-runtime
             unzip
+            zip
+            zlib
+            zlib-devel
             
       - name: Checkout full repo with all tags and history
         uses: actions/checkout@v4

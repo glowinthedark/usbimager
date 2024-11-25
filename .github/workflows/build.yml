@@ -58,14 +58,13 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         working-directory: ./src
         run: |
-          make package
+          make all package
 
       - name: Make linux deb
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |
-          USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make package
-          USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make deb
+          USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 make all deb
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4

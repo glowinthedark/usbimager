@@ -60,12 +60,16 @@ jobs:
         run: |
           make all package
 
-      - name: Make linux deb
+      - name: Make linux GTK3 deb
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |
           sudo apt-get install --no-install-recommends -y libudisks2-dev libgtk-3-dev libglib2.0-dev
-          USE_UNIFONT=1 USE_GTK=1 USE_UDISKS2=1 USE_TUI=1 make all deb
+          USE_GTK=1 USE_UDISKS2=1 make all deb
+          make clean
+          USE_UNIFONT=1 make all package
+          make clean
+          USE_UNIFONT=1 USE_TUI=1 make all package
 
       - name: Upload Artifacts zip
         uses: actions/upload-artifact@v4

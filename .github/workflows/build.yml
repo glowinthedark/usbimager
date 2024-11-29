@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "TAG=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
 
-      - name: Make macos
+      - name: "Make macos (macos-13 = intel64, macos-14 = arm64)"
         if: startsWith(matrix.os, 'macos')
         working-directory: ./src
         run: |
@@ -91,9 +91,8 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |      
-          make clean
           find . -iname '*.zip' -delete -print
-          make all package
+          make clean && make all package
 
       - name: "2b: Upload X11 zip artifact"
         if: startsWith(matrix.os, 'ubuntu')

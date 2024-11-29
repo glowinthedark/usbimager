@@ -73,13 +73,13 @@ jobs:
         run: |
           sudo apt-get install --no-install-recommends -y libudisks2-dev libgtk-3-dev libglib2.0-dev
         
-      - name: Make ubuntu GTK3 deb
+      - name: "1a: Make ubuntu GTK3 deb"
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |
           USE_GTK=1 USE_UDISKS2=1 make all deb
           
-      - name: Upload DEB artifact
+      - name: "1b: Upload DEB artifact"
         if: startsWith(matrix.os, 'ubuntu')
         uses: actions/upload-artifact@v4
         with:
@@ -87,15 +87,15 @@ jobs:
           path: |
             **/*.deb
             
-      - name: Make X11 zip
+      - name: "2a: Make X11 zip"
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |      
           make clean
           find . -iname '*.zip' -delete -print
-          USE_UNIFONT=1 make all package
+          make all package
 
-      - name: Upload X11 zip artifact
+      - name: "2b: Upload X11 zip artifact"
         if: startsWith(matrix.os, 'ubuntu')
         uses: actions/upload-artifact@v4
         with:
@@ -103,7 +103,23 @@ jobs:
           path: |
             **/*.zip
 
-      - name: Make TUI zip
+      - name: "3a: Make X11 unifont zip"
+        if: startsWith(matrix.os, 'ubuntu')
+        working-directory: ./src
+        run: |      
+          make clean
+          find . -iname '*.zip' -delete -print
+          USE_UNIFONT=1 make all package
+
+      - name: "3b: Upload X11 unifont zip artifact"
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip-x11-${{ env.APPNAME }}-${{ matrix.os }}-${{ github.sha }}
+          path: |
+            **/*.zip
+
+      - name: "4a: Make TUI zip"
         if: startsWith(matrix.os, 'ubuntu')
         working-directory: ./src
         run: |
@@ -111,7 +127,7 @@ jobs:
           find . -iname '*.zip' -delete -print
           USE_TUI=1 make all package
 
-      - name: Upload TUI zip artifact
+      - name: "4b: Upload TUI zip artifact"
         if: startsWith(matrix.os, 'ubuntu')
         uses: actions/upload-artifact@v4
         with:

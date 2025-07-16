@@ -175,7 +175,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                         break;
                     } else {
                         DWORD numberOfBytesWritten, numberOfBytesVerify;
-                        errno = 0; needWrite = 1;
+                        errno = 0; needWrite = 1; numberOfBytesVerify = 0;
                         if(!force) {
                             if(ReadFile(hTargetDevice, ctx.verifyBuf, numberOfBytesRead, &numberOfBytesVerify, NULL) &&
                                 numberOfBytesRead == (int)numberOfBytesVerify && !memcmp(ctx.buffer, ctx.verifyBuf, numberOfBytesRead)) {
@@ -224,6 +224,7 @@ static DWORD WINAPI writerRoutine(LPVOID lpParam) {
                                 break;
                             }
                         }
+                        stream_hash(&ctx, numberOfBytesVerify);
                     }
                 } else {
                     MainDlgMsgBox(hwndDlg, lang[L_RDSRCERR]);

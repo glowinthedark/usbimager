@@ -33,6 +33,74 @@
 #include "lang.h"
 #include "stream.h"
 
+/**
+ * SHA-256
+ */
+#define SHA_ADD(a,b,c) if(a>0xffffffff-(c))b++;a+=c;
+#define SHA_ROTL(a,b) (((a)<<(b))|((a)>>(32-(b))))
+#define SHA_ROTR(a,b) (((a)>>(b))|((a)<<(32-(b))))
+#define SHA_CH(x,y,z) (((x)&(y))^(~(x)&(z)))
+#define SHA_MAJ(x,y,z) (((x)&(y))^((x)&(z))^((y)&(z)))
+#define SHA_EP0(x) (SHA_ROTR(x,2)^SHA_ROTR(x,13)^SHA_ROTR(x,22))
+#define SHA_EP1(x) (SHA_ROTR(x,6)^SHA_ROTR(x,11)^SHA_ROTR(x,25))
+#define SHA_SIG0(x) (SHA_ROTR(x,7)^SHA_ROTR(x,18)^((x)>>3))
+#define SHA_SIG1(x) (SHA_ROTR(x,17)^SHA_ROTR(x,19)^((x)>>10))
+static uint32_t sha256_k[64]={
+   0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+   0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+   0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+   0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+   0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+   0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+   0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+   0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+};
+static void sha256_t(sha256_ctx_t *ctx)
+{
+   uint32_t a,b,c,d,e,f,g,h,i,j,t1,t2,m[64];
+   for(i=0,j=0;i<16;i++,j+=4) m[i]=(ctx->d[j]<<24)|(ctx->d[j+1]<<16)|(ctx->d[j+2]<<8)|(ctx->d[j+3]);
+   for(;i<64;i++) m[i]=SHA_SIG1(m[i-2])+m[i-7]+SHA_SIG0(m[i-15])+m[i-16];
+   a=ctx->s[0];b=ctx->s[1];c=ctx->s[2];d=ctx->s[3];
+   e=ctx->s[4];f=ctx->s[5];g=ctx->s[6];h=ctx->s[7];
+   for(i=0;i<64;i++) {
+       t1=h+SHA_EP1(e)+SHA_CH(e,f,g)+sha256_k[i]+m[i];
+       t2=SHA_EP0(a)+SHA_MAJ(a,b,c);h=g;g=f;f=e;e=d+t1;d=c;c=b;b=a;a=t1+t2;
+    }
+   ctx->s[0]+=a;ctx->s[1]+=b;ctx->s[2]+=c;ctx->s[3]+=d;
+   ctx->s[4]+=e;ctx->s[5]+=f;ctx->s[6]+=g;ctx->s[7]+=h;
+}
+void sha256_i(sha256_ctx_t *ctx)
+{
+    ctx->l=0;ctx->b[0]=ctx->b[1]=0;
+    ctx->s[0]=0x6a09e667;ctx->s[1]=0xbb67ae85;ctx->s[2]=0x3c6ef372;ctx->s[3]=0xa54ff53a;
+    ctx->s[4]=0x510e527f;ctx->s[5]=0x9b05688c;ctx->s[6]=0x1f83d9ab;ctx->s[7]=0x5be0cd19;
+}
+void sha256_u(sha256_ctx_t *ctx, const void *data, int len)
+{
+    uint8_t *d=(uint8_t *)data;
+    for(;len--;d++) {
+        ctx->d[ctx->l++]=*d;
+        if(ctx->l==64) {sha256_t(ctx);SHA_ADD(ctx->b[0],ctx->b[1],512);ctx->l=0;}
+    }
+}
+void sha256_f(sha256_ctx_t *ctx, uint8_t *h)
+{
+    uint32_t i=ctx->l;
+    ctx->d[i++]=0x80;
+    if(ctx->l<56) {while(i<56) ctx->d[i++]=0x00;}
+    else {while(i<64) ctx->d[i++]=0x00;sha256_t(ctx);memset(ctx->d,0,56);}
+    SHA_ADD(ctx->b[0],ctx->b[1],ctx->l*8);
+    ctx->d[63]=ctx->b[0];ctx->d[62]=ctx->b[0]>>8;ctx->d[61]=ctx->b[0]>>16;ctx->d[60]=ctx->b[0]>>24;
+    ctx->d[59]=ctx->b[1];ctx->d[58]=ctx->b[1]>>8;ctx->d[57]=ctx->b[1]>>16;ctx->d[56]=ctx->b[1]>>24;
+    sha256_t(ctx);
+    for(i=0;i<4;i++) {
+        h[i]   =(ctx->s[0]>>(24-i*8)); h[i+4] =(ctx->s[1]>>(24-i*8));
+        h[i+8] =(ctx->s[2]>>(24-i*8)); h[i+12]=(ctx->s[3]>>(24-i*8));
+        h[i+16]=(ctx->s[4]>>(24-i*8)); h[i+20]=(ctx->s[5]>>(24-i*8));
+        h[i+24]=(ctx->s[6]>>(24-i*8)); h[i+28]=(ctx->s[7]>>(24-i*8));
+    }
+}
+
 #ifdef WINVER
 #include <windows.h>
 /*extern int _fileno(FILE *f);*/
@@ -129,6 +197,7 @@ uint64_t hex2bin(char *str, int size)
 int stream_status(stream_t *ctx, char *str, int done)
 {
     time_t t = time(NULL);
+    uint8_t hash[32];
     uint64_t d = 0;
     int h,m,s;
 #ifdef WINVER
@@ -153,6 +222,18 @@ int stream_status(stream_t *ctx, char *str, int done)
 #else
             sprintf(str, lang[L_DONE], h, m, s);
 #endif
+        }
+        if(verbose) {
+            if(ctx->hasHash) {
+                sha256_f(&ctx->sha, hash);
+                printf("On-disk data checksum (SHA-256): ");
+                for(h = 0; h < 32; h++) printf("%02x", hash[h]);
+                printf("\r\n");
+            }
+            if(ctx->avgSpeedNum > 0) {
+                d = ctx->avgSpeedBytes / ctx->avgSpeedNum;
+                printf("Average speed was %" PRIu64" bytes / sec\r\n", d);
+            }
         }
         return 0;
     }
@@ -224,6 +305,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
 
     errno = 0;
     memset(ctx, 0, sizeof(stream_t));
+    sha256_i(&ctx->sha);
     if(!fn || !*fn) return 1;
     /* some DE uses URL on file drag'n'drop instead of a path */
     if(!memcmp(fn, "file://", 7)) {
@@ -906,3 +988,13 @@ void stream_baud(int rate)
         baud = bauds[i];
 }
 
+/**
+ * Calculate on-disk data hash
+ */
+void stream_hash(stream_t *ctx, int len)
+{
+    if(ctx && ctx->verifyBuf && len > 0) {
+        ctx->hasHash = 1;
+        sha256_u(&ctx->sha, ctx->verifyBuf, len);
+    }
+}

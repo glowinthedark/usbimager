@@ -459,7 +459,7 @@ static void *writerRoutine(void)
                         if(!ctx.fileSize) ctx.fileSize = ctx.readSize;
                         break;
                     } else {
-                        errno = 0; needWrite = 1;
+                        errno = 0; needWrite = 1; numberOfBytesVerify = 0;
                         if(!force) {
                             numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesRead);
                             if(numberOfBytesVerify == numberOfBytesRead &&
@@ -492,6 +492,7 @@ static void *writerRoutine(void)
                                 break;
                             }
                         }
+                        stream_hash(&ctx, numberOfBytesVerify);
                     }
                 } else {
                     main_onError(lang[L_RDSRCERR]);

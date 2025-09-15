@@ -8,7 +8,7 @@ and creates backups. Available platforms: Windows, MacOSX and Linux. Its interfa
 | Platform     | Frontend     | Description                  |
 |--------------|--------------|------------------------------|
 | Windows      | [GDI](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-i686-win-gdi.zip)<br>[GDI wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-i686-win-gdi.zip) | native interface<br>simplified, write-only interface |
-| MacOSX       | [Cocoa Intel](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-intel-macosx-cocoa.zip)<br>[Cocoa ARM](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-arm-macosx-cocoa.zip) | for older Mac models<br>for newer Mac models |
+| MacOS        | [Cocoa Intel](https://github.com/glowinthedark/usbimager/releases/download/1.0.10/usbimager_1.0.10-intel-macosx-cocoa.zip)<br>[Cocoa ARM](https://github.com/glowinthedark/usbimager/releases/download/1.0.10/usbimager_1.0.10-arm-macosx-cocoa.zip) | for older Mac models<br>for newer Mac models (provided by @tshup) |
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-amd64.deb) | same as the Linux PC GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-armhf.deb) | same as the Raspberry Pi GTK version with udisks2 support, but in .deb format<br>simplified, write-only interface |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | same as the Linux PC GTK version with udisks2 support, but in an AUR package<br>generated from the binaries<br>minimal X11 version |
@@ -107,7 +107,7 @@ Comparison
 | Raw write time (4)             | 23:16         | 23:28             | 24:05     |
 | Compressed write time (4)      | 01:12:51      | ✗                 | 30:47     |
 
-(1) - for Intel: the provided binary was compiled under 10.14 (because that's what I have), however it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10. For ARM: the minimum version is 11.0. As of 1.0.9, the Intel version isn't supported any more, and the ARM version is maintained by @cwongmath.
+(1) - for Intel: 10.14, but it was reported that you can compile the source under 10.13 too without problems. Furthermore, [Tarnyko](https://gitlab.com/bztsrc/usbimager/-/issues/63) also successfully tested it under 10.10. For ARM: the minimum version is 11.0. The USBImager binaries are provided by a contributor, @tshup, many many thanks!
 
 (2) - the portable executable's size on Windows platform. I couldn't download an official pre-compiled version of WIN32 Disk Imager, just the source. The **uf** versions of USBImager are bigger, ~800K, because they include Unifont.
 

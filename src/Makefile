@@ -54,7 +54,10 @@ CFLAGS += -DNDEBUG -DWINVER=0x0500 -DUNICODE=1
 LDFLAGS += -mwindows -static -static-libgcc
 TARGET = usbimager.exe
 WINDRES = windres
-ARCH = i686
+ifeq ($(ARCH),)
+ARCH=$(MSYSTEM_CARCH)
+endif
+ARCH?=i686
 ifeq ($(USE_WRONLY),)
 OBJ += resource.o
 else

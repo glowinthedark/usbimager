@@ -150,7 +150,7 @@ static void *writerRoutine(void *data)
                         if(!ctx.fileSize) ctx.fileSize = ctx.readSize;
                         break;
                     } else {
-                        errno = 0; needWrite = 1;
+                        errno = 0; needWrite = 1; numberOfBytesVerify = 0;
                         if(!force) {
                             numberOfBytesVerify = read(dst, ctx.verifyBuf, numberOfBytesRead);
                             if(numberOfBytesVerify == numberOfBytesRead &&
@@ -183,6 +183,7 @@ static void *writerRoutine(void *data)
                                 break;
                             }
                         }
+                        stream_hash(&ctx, numberOfBytesVerify);
                     }
                 } else {
                     uiQueueMain(onThreadError, lang[L_RDSRCERR]);

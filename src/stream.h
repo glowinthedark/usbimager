@@ -53,6 +53,12 @@
 #endif
 #endif
 
+/* SHA-256 context */
+typedef struct {
+   uint8_t d[64];
+   uint32_t l, b[2], s[8];
+} sha256_ctx_t;
+
 /* stream context */
 typedef struct {
     FILE *f, *g;
@@ -66,6 +72,8 @@ typedef struct {
     unsigned char *compBuf;
     char *buffer;
     char *verifyBuf;
+    char hasHash;
+    sha256_ctx_t sha;
     z_stream zstrm;
     bz_stream bstrm;
     struct xz_buf xstrm;
@@ -114,3 +122,8 @@ void stream_close(stream_t *ctx);
  * Check and set a valid baud rate
  */
 void stream_baud(int rate);
+
+/**
+ * Calculate on-disk data hash
+ */
+void stream_hash(stream_t *ctx, int len);

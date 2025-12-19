@@ -57,12 +57,6 @@ sudo dpkg -i usbimager_*.deb
 ```
 command.
 
-Support the Development by Donation
------------------------------------
-
-If you like it or find it useful, your donation of any amount will be very much appreciated:<br>
-<a href="bitcoin:3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx"><img src="https://gitlab.com/bztsrc/usbimager/raw/master/donate.png"><br>BTC 3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx</a>
-
 Features
 --------
 

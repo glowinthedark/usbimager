@@ -59,12 +59,6 @@ sudo dpkg -i usbimager_*.deb
 ```
 paranccsal telepíthetsz.
 
-Támogasd a fejlesztést adománnyal
----------------------------------
-
-Ha tetszik, vagy hasznosnak találod, szívesen fogadok akármekkora adományt:<br>
-<a href="bitcoin:3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx"><img src="https://gitlab.com/bztsrc/usbimager/raw/master/donate.png"><br>BTC 3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx</a>
-
 Fícsörök
 --------
 

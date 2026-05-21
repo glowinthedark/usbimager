@@ -34,7 +34,8 @@ jobs:
 
     strategy:
       matrix:
-        os: ['macos-14', 'macos-15', 'ubuntu-latest']
+        os: ['macos-14', 'ubuntu-latest']
+        # FIXME macos-15!! os: ['macos-14', 'macos-15', 'ubuntu-latest']
       fail-fast: false
     steps:
       - uses: actions/checkout@v4

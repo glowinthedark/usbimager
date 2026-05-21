@@ -489,7 +489,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
         if(verbose) printf(" zstd\r\n");
         ctx->compSize = fs;
         ctx->cmrdSize = hs;
-        zr = (uint64_t)ZSTD_getFrameContentSize(ctx->compBuf, sizeof(ctx->compBuf));
+        zr = (uint64_t)ZSTD_getFrameContentSize(ctx->compBuf, buffer_size);
         if(zr != ZSTD_CONTENTSIZE_UNKNOWN && zr != ZSTD_CONTENTSIZE_ERROR)
             ctx->fileSize = zr;
         else
@@ -557,7 +557,7 @@ int stream_open(stream_t *ctx, char *fn, int uncompr)
             /* zip64 */
             if(verbose) printf("   zip64\r\n");
             for(x = 30 + ctx->compBuf[26] + (ctx->compBuf[27]<<8), y = x + ctx->compBuf[28] + (ctx->compBuf[29]<<8);
-                x < y && x < (int)sizeof(ctx->compBuf) - 4; x += 4 + ctx->compBuf[x + 2] + (ctx->compBuf[x + 3]<<8))
+                x < y && x < buffer_size - 4; x += 4 + ctx->compBuf[x + 2] + (ctx->compBuf[x + 3]<<8))
                     if(ctx->compBuf[x] == 1 && ctx->compBuf[x + 1] == 0) {
                         memcpy(&ctx->compSize, ctx->compBuf + x + 12, 8);
                         memcpy(&ctx->fileSize, ctx->compBuf + x + 4, 8);

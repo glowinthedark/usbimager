@@ -57,12 +57,6 @@ sudo dpkg -i usbimager_*.deb
 ```
 command.
 
-Support the Development by Donation
------------------------------------
-
-If you like it or find it useful, your donation of any amount will be very much appreciated:<br>
-<a href="bitcoin:3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx"><img src="https://gitlab.com/bztsrc/usbimager/raw/master/donate.png"><br>BTC 3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx</a>
-
 Features
 --------
 
@@ -241,7 +235,8 @@ on the serial line:
 For both case the serial line is set to 115200 baud, 8 data bits, no parity, 1 stop bit. For serial transfers, USBImager does not uncompress the image to minimize
 transfer times, so that has to be done on the client side. For a simple boot loader that's compatible with USBImager, take a look at
 [Image Receiver](https://gitlab.com/bztsrc/imgrecv) (available for RPi1, 2, 3, 4 and IBM PC BIOS machines). Also used to send
-emergency initial ramdisks to [BOOTBOOT](https://gitlab.com/bztsrc/bootboot) compliant boot loaders.
+emergency boot images to the [Simpleboot ROM loader](https://gitlab.com/bztsrc/simpleboot/-/blob/main/docs/serial.md) and initial
+ramdisks to [BOOTBOOT](https://gitlab.com/bztsrc/bootboot) compliant boot loaders.
 
 If you want to use a different baud, just simply add it to the flag, like "-s57600" or "-S230400". Valid values are:
 57600, 115200, 230400, 460800, 500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000, 2500000, 3000000, 3500000, 4000000

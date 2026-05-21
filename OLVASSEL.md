@@ -13,7 +13,7 @@ annyira egyszerű, amennyire csak lehetséges, teljesen salang mentes.
 | Ubuntu LTS   | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-amd64.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-amd64.deb) | ua. mint a Linux PC GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | RaspiOS      | [GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-armhf.deb)<br>[GTK+ wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-armhf.deb) | ua. mint a Raspberry Pi GTK verzió udisks2-vel, csak .deb formátumban<br>egyszerűsített, csak író felület |
 | Arch/Manjaro | [GTK+](https://aur.archlinux.org/packages/usbimager/)<br>[GTK+](https://aur.archlinux.org/packages/usbimager-bin/)<br>[X11](https://aur.archlinux.org/packages/usbimager-x11/) | ua. mint a Linux PC GTK verzió udisks2-vel, csak AUR csomagban<br>binárisból generálva<br>minimális X11 verzió |
-| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-x86_64-linux-x11.zip)<br>[X11 uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_uf-x86_64-linux-x11.zip)<br>[X11 wo uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo_uf-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-x86_64-linux-gtk.zip)  | javalott<br>egyszerűsített, csak író felület<br>beépített Unifont, +512K<br>egyszerűsített felület, beépített Unifont, +512K<br>kompatíbilitás (udisks2 is kell hozzá) |
+| Linux PC     | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-x86_64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-x86_64-linux-x11.zip)<br>[X11 uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_uf-x86_64-linux-x11.zip)<br>[X11 wo uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo_uf-x86_64-linux-x11.zip)<br>[GTK+](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-x86_64-linux-gtk.zip)  | javallott<br>egyszerűsített, csak író felület<br>beépített Unifont, +512K<br>egyszerűsített felület, beépített Unifont, +512K<br>kompatíbilitás (udisks2 is kell hozzá) |
 | Raspberry Pi | [X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-armv7l-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-armv7l-linux-x11.zip)<br>[X11 uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_uf-armv7l-linux-x11.zip)<br>[X11 wo uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo_uf-armv7l-linux-x11.zip)<br>[X11](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10-aarch64-linux-x11.zip)<br>[X11 wo](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo-aarch64-linux-x11.zip)<br>[X11 uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_uf-aarch64-linux-x11.zip)<br>[X11 wo uf](https://gitlab.com/bztsrc/usbimager/raw/binaries/usbimager_1.0.10_wo_uf-aarch64-linux-x11.zip) | AArch32 (armv7l), normál interfész<br>AArch32, egyszerűsített, csak író felület<br>AArch32, normál, beépített Unifont, +512K<br>AArch32, egyszerűsített, beépített Unifont, +512K<br>AArch64 (arm64), normál interfész<br>AArch64, egyszerűsített, csak író felület<br>AArch64, normál, beépített Unifont, +512K<br>AArch64, egyszerűsített, beépített Unifont, +512K |
 
 FONTOS: muszáj megemlítenem pár szóban, mert ez a kérdés folyton-folyvást felvetődik: miért ne `dd` inkább? A válaszom:
@@ -58,12 +58,6 @@ Ubuntu LTS és Raspbian rendszeren letöltheted a deb csomagot is, amit aztán a
 sudo dpkg -i usbimager_*.deb
 ```
 paranccsal telepíthetsz.
-
-Támogasd a fejlesztést adománnyal
----------------------------------
-
-Ha tetszik, vagy hasznosnak találod, szívesen fogadok akármekkora adományt:<br>
-<a href="bitcoin:3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx"><img src="https://gitlab.com/bztsrc/usbimager/raw/master/donate.png"><br>BTC 3EsdxN1ZsX5JkLgk3uR4ybHLDX5i687dkx</a>
 
 Fícsörök
 --------
@@ -243,10 +237,10 @@ kézfogást fogja alkalmazni a soros vonalon:
 6. amikor a kliens fogadta a méretedik bájtot, a lemezkép megérkezett.
 
 Mindkét esetben a soros port 115200 baud, 8 adatbit, nincs paritás, 1 stopbit módra kerül felkonfigurálásra. A soros vonali átvitelek esetében
-az USBImager nem tömöríti ki a lemezképet, hogy csökkentse az átviteli időt, így a kicsomagolást a kliensen kell elvégezni. Ha egy egyszerű
-rendszerbetöltőre vágysz, ami kompatíbilis az USBImager-el, akkor javalom az [Image Receiver](https://gitlab.com/bztsrc/imgrecv)-t
-(elérhető RPi1, 2, 3, 4 és IBM PC BIOS gépekre). Használható vészhelyzeti induló lemezképek küldésére
-[BOOTBOOT](https://gitlab.com/bztsrc/bootboot) kompatíbilis rendszerbetöltők számára.
+az USBImager nem tömöríti ki a lemezképet, hogy csökkentse az átviteli időt, így a kicsomagolást a kliensen kell elvégezni. USBImager-rel
+kompatíbilis, egyszerű minta rendszerbetöltő található az [Image Receiver](https://gitlab.com/bztsrc/imgrecv) repóban (elérhető
+RPi1, 2, 3, 4 és IBM PC BIOS gépekre). Továbbá használható vészhelyzeti lemezképek küldésére a [Simpleboot ROM betöltő](https://gitlab.com/bztsrc/simpleboot/-/blob/main/docs/serial.md)
+höz, valamint induló lemezképek küldésére [BOOTBOOT](https://gitlab.com/bztsrc/bootboot) kompatíbilis rendszerbetöltők számára.
 
 Ha más baud-ot szeretnél, csak add meg a kapcsoló után, pl. "-s57600" vagy "-S230400". Lehetséges értékek:
 57600, 115200, 230400, 460800, 500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000, 2500000, 3000000, 3500000, 4000000
